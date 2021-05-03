@@ -28,33 +28,45 @@ public:
 
     void AddComponentToEntity(const Entity& entity, TComponentType component) {
         // Add the new component at the end of the array
-        m_entityToComponentArrayIdx[entity] = m_size;
+        size_t newElemIdx = m_size;
+        m_componentArray[newElemIdx] = component;
+        m_entityToCompArrayIdx[entity] = newElemIdx; // add a new key:entity->value:CompArrayIdx to the map
+        m_compArrayIdxToEntity[newElemIdx] = entity; // add a new key:CompArrayIdx->value:entity
         m_size++; 
     }
 
     void RemoveComponentFromEntity(const Entity& entity) {
         // Move the component at the end of the array into the deleted component's index to maintain the density
-        size_t idxOfRemovedComp = m_entityToComponentArrayIdx[entity];
-        m_componentArray[idxOfRemovedComp] = m_componentArray[m_size-1]; // here, we don't know which entity's component we're moving within the array
+        size_t idxOfRemovedComp = m_entityToCompArrayIdx[entity];
+        size_t lastElemId = m_size-1;
+        m_componentArray[idxOfRemovedComp] = m_componentArray[lastElemId]; // the function input tells which entity removes this component but,
+                                                                         // we don't know which entity's component we're moving from the end of the array
                                                                          // That's why, we need a 2nd map to do CompArrayIdx -> Entity
         // Update the entity -> component array idx map
-        Entity entityOfLastCompArrayElement = m_compArrayIdxToEntity[m_size-1]; // we get the entity of the component that we moved from the end of the array
-        m_entityToComponentArrayIdx[entityOfLastCompArrayElement] = idxOfRemovedComp; // update map
-        m_compArrayIdxToEntity[idxOfRemovedComp] = entityOfLastCompArrayElement;
+        Entity entityOfMovedElem = m_compArrayIdxToEntity[lastElemId]; // we get the entity of the component that we moved from the end of the array
+        m_entityToCompArrayIdx[entityOfMovedElem] = idxOfRemovedComp; // update map
+        m_compArrayIdxToEntity[idxOfRemovedComp] = entityOfMovedElem;
 
-        m_entityToComponentArrayIdx.erase(entity);
-        m_compArrayIdxToEntity.erase(m_size-1);
+        m_entityToCompArrayIdx.erase(entity);
+        m_compArrayIdxToEntity.erase(lastElemId);
 
-        m_size--;
-        
+        m_size--;    
     }
+
+    TComponentType& GetComponentData(const Entity& entity){
+        assert(m_entityToCompArrayIdx.find(entity) != m_entityToCompArrayIdx.end() && "Entity does not have this component!")
+
+        return m_componentArray[m_entityToCompArrayIdx[entity]];
+    }
+
+
 
 
 
 private:
     std::array<TComponentType, MAX_ENTITIES> m_componentArray{}; // container of this Component Type's instances
 
-    std::unordered_map<Entity, size_t> m_entityToComponentArrayIdx{}; // mapping between the instance inside ComponentArray and it's owner Entity
+    std::unordered_map<Entity, size_t> m_entityToCompArrayIdx{}; // mapping between the instance inside ComponentArray and it's owner Entity
     std::unordered_map<size_t, Entity> m_compArrayIdxToEntity{}; // mirror of the above
 
     size_t m_size; // number of valid Entities in the ComponentArray --> all indices smaller than this should be occupied
