@@ -15,8 +15,8 @@ int main() {
     gOrchestrator.Init(); // initializes the ECS managers
 
     // Register the components
-    gOrchestrator.RegisterComponent<Transform>();
-    gOrchestrator.RegisterComponent<RigidBody>();
+    gOrchestrator.RegisterComponentType<Transform>();
+    gOrchestrator.RegisterComponentType<RigidBody>();
 
     // Register the systems
     auto physicsSys = gOrchestrator.RegisterSystem<PhysicsSystem>();
@@ -24,25 +24,25 @@ int main() {
     // Initialize the systems
     physicsSys->Init();
 
-    std::vector<Entity> entities(10);
+    std::vector<Entity> entities(10);                       
 
     for (auto& entity : entities) {
         entity = gOrchestrator.CreateEntity();
 
-        gOrchestrator.AddComponent<Transform>(entity, Transform{.position = Vec3(0.0, 0.0, 0.0),
+        gOrchestrator.AddComponent<Transform>(entity, Transform{.position = Vec3(100.0, 200.0, 300.0),
                                                                 .rotation = Vec3(0.0, 0.0, 0.0),
                                                                 .scale = Vec3(1.0, 1.0, 1.0)
                                                                 });
 
-        gOrchestrator.AddComponent<RigidBody>(entity, RigidBody{.acceleration = Vec3(0.0, 0.0, 0.0),
-                                                                .velocity = Vec3(0.0, 0.0, 0.0)
-                                                                });
+        gOrchestrator.AddComponent<RigidBody>(entity, RigidBody{.velocity = Vec3(1.0, 2.0, 3.0),
+                                                                .acceleration = Vec3(0.0, 0.0, -8.0)
+                                                                });      
     }
 
 
     int ctr = 0;
 
-    float dt = 0.0f;
+    float dt = 0.f;
 
     while(ctr < 1000) {
 

@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <typeinfo>
 #include <typeindex>
+#include <cassert>
 
 class SystemManager{
 public:
@@ -37,13 +38,13 @@ public:
         }
     }
 
-    void EntitySignatureChanged(const Entity& entity, const Signature& entitySignature) {
+    void EntitySignatureChanged(const Entity& entity, const Signature& newEntitySignature) {
         for (auto const& pair : m_Systems) {
             auto const& sysType = pair.first;
             auto const& system = pair.second;
             auto const& sysSig = m_systemSignatures[sysType];
 
-            if ( (entitySignature & sysSig) == sysSig) {
+            if ( (newEntitySignature & sysSig) == sysSig) {
                 system->m_entities.insert(entity);
             }
             else { // no need to check if the entity is existing in the System or not, since unordered_set allows erasing non-existent keys

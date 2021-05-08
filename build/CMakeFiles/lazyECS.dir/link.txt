@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/lazyECS.dir/main.cpp.o CMakeFiles/lazyECS.dir/src/Systems/PhysicsSystem.cpp.o  -o lazyECS 

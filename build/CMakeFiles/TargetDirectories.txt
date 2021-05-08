@@ -1,3 +1,0 @@
-/home/goksan/Work/lazyECS/build/CMakeFiles/rebuild_cache.dir
-/home/goksan/Work/lazyECS/build/CMakeFiles/lazyECS.dir
-/home/goksan/Work/lazyECS/build/CMakeFiles/edit_cache.dir

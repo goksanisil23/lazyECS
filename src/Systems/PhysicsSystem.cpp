@@ -7,6 +7,8 @@
 
 #include "Math/Vec3.hpp"
 
+#include <iostream>
+
 extern Orchestrator gOrchestrator; // expected to be defined globally in main
 
 void PhysicsSystem::Init(){
@@ -19,12 +21,14 @@ void PhysicsSystem::Init(){
 
 void PhysicsSystem::Update(float dt) {
     for (auto const& entity : m_entities) {
-        auto& rigidBody = gOrchestrator.GetComponent<RigidBody>(entity);
-        auto& transform = gOrchestrator.GetComponent<Transform>(entity);
-    
+        RigidBody& rigidBody = gOrchestrator.GetComponent<RigidBody>(entity);
+        Transform& transform = gOrchestrator.GetComponent<Transform>(entity);
+
         transform.position += rigidBody.velocity * dt;
         rigidBody.velocity +=  rigidBody.acceleration* dt;
-        rigidBody.acceleration = Vec3{0.0, 0.0, -9.8};
 
+        std::cout << "entity " << entity << " x,y,z:" << transform.position.x << " " 
+                                                      << transform.position.y << " " 
+                                                      << transform.position.z << std::endl; 
     }
 }

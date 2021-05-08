@@ -31,8 +31,8 @@ public:
 
     /////////////////////////// COMPONENT METHODS //////////////////////////////// 
     template<typename TComponentType>
-    void RegisterComponent() {
-        m_componentManager->RegisterComponent<TComponentType>();
+    void RegisterComponentType() {
+        m_componentManager->RegisterComponentType<TComponentType>();
     }
 
     template<typename TComponentType>
@@ -43,7 +43,7 @@ public:
         Signature signature = m_entityManager->GetSignature(entity);
         // given that this component type has unique id "x", sets the x'th bit in the signature to "1"
         signature.set(m_componentManager->GetComponentTypeId<TComponentType>(), true);
-        m_entityManager->SetSignature(signature);
+        m_entityManager->SetSignature(entity, signature);
 
         m_systemManager->EntitySignatureChanged(entity, signature);
     }
@@ -68,7 +68,6 @@ public:
     void SetSystemSignature(const Signature& signature) {
         m_systemManager->SetSignature<TSytemType>(signature);
     }
-
 
 
 private:

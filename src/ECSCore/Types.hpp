@@ -9,6 +9,9 @@ using Entity = std::uint32_t; // Entity is nothing but a unique id
 
 using ComponentTypeId = std::uint8_t; // each unique component type is defined by a unique number
 
+const Entity MAX_ENTITIES = 5000;
+const ComponentTypeId MAX_COMPONENT_TYPES = 32;
+
 using Signature = std::bitset<MAX_COMPONENT_TYPES>;  // a signature contains information about which components exist/used in that Entity or System
                                                      // If a Component with unique id (ComponentType) "n" exists in that System or Entity,
                                                      // "n"th bit of the Signature is set to 1.
@@ -19,6 +22,3 @@ class System {
 public:
     std::unordered_set<Entity> m_entities;
 };
-
-const Entity MAX_ENTITIES = 5000;
-const ComponentTypeId MAX_COMPONENT_TYPES = 32;

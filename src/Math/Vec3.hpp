@@ -15,16 +15,16 @@ public:
 	Vec3 operator+(Vec3 const& rhs) const
 	{
 		return Vec3(
-			x + rhs.x,
-			y + rhs.y,
-			z + rhs.z);
+			this->x + rhs.x,
+			this->y + rhs.y,
+			this->z + rhs.z);
 	}
 
 	Vec3 operator+=(Vec3 const& rhs)
 	{
-		x += rhs.x;
-		y += rhs.y;
-		z += rhs.z;
+		this->x += rhs.x;
+		this->y += rhs.y;
+		this->z += rhs.z;
 
 		return *this;
 	}
@@ -32,16 +32,16 @@ public:
 	Vec3 operator-(Vec3 const& rhs) const
 	{
 		return Vec3(
-			x - rhs.x,
-			y - rhs.y,
-			z - rhs.z);
+			this->x - rhs.x,
+			this->y - rhs.y,
+			this->z - rhs.z);
 	}
 
 	Vec3 operator-=(Vec3 const& rhs)
 	{
-		x -= rhs.x;
-		y -= rhs.y;
-		z -= rhs.z;
+		this->x -= rhs.x;
+		this->y -= rhs.y;
+		this->z -= rhs.z;
 
 		return *this;
 	}
@@ -49,33 +49,33 @@ public:
 	Vec3 operator*(Vec3 const& rhs) const
 	{
 		return Vec3(
-			x * rhs.x,
-			y * rhs.y,
-			z * rhs.z);
+			this->x * rhs.x,
+			this->y * rhs.y,
+			this->z * rhs.z);
 	}
 
 	Vec3 operator*=(Vec3 const& rhs)
 	{
-		x *= rhs.x;
-		y *= rhs.y;
-		z *= rhs.z;
+		this->x *= rhs.x;
+		this->y *= rhs.y;
+		this->z *= rhs.z;
 
 		return *this;
 	}
 
 	Vec3 operator*(float rhs) const
 	{
-		return Vec3(
-			x * rhs,
-			y * rhs,
-			z * rhs);
+		return Vec3(this->x * rhs, 
+					this->y * rhs, 
+					this->z * rhs
+					);
 	}
 
 	Vec3 operator*=(float rhs)
 	{
-		x *= rhs;
-		y *= rhs;
-		z *= rhs;
+		this->x *= rhs;
+		this->y *= rhs;
+		this->z *= rhs;
 
 		return *this;
 	}

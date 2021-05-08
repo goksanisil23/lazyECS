@@ -5,6 +5,8 @@
 #include <array>
 #include <unordered_map>
 #include <vector>
+#include <cassert>
+#include <iostream>
 
 // A Component is plain-old-data (POD) structure
 // e.g. struct Transform {Vec3 pos, Vec3 rot, Vec3 scale}
@@ -30,68 +32,64 @@ public:
 };
 
 template<typename TComponentType>
-class ComponentArrayHandler {
+class ComponentArrayHandler : public IComponentArrayHandler {
 
 public:
 
     void AddComponentToEntity(const Entity& entity, TComponentType component) {
         
         // Only 1 of this component type per entity is allowed
-        assert(m_entityComponentLookup.find(entity) == m_entityComponentLookup.end() && "This entity already has this component type!")
+        assert(this->m_entityComponentLookup.find(entity) == this->m_entityComponentLookup.end() && "This entity already has this component type!");
         // For this component type, owner(entity) count must be the same number of component instances (due to rule above)
-        assert(m_entityArray.size() == m_componentArray.size() && "owner (entity) size does not match component size for this component type!")
-        assert(m_entityComponentLookup.size() == m_componentArray.size() && " entity->Component lookup size does not match component size for this component type!")
+        assert(this->m_entityArray.size() == this->m_componentArray.size() && "owner (entity) size does not match component size for this component type!");
+        assert(this->m_entityComponentLookup.size() == this->m_componentArray.size() && " entity->Component lookup size does not match component size for this component type!");
 
         // Add the new component at the end of component array
-        m_componentArray.push_back(component);    
+        this->m_componentArray.push_back(component);    
         // Add the owner id at the end of entity array
-        m_entityArray.push_back(entity);
+        this->m_entityArray.push_back(entity);
 
         // Update lookup
-        m_entityComponentLookup[entity] = m_componentArray.size()-1; // since its added to the back
+        this->m_entityComponentLookup[entity] = this->m_componentArray.size()-1; // since its added to the back
     }
 
     void RemoveComponentFromEntity(const Entity& entity) override {
-        auto it = m_entityComponentLookup.find(entity);
+        auto it = this->m_entityComponentLookup.find(entity);
 
-        if (it != m_entityComponentLookup.end()) {
+        if (it != this->m_entityComponentLookup.end()) {
             const size_t compIdxToRemove = it->second;
             
             // if not already last element in the array, swap the component to be removed
             // with the last component in the array to maintain the compactness
-            if (compIdxToRemove < (m_componentArray.size()-1)) {
-                m_componentArray[compIdxToRemove] = std::move(m_componentArray.back()); // avoid copying since structs might be big
-                m_entityArray[compIdxToRemove] = m_entityArray.back();
+            if (compIdxToRemove < (this->m_componentArray.size()-1)) {
+                this->m_componentArray[compIdxToRemove] = std::move(this->m_componentArray.back()); // avoid copying since structs might be big
+                this->m_entityArray[compIdxToRemove] = this->m_entityArray.back();
                 
                 // update the lookup after swapping
-                m_entityComponentLookup[m_entityArray[compIdxToRemove]] = compIdxToRemove; // the element moved from the back of the array, takes 
+                this->m_entityComponentLookup[this->m_entityArray[compIdxToRemove]] = compIdxToRemove; // the element moved from the back of the array, takes 
                                                                                            // removed element's index
             }
 
             // shrink the containers
-            m_componentArray.pop_back();
-            m_entityArray.pop_back();
-            m_entityComponentLookup.erase(entity);
+            this->m_componentArray.pop_back();
+            this->m_entityArray.pop_back();
+            this->m_entityComponentLookup.erase(entity);
         }
     }
 
     TComponentType& GetComponentData(const Entity& entity) {
-        assert(m_entityComponentLookup.find(entity) != m_entityComponentLookup.end() && "This component has no such owner(entity)");
+        assert(this->m_entityComponentLookup.find(entity) != this->m_entityComponentLookup.end() && "This component has no such owner(entity)");
+
+        return this->m_componentArray[this->m_entityComponentLookup[entity]];
     }
 
-    // void RemoveEntityFromCompArray(const Entity& entity) override {
-    //     if (m_entityComponentLookup[entity] != m_entityComponentLookup.end()) { // make sure this entity is an owner of this type of component
-    //         this->RemoveComponentFromEntity(entity);
-    //     }
-    // }
-
 private:
-    std::vector<TComponentType> m_componentArray; // stores the instances for this component type
+    std::vector<TComponentType> m_componentArray{}; // stores the instances for this component type
     
-    std::vector<Entity> m_entityArray; // stores the owners of the component instances
+    std::vector<Entity> m_entityArray{}; // stores the owners of the component instances
                                        // component in m_componentArray[i] belongs to entity in m_entityArray[i], so they evolve in parallel
     
-    std::unordered_map<Entity, size_t> m_entityComponentLookup; // maps the component instances to the entities
+    std::unordered_map<Entity, size_t> m_entityComponentLookup{}; // maps the component instances to the entities
                                                                 // WHY we need lookup if entityArray and componentArray evolve in parallel?
                                                                 // Because: position along the arrays != id of entity
 
