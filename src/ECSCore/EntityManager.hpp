@@ -51,13 +51,6 @@ public:
         return m_entitySignatures[entity];
     }
 
-    Signature GetSignature() {
-
-    }
-
-
-
-
 private:
 
     std::queue<Entity> m_availableEntities {}; // unoccupied Entity id's. Initially, queue is nicely ordered [0,1,..., (MAX_ENTITIES-1)]

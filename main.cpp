@@ -29,13 +29,13 @@ int main() {
     for (auto& entity : entities) {
         entity = gOrchestrator.CreateEntity();
 
-        gOrchestrator.AddComponent<Transform>(entity, Transform{.position = Vec3(100.0, 200.0, 300.0),
-                                                                .rotation = Vec3(0.0, 0.0, 0.0),
-                                                                .scale = Vec3(1.0, 1.0, 1.0)
+        gOrchestrator.AddComponent<Transform>(entity, Transform{Vec3(100.0, 200.0, 300.0), // location
+                                                                Vec3(0.0, 0.0, 0.0),       // rotation
+                                                                Vec3(1.0, 1.0, 1.0)        // scale
                                                                 });
 
-        gOrchestrator.AddComponent<RigidBody>(entity, RigidBody{.velocity = Vec3(1.0, 2.0, 3.0),
-                                                                .acceleration = Vec3(0.0, 0.0, -8.0)
+        gOrchestrator.AddComponent<RigidBody>(entity, RigidBody{Vec3(1.0, 2.0, 3.0), // velocity
+                                                                Vec3(0.0, 0.0, -8.0) // acceleration
                                                                 });      
     }
 
