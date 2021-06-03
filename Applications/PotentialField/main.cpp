@@ -4,7 +4,7 @@
 #include "lazyECS/ECSCore/Orchestrator.hpp"
 
 #include "lazyECS/Systems/PhysicsSystem.hpp"
-#include "lazyECS/Systems/RenderingSystem.hpp"
+#include "lazyECS/Systems/RenderingSystem2D.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -21,7 +21,7 @@ int main() {
 
     // Register the systems
     auto physicsSys = gOrchestrator.RegisterSystem<lazyECS::PhysicsSystem>();
-    auto renderSys = gOrchestrator.RegisterSystem<lazyECS::RenderingSystem>();
+    auto renderSys = gOrchestrator.RegisterSystem<lazyECS::RenderingSystem2D>();
 
     // Initialize the systems
     physicsSys->Init();

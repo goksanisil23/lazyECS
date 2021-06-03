@@ -1,7 +1,7 @@
-#include "RenderingSystem.hpp"
+#include "RenderingSystem2D.hpp"
 
-#include "Components/RigidBody.hpp"
-#include "Components/Transform.hpp"
+#include "Components/RigidBody2D.hpp"
+#include "Components/Transform2D.hpp"
 
 #include "ECSCore/Orchestrator.hpp"
 
@@ -11,12 +11,12 @@ extern lazyECS::Orchestrator gOrchestrator; // expected to be defined globally i
 
 namespace lazyECS {
 
-void RenderingSystem::Init(){
+void RenderingSystem2D::Init(){
 
     // Set the system signature based on the utilized Components below
     Signature signature;
     signature.set(gOrchestrator.GetComponentTypeId<Transform>(), true);
-    gOrchestrator.SetSystemSignature<RenderingSystem>(signature);
+    gOrchestrator.SetSystemSignature<RenderingSystem2D>(signature);
 
 
     // Raylib related initialization
@@ -33,7 +33,7 @@ void RenderingSystem::Init(){
 
 }
 
-void RenderingSystem::Update(float dt) {
+void RenderingSystem2D::Update(float dt) {
 
     camera->Update(); // updates the camera based on cursor and keyboard inputs
 

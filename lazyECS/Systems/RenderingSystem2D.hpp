@@ -8,7 +8,7 @@
 
 namespace lazyECS {
 
-class RenderingSystem : public System {
+class RenderingSystem2D : public System {
 public:
     void Init();
 

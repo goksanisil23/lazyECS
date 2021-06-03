@@ -10,7 +10,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(raylib REQUIRED)
 
 message("raylib include dir: " ${raylib_INCLUDE_DIR})
-message("raylib binary dir: " ${raylib_LIBRARY_DIR})
+message("raylib library dir: " ${raylib_LIBRARY_DIR})
+
+######################## ReachPhysics3D #####################
+
+find_package(ReactPhysics3D REQUIRED)
+
+message("ReachPhysics3D include dir: " ${ReactPhysics3D_INCLUDE_DIR})
+message("ReachPhysics3D library dir: " ${ReactPhysics3D_LIBRARY_DIR})
 
 ######################## MAIN lazyECS #########################
 
@@ -22,21 +29,24 @@ set(
     ECSCore/SystemManager.hpp
     ECSCore/Orchestrator.hpp
     ECSCore/Types.hpp
-    Components/RigidBody.hpp
-    Components/Transform.hpp
+    Components/RigidBody3D.hpp
+    Components/Transform3D.hpp
+    Components/RigidBody2D.hpp
+    Components/Transform2D.hpp    
     Systems/PhysicsSystem.hpp
     Systems/PhysicsSystem.cpp
-    Systems/RenderingSystem.cpp
-    Systems/RenderingSystem.hpp
+    Systems/RenderingSystem2D.cpp
+    Systems/RenderingSystem2D.hpp
 )
 
 # #Generate the static library from the sources
 # add_library(lazyECS SHARED ${LAZY_ECS_SOURCES})
 add_library(lazyECS ${LAZY_ECS_SOURCES})
 
-target_link_libraries(lazyECS raylib)
+target_link_libraries(lazyECS raylib ReactPhysics3D::ReactPhysics3D)
 target_include_directories(lazyECS PUBLIC
                                         ${CMAKE_CURRENT_SOURCE_DIR}
                                         ${raylib_INCLUDE_DIR}
+                                        ${ReactPhysics3D_INCLUDE_DIR}
                                         ../external/raylib-cpp/include)
 
