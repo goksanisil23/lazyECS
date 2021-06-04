@@ -3,6 +3,8 @@
 #include <bitset>
 #include <unordered_set>
 
+#include "ECSCore/ECSConstants.hpp"
+
 //////////// ECS types /////////////
 
 namespace lazyECS {
@@ -10,9 +12,6 @@ namespace lazyECS {
 using Entity = std::uint32_t; // Entity is nothing but a unique id
 
 using ComponentTypeId = std::uint8_t; // each unique component type is defined by a unique number
-
-const Entity MAX_ENTITIES = 5000;
-const ComponentTypeId MAX_COMPONENT_TYPES = 32;
 
 using Signature = std::bitset<MAX_COMPONENT_TYPES>;  // a signature contains information about which components exist/used in that Entity or System
                                                      // If a Component with unique id (ComponentTypeId) "n" exists in that System or Entity,

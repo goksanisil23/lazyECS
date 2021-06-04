@@ -9,23 +9,22 @@
 namespace lazyECS {
 
 class PhysicsSystem : public System {
+
 public:
+    PhysicsSystem();
+
     void Init();
 
     void Update(float dt);
 
 private:
     // PhysicsCommon is a factory module that is used to create physics world and objects and handling memory and logging
-    reactphysics3d::PhysicsCommon physicsCommon;
+    rp3d::PhysicsCommon physicsCommon;
+    rp3d::PhysicsWorld* physicsWorld;
 
-    reactphysics3d::PhysicsWorld* physicsWorld;
-
-    const float timeStep = 1.0f / 60.0f;
-
-    std::chrono::_V2::system_clock::time_point prevFrameTime = std::chrono::high_resolution_clock::now();
-
-    float timeAccumulator;
-
+    float timeStep; // fixed time step for the physics solver iteration
+    std::chrono::_V2::system_clock::time_point prevFrameTime;
+    float timeAccumulator; // to keep track of the leftover time from last physics iteration
     rp3d::Transform prevTrans; // Transform value to calculate interpolation
 
 };

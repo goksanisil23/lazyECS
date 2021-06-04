@@ -11,8 +11,12 @@ extern lazyECS::Orchestrator gOrchestrator; // expected to be defined globally i
 
 namespace lazyECS {
 
+PhysicsSystem::PhysicsSystem() : timeStep{PHYSICS_TIME_STEP}, timeAccumulator{0.0f}, 
+                                prevFrameTime{std::chrono::high_resolution_clock::now()},
+                                prevTrans{rp3d::Transform()} {}
+
 void PhysicsSystem::Init(){
-    
+
     // Set the system signature based on the utilized Components below
     Signature signature;
     signature.set(gOrchestrator.GetComponentTypeId<RigidBody3D>(), true);
@@ -34,11 +38,12 @@ void PhysicsSystem::Init(){
 void PhysicsSystem::Update(float dt) {
 
     auto currentFrameTime = std::chrono::high_resolution_clock::now();
-    auto deltaTime = currentFrameTime - prevFrameTime;
+    auto deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentFrameTime-prevFrameTime).count();
     this->prevFrameTime = currentFrameTime; // update previous time
-    this->timeAccumulator += deltaTime.count();
+    this->timeAccumulator += deltaTime;
 
-    while(timeAccumulator >= timeStep) {
+    while(this->timeAccumulator >= this->timeStep) {
+
         // Update physics world with constant time step
         this->physicsWorld->update(this->timeStep);
 

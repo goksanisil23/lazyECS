@@ -34,11 +34,9 @@ int main() {
         reactphysics3d::Quaternion spawn_rot(reactphysics3d::Quaternion::identity());
         lazyECS::Transform3D spawn_trans;
         spawn_trans.rp3d_transform = std::make_shared<reactphysics3d::Transform>(spawn_pos, spawn_rot);
-
         gOrchestrator.AddComponent<lazyECS::Transform3D>(entity,spawn_trans);
 
         lazyECS::RigidBody3D rigid_body; // will be initialized in PhysicsSystem
-
         gOrchestrator.AddComponent<lazyECS::RigidBody3D>(entity, rigid_body);      
     }
 
@@ -59,7 +57,7 @@ int main() {
         auto stopTime = std::chrono::high_resolution_clock::now();
 
         dt = std::chrono::duration<float, std::chrono::seconds::period>(stopTime-startTime).count();
-        std::cout << "dt: " << dt << std::endl;
+        // std::cout << "dt: " << dt << std::endl;
 
     }
 

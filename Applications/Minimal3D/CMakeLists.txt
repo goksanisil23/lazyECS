@@ -9,4 +9,4 @@ add_executable(minimal_3d main.cpp)
 target_link_libraries(minimal_3d
                         lazyECS)
 
-target_include_directories(minimal_3d PUBLIC ../..)
+target_include_directories(minimal_3d PUBLIC ${LAZY_ECS_PARENT_DIR})
