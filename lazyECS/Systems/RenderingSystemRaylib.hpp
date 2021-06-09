@@ -8,7 +8,7 @@
 
 namespace lazyECS {
 
-class RenderingSystem2D : public System {
+class RenderingSystemRaylib : public System {
 public:
     void Init();
 

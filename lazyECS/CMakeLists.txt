@@ -32,11 +32,12 @@ set(
     Components/RigidBody3D.hpp
     Components/Transform3D.hpp
     Components/RigidBody2D.hpp
-    Components/Transform2D.hpp    
+    Components/Transform2D.hpp
+    Components/Mesh.hpp
     Systems/PhysicsSystem.hpp
     Systems/PhysicsSystem.cpp
-    Systems/RenderingSystem2D.cpp
-    Systems/RenderingSystem2D.hpp
+    Systems/RenderingSystemRaylib.cpp
+    Systems/RenderingSystemRaylib.hpp
 )
 
 # #Generate the static library from the sources
