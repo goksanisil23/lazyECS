@@ -1,0 +1,3 @@
+[submodule "external/SimpleRenderEngine"]
+	path = external/SimpleRenderEngine
+	url = https://github.com/mortennobel/SimpleRenderEngine.git
