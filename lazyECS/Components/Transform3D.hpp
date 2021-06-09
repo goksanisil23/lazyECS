@@ -2,8 +2,6 @@
 
 #include <reactphysics3d/reactphysics3d.h>
 
-#include "Systems/Rendering/opengl-framework/src/maths/Vector3.h"
-
 namespace lazyECS {
 
 // Class to represent the position & orientation of a generic 3D entity in the scene

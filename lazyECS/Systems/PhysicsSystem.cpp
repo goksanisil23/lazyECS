@@ -13,7 +13,7 @@ namespace lazyECS {
 
 PhysicsSystem::PhysicsSystem() : timeStep{PHYSICS_TIME_STEP}, timeAccumulator{0.0f}, 
                                 prevFrameTime{std::chrono::high_resolution_clock::now()},
-                                prevTrans{rp3d::Transform()} {}
+                                prevTrans{rp3d::Transform()}, mEngineSettings(EngineSettings::defaultSettings()) {}
 
 void PhysicsSystem::Init(){
 
@@ -23,16 +23,16 @@ void PhysicsSystem::Init(){
     signature.set(gOrchestrator.GetComponentTypeId<Transform3D>(), true);
     gOrchestrator.SetSystemSignature<PhysicsSystem>(signature);
 
-    // Setup the React 3D Physics World
-    this->physicsWorld = physicsCommon.createPhysicsWorld();
+    // // Setup the React 3D Physics World
+    // this->physicsWorld = physicsCommon.createPhysicsWorld();
 
-    // Create rp3d rigid body for the entities that have rigid body components
-    for(auto& entity : m_entities) {
-        auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity); // uninitialized here
-        auto& transform = gOrchestrator.GetComponent<Transform3D>(entity); // Initial Transform of entities must be assigned outside of Physics Sys. 
-        // we give the actual rigidBody here
-        rigidBody.rp3d_rigidBody = std::shared_ptr<rp3d::RigidBody>(this->physicsWorld->createRigidBody(*transform.rp3d_transform)); 
-    }
+    // // Create rp3d rigid body for the entities that have rigid body components
+    // for(auto& entity : m_entities) {
+    //     auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity); // uninitialized here
+    //     auto& transform = gOrchestrator.GetComponent<Transform3D>(entity); // Initial Transform of entities must be assigned outside of Physics Sys. 
+    //     // we give the actual rigidBody here
+    //     rigidBody.rp3d_rigidBody = std::shared_ptr<rp3d::RigidBody>(this->physicsWorld->createRigidBody(*transform.rp3d_transform)); 
+    // }
 }
 
 void PhysicsSystem::Update(float dt) {
