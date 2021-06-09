@@ -7,17 +7,61 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
  
 ########################## raylib ##########################
-find_package(raylib REQUIRED)
+# find_package(raylib REQUIRED)
 
-message("raylib include dir: " ${raylib_INCLUDE_DIR})
-message("raylib library dir: " ${raylib_LIBRARY_DIR})
+# message("raylib include dir: " ${raylib_INCLUDE_DIR})
+# message("raylib library dir: " ${raylib_LIBRARY_DIR})
 
+###################### NANOGUI ##############################
+# Disable building extras of nanogui we won't need (pure C++ project)
+set(NANOGUI_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
+set(NANOGUI_BUILD_PYTHON  OFF CACHE BOOL " " FORCE)
+set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
+set(NANOGUI_BACKEND       OpenGL CACHE BOOL " " FORCE)
+# Ask Nanogui not to build shared libraries
+SET(NANOGUI_BUILD_SHARED OFF CACHE BOOL "Build Nanogui with static libraries" FORCE)
+add_subdirectory(External/nanogui)
 ######################## ReachPhysics3D #####################
 
 find_package(ReactPhysics3D REQUIRED)
 
 message("ReachPhysics3D include dir: " ${ReactPhysics3D_INCLUDE_DIR})
 message("ReachPhysics3D library dir: " ${ReactPhysics3D_LIBRARY_DIR})
+
+########################### OPENGL FRAMEWORK ######################
+# OpenGLFramework source files
+set(OPENGLFRAMEWORK_SOURCES
+    Systems/Rendering/opengl-framework/src/maths/Color.h
+    Systems/Rendering/opengl-framework/src/maths/Matrix3.h
+    Systems/Rendering/opengl-framework/src/maths/Matrix4.h
+    Systems/Rendering/opengl-framework/src/maths/Vector2.h
+    Systems/Rendering/opengl-framework/src/maths/Vector3.h
+    Systems/Rendering/opengl-framework/src/maths/Vector4.h
+    Systems/Rendering/opengl-framework/src/Camera.cpp
+    Systems/Rendering/opengl-framework/src/Camera.h
+    Systems/Rendering/opengl-framework/src/definitions.h
+    # Systems/Rendering/opengl-framework/src/FrameBufferObject.cpp
+    # Systems/Rendering/opengl-framework/src/FrameBufferObject.h
+    Systems/Rendering/opengl-framework/src/Light.h
+    Systems/Rendering/opengl-framework/src/Light.cpp
+    Systems/Rendering/opengl-framework/src/Mesh.h
+    Systems/Rendering/opengl-framework/src/Mesh.cpp
+    # Systems/Rendering/opengl-framework/src/MeshReaderWriter.h
+    # Systems/Rendering/opengl-framework/src/MeshReaderWriter.cpp
+    Systems/Rendering/opengl-framework/src/Object3D.h
+    Systems/Rendering/opengl-framework/src/Object3D.cpp
+    Systems/Rendering/opengl-framework/src/openglframework.h
+    Systems/Rendering/opengl-framework/src/Shader.h
+    Systems/Rendering/opengl-framework/src/Shader.cpp
+    Systems/Rendering/opengl-framework/src/Texture2D.h
+    Systems/Rendering/opengl-framework/src/Texture2D.cpp
+    # Systems/Rendering/opengl-framework/src/TextureReaderWriter.h
+    # Systems/Rendering/opengl-framework/src/TextureReaderWriter.cpp
+    Systems/Rendering/opengl-framework/src/VertexBufferObject.h
+    Systems/Rendering/opengl-framework/src/VertexBufferObject.cpp
+    Systems/Rendering/opengl-framework/src/VertexArrayObject.h
+    Systems/Rendering/opengl-framework/src/VertexArrayObject.cpp
+)
 
 ######################## MAIN lazyECS #########################
 
@@ -29,25 +73,33 @@ set(
     ECSCore/SystemManager.hpp
     ECSCore/Orchestrator.hpp
     ECSCore/Types.hpp
+
     Components/RigidBody3D.hpp
     Components/Transform3D.hpp
-    Components/RigidBody2D.hpp
-    Components/Transform2D.hpp
-    Components/Mesh.hpp
+    # Components/RigidBody2D.hpp
+    # Components/Transform2D.hpp
+    # Components/Mesh.hpp
+
+    ${OPENGLFRAMEWORK_SOURCES}
+    
     Systems/PhysicsSystem.hpp
     Systems/PhysicsSystem.cpp
-    Systems/RenderingSystemRaylib.cpp
-    Systems/RenderingSystemRaylib.hpp
+    # Systems/Rendering
+    # Systems/RenderingSystemRaylib.cpp
+    # Systems/RenderingSystemRaylib.hpp
 )
 
 # #Generate the static library from the sources
 # add_library(lazyECS SHARED ${LAZY_ECS_SOURCES})
 add_library(lazyECS ${LAZY_ECS_SOURCES})
 
-target_link_libraries(lazyECS raylib ReactPhysics3D::ReactPhysics3D)
+target_link_libraries(lazyECS ReactPhysics3D::ReactPhysics3D)
 target_include_directories(lazyECS PUBLIC
                                         ${CMAKE_CURRENT_SOURCE_DIR}
-                                        ${raylib_INCLUDE_DIR}
+                                        ${CMAKE_CURRENT_SOURCE_DIR}/Systems/Rendering/opengl-framework
+                                        ${CMAKE_CURRENT_SOURCE_DIR}/External/nanogui/include
+                                        # ${raylib_INCLUDE_DIR}
                                         ${ReactPhysics3D_INCLUDE_DIR}
-                                        ../external/raylib-cpp/include)
+                                        # ../external/raylib-cpp/include
+                                        )
 
