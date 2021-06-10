@@ -4,17 +4,17 @@
 #define OPENGL_FRAMEWORK_H
 
 // Libraries
-// #include "MeshReaderWriter.h"
+#include "MeshReaderWriter.h"
 // #include "TextureReaderWriter.h"
 #include "Camera.h"
 #include "Light.h"
-#include "Mesh.h"
+// #include "Mesh.h"
 #include "Shader.h"
 #include "Texture2D.h"
 // #include "FrameBufferObject.h"
 #include "VertexBufferObject.h"
 #include "VertexArrayObject.h"
-// #include "Shader.h"
+#include "Shader.h"
 #include "maths/Color.h"
 #include "maths/Vector2.h"
 #include "maths/Vector3.h"

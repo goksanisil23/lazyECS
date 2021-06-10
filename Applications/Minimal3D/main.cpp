@@ -4,7 +4,7 @@
 #include "lazyECS/ECSCore/Orchestrator.hpp"
 
 #include "lazyECS/Systems/PhysicsSystem.hpp"
-#include "lazyECS/Systems/RenderingSystem.hpp"
+#include "lazyECS/Systems/Rendering/RenderingSystem.hpp"
 
 #include <chrono>
 #include <iostream>

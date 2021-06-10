@@ -29,7 +29,9 @@
 // Libraries
 #include <string>
 #include <stdexcept>
-#include "Mesh.h"
+// #include "Mesh.h"
+// #include "../lazyECS/Components/Mesh.hpp" // gisil
+#include "Mesh.hpp"
 
 namespace openglframework {
 
@@ -47,20 +49,20 @@ class MeshReaderWriter {
         MeshReaderWriter();
 
         // Load an OBJ file with a triangular or quad mesh
-        static void loadOBJFile(const std::string& filename, Mesh& meshToCreate);
+        static void loadOBJFile(const std::string& filename, lazyECS::Mesh& meshToCreate);
 
         // Store a mesh into a OBJ file
-        static void writeOBJFile(const std::string& filename, const Mesh &meshToWrite);
+        static void writeOBJFile(const std::string& filename, const lazyECS::Mesh &meshToWrite);
 
     public :
 
         // -------------------- Methods -------------------- //
 
         // Read a mesh from a file
-        static void loadMeshFromFile(const std::string& filename, Mesh& meshToCreate);
+        static void loadMeshFromFile(const std::string& filename, lazyECS::Mesh& meshToCreate);
 
         // Write a mesh to a file
-        static void writeMeshToFile(const std::string& filename, const Mesh& meshToWrite);
+        static void writeMeshToFile(const std::string& filename, const lazyECS::Mesh& meshToWrite);
 };
 
 // Class VertexMergingData
@@ -73,26 +75,9 @@ class VertexMergingData {
         unsigned int indexNormal;
         unsigned int indexUV;
 };
-
-// Class VertexMergingDataComparison
-// This class is used in the method to read a mesh
-class VertexMergingDataComparison {
-
-    public:
-        bool operator()(const VertexMergingData& x, const VertexMergingData& y) const {
-            if(x.indexPosition < y.indexPosition)
-                return true;
-            if(x.indexPosition == y.indexPosition && x.indexNormal < y.indexNormal)
-                return true;
-            if(x.indexPosition == y.indexPosition && x.indexNormal ==
-                                  y.indexNormal && x.indexUV < y.indexUV)
-                return true;
-            return false;
-    }
-};
-
 }
 
+// template specialization for hash
 namespace std {
 	template<>
 	struct hash<std::tuple<int, int, int>>
