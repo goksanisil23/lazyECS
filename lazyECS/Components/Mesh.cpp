@@ -3,7 +3,7 @@
 namespace lazyECS {
 
 // Constructor
-Mesh::Mesh() {}
+Mesh::Mesh() : mColor(openglframework::Color(1,1,1,1)), mSleepingColor(openglframework::Color(1,0,0,1)) {}
 
 // This causes problem due to cyclic dependecy
 // // Construct Mesh from the model file

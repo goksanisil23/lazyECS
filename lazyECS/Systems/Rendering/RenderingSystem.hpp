@@ -2,6 +2,8 @@
 #define RENDERINGSYSTEM_H
 
 #include "ECSCore/Types.hpp"
+#include "Components/RigidBody3D.hpp"
+#include "Components/Transform3D.hpp"
 
 #include <reactphysics3d/reactphysics3d.h>
 #include "openglframework.h"
@@ -40,12 +42,13 @@ protected:
     openglframework::Matrix4 mShadowMapBiasMatrix; // Shadow map bias matrix
 
     // Shared variables among all renderable entities
-    static openglframework::VertexBufferObject mVBOVertices;
-    ....
-    static int numRenderables; 
-
-
+    openglframework::VertexBufferObject mVBOVertices; // vertex buffer object for the vertices data
+    openglframework::VertexBufferObject mVBONormals; // vertex buffer object for the normals data
+    openglframework::VertexBufferObject mVBOTextureCoords; // vertex buffer object for texture coordinates
+    openglframework::VertexBufferObject mVBOIndices; //
+    openglframework::VertexArrayObject mVAO; // vertex array object for vertex data above
     
+    int numRenderables; // total number of renderables created
 
     // ----------------- Member functions ----------------- //
 
@@ -75,7 +78,9 @@ public:
     void Render(); // Render the scene (possibly in multiple passes due to shadow mapping)
 
     // render the scene in a single pass
-    void RenderSinglePass(const openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix); 
+    void RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix);
+
+    void CreateVBOVAO(Mesh& mesh); // Create VBOs and VAO to render with OpenGL
 
 };
 

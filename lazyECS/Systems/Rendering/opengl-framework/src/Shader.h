@@ -164,7 +164,7 @@ inline GLint Shader::getUniformLocation(const std::string& variableName, bool er
         std::cerr << "Error in vertex shader " << mFilenameVertexShader << " or in fragment shader"
                   << mFilenameFragmentShader << " : No Uniform variable : " << variableName
                   << std::endl;
-        //throw std::logic_error("Error in Shader");
+        // throw std::logic_error("Error in Shader");
     }
 
     return location;

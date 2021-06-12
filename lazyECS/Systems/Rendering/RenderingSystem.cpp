@@ -1,8 +1,5 @@
 #include "RenderingSystem.hpp"
 
-#include "Components/RigidBody3D.hpp"
-#include "Components/Transform3D.hpp"
-
 #include "ECSCore/Orchestrator.hpp"
 
 extern lazyECS::Orchestrator gOrchestrator; // expected to be defined globally in main
@@ -11,26 +8,106 @@ namespace lazyECS {
 
 RenderingSystem::RenderingSystem() : mLastMouseX(0), mLastMouseY(0), mViewportX(0), mViewportY(0),
                                      mViewportWidth(0), mViewportHeight(0), 
-                                     mIsShadowMappingEnabled(false), mIsShadowMappingInitialized(false){}
+                                     mIsShadowMappingEnabled(false), mIsShadowMappingInitialized(false),
+                                     mVBOVertices(GL_ARRAY_BUFFER), mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
+                                     mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mVAO(), numRenderables(0),
+                                     mPhongShader("/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.vert",
+                                                  "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.frag"),
+                                     mColorShader("/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.vert",
+                                                  "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag")
+{}
 
 void RenderingSystem::Init(const std::string& meshPath) {
     // Set the system signature based on the utilized Components below
     Signature signature;
-    signature.set(gOrchestrator.GetComponentTypeId<RigidBody3D>(), true);
+    // signature.set(gOrchestrator.GetComponentTypeId<RigidBody3D>(), true);
     signature.set(gOrchestrator.GetComponentTypeId<Transform3D>(), true);
     signature.set(gOrchestrator.GetComponentTypeId<Mesh>(), true);
-    gOrchestrator.SetSystemSignature<RenderingSystem>(signature);
+    gOrchestrator.SetSystemSignature<RenderingSystem>(signature); 
+
+    // ------------- Scene setup (TODO: move to a new class/function) ------------------ //
+    float lightsRadius = 30.0f;
+    float lightsHeight = 20.0f;
+    mLight0.translateWorld(openglframework::Vector3(0*lightsRadius, lightsHeight, 1*lightsRadius));
+    mLight1.translateWorld(openglframework::Vector3(0.95f*lightsRadius, lightsHeight, -0.3f*lightsRadius));
+    mLight2.translateWorld(openglframework::Vector3(-0.58f*lightsRadius, lightsHeight, -0.81f*lightsRadius));
+
+    // Set the lights colors
+	mLight0.setDiffuseColor(openglframework::Color(0.6f, 0.6f, 0.6f, 1.0f));
+	mLight1.setDiffuseColor(openglframework::Color(0.6f, 0.6f, 0.6f, 1.0f));
+	mLight2.setDiffuseColor(openglframework::Color(0.6f, 0.6f, 0.6f, 1.0f));
+
+    openglframework::Vector3 center(0, 5, 0);
+    const float SCENE_RADIUS = 30.0f;
+    SetScenePosition(center, SCENE_RADIUS);
+
 
     // Populate the mesh for the entities that have a Mesh component, from a model file
     for(auto& entity : m_entities) {
+        auto& transform = gOrchestrator.GetComponent<Transform3D>(entity); // initialized outsize
         auto& mesh = gOrchestrator.GetComponent<Mesh>(entity); // uninitialized here
         openglframework::MeshReaderWriter::loadMeshFromFile(meshPath, mesh); // mesh is initialized here
         if(mesh.getNormals().empty()) { // if the mesh file don't have the normals, calculate them
             mesh.calculateNormals();
         }
+        
+        // Set the scaling
+        transform.opengl_transform.setTransformMatrix(transform.opengl_transform.getTransformMatrix() * transform.mScalingMatrix);
+        
+        // Create Vertex Buffer object if it hasn't been created yet (we do it here since we need vertex info from the Mesh)
+        if(numRenderables == 0)
+            CreateVBOVAO(mesh);
+        numRenderables++;
+    }
+    
+    // Initialize shaders
+    // mPhongShader = openglframework::Shader("/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.vert",
+    //                                               "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.frag");
+    // mColorShader = openglframework::Shader("/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.vert",
+    //                                               "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag");      
+}
+
+void RenderingSystem::CreateVBOVAO(Mesh& mesh) {
+    // VBO for the vertices data
+    mVBOVertices.create();
+    mVBOVertices.bind();
+    size_t sizeVertices = mesh.getVertices().size() * sizeof(openglframework::Vector3);
+    mVBOVertices.copyDataIntoVBO(sizeVertices, mesh.getVerticesPointer(), GL_STATIC_DRAW);
+    mVBOVertices.unbind();
+
+    // Create the VBO for the normals data
+    mVBONormals.create();
+    mVBONormals.bind();
+    size_t sizeNormals = mesh.getNormals().size() * sizeof(openglframework::Vector3);
+    mVBONormals.copyDataIntoVBO(sizeNormals, mesh.getNormalsPointer(), GL_STATIC_DRAW);
+    mVBONormals.unbind();
+
+    // Create VBO for the texture coordinates
+    if(mesh.hasTexture()) {
+        mVBOTextureCoords.create();
+        mVBOTextureCoords.bind();
+        size_t sizeTextureCoords = mesh.getUVs().size() * sizeof(openglframework::Vector2);
+        mVBOTextureCoords.copyDataIntoVBO(sizeTextureCoords, mesh.getUVTextureCoordinatesPointer(), GL_STATIC_DRAW);
+        mVBOTextureCoords.unbind();
     }
 
-    // Create Vertex Buffer object if it hasn't been created yet
+    // Create VBO for the indices data
+    mVBOIndices.create();
+    mVBOIndices.bind();
+    size_t sizeIndices = mesh.getIndices().size() * sizeof(unsigned int);
+    mVBOIndices.copyDataIntoVBO(sizeIndices, mesh.getIndicesPointer(), GL_STATIC_DRAW);
+    mVBOIndices.unbind();
+
+    // Create VAO and bind all the VBOs
+    mVAO.create();
+    mVAO.bind();
+
+    mVBOVertices.bind();
+    mVBONormals.bind();
+    if (mesh.hasTexture()) mVBOTextureCoords.bind();
+    mVBOIndices.bind();
+
+    mVAO.unbind(); 
 }
 
 void RenderingSystem::SetScenePosition(const openglframework::Vector3& position, float sceneRadius) {
@@ -150,6 +227,7 @@ void RenderingSystem::Rotate(int xMouse, int yMouse) {
 }
 
 void RenderingSystem::Render() {
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
@@ -166,6 +244,10 @@ void RenderingSystem::Render() {
     const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
 
     mPhongShader.bind();
+
+    // gisil
+    std::cout << "phong shader program id: " << mPhongShader.getProgramObjectId() << std::endl;
+    std::cout << "color shader program id: " << mColorShader.getProgramObjectId() << std::endl;     
 
     // Set the variables of the phong shader
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
@@ -200,16 +282,21 @@ void RenderingSystem::Render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear previous frame values
 
     RenderSinglePass(mPhongShader, worldToCameraMatrix);
+
+    mPhongShader.unbind();
     
 
 }
 
-void RenderingSystem::RenderSinglePass(const openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix) {
+void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix) {
     
     shader.bind();
 
     // For all objects, render
     for (auto const& entity : m_entities) {
+        // auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity);
+        auto& mesh = gOrchestrator.GetComponent<Mesh>(entity);
+
         shader.bind();
         // Set the model to camera matrix
         auto& transform = gOrchestrator.GetComponent<Transform3D>(entity);
@@ -221,10 +308,41 @@ void RenderingSystem::RenderSinglePass(const openglframework::Shader& shader, co
         const openglframework::Matrix3 normalMatrix = localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
         shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
-        // Bind VAO
-        mVAO
+        // Set the vertex color
+        // openglframework::Color currentColor = rigidBody.rp3d_rigidBody->isSleeping() ? mesh.mSleepingColor : mesh.mColor;
+        // openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
+        openglframework::Vector4 color;
+        shader.setVector4Uniform("globalVertexColor", color, false);
 
+        // Bind VAO
+        mVAO.bind();
+        mVBOVertices.bind();
+
+        // Get the location of shader attribute variables
+        GLint vertexPositionAttLoc = shader.getAttribLocation("vertexPosition");
+        GLint vertexNormalAttLoc = shader.getAttribLocation("vertexNormal", false);
+        glEnableVertexAttribArray(vertexPositionAttLoc);
+        glVertexAttribPointer(vertexPositionAttLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
+
+        mVBONormals.bind();
+        if(vertexNormalAttLoc != -1) glVertexAttribPointer(vertexNormalAttLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
+        if(vertexNormalAttLoc != -1) glEnableVertexAttribArray(vertexNormalAttLoc);
+
+        // For each part of the mesh
+        for(unsigned int i = 0; i < mesh.getNbParts(); i++) {
+            glDrawElements(GL_TRIANGLES, mesh.getNbFaces(i) * 3, GL_UNSIGNED_INT, (char*)nullptr);
+        }
+
+        glDisableVertexAttribArray(vertexPositionAttLoc);
+        if (vertexNormalAttLoc != -1) glDisableVertexAttribArray(vertexNormalAttLoc);
+
+        mVBONormals.unbind();
+        mVBOVertices.unbind();
+        mVAO.unbind();
+        shader.unbind();
     }
+
+    shader.unbind();
 }
 
 

@@ -1,8 +1,5 @@
 #include "PhysicsSystem.hpp"
 
-#include "Components/RigidBody3D.hpp"
-#include "Components/Transform3D.hpp"
-
 #include "ECSCore/Orchestrator.hpp"
 
 #include <iostream>

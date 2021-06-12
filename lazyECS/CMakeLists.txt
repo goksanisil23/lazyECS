@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 # project(lazyECS CXX)
 
-set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
  
@@ -76,6 +76,7 @@ set(
 
     Components/RigidBody3D.hpp
     Components/Transform3D.hpp
+    Components/Transform3D.cpp
     Components/Mesh.hpp
     Components/Mesh.cpp
     # Components/RigidBody2D.hpp

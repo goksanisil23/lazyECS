@@ -86,6 +86,7 @@ void MeshReaderWriter::writeMeshToFile(const std::string& filename, const lazyEC
 
 // Load an OBJ file with a triangular or quad mesh
 void MeshReaderWriter::loadOBJFile(const string &filename, lazyECS::Mesh& meshToCreate) {
+    std::cout << "Loading .obj file " << filename << std::endl;
 
     // Open the file
     std::ifstream meshFile(filename.c_str());

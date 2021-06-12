@@ -27,6 +27,10 @@ protected:
     std::map<uint, openglframework::Texture2D> mTextures; // Textures of the mesh per each part of the mesh
 
 public:
+
+    openglframework::Color mColor;
+    openglframework::Color mSleepingColor;
+
     // ----------------- Member functions ----------------- //
 
         // Constructor
