@@ -40,6 +40,7 @@ protected:
     bool mIsShadowMappingInitialized; // true if shadow's FBO and textures have been created
 
     openglframework::Matrix4 mShadowMapBiasMatrix; // Shadow map bias matrix
+    openglframework::Camera mShadowMapLightCameras[NUM_SHADOW_MAPS]; // Cameras at lights position for the shadow maps
 
     // Shared variables among all renderable entities
     openglframework::VertexBufferObject mVBOVertices; // vertex buffer object for the vertices data
@@ -55,6 +56,8 @@ protected:
 public:
 
     RenderingSystem();
+
+    void SetupSignature(); // sets the signature of the system based on components its using
 
     void ResetCameraToViewAll(); // Set the camera so that we can view the whole scene
     // Map mouse coordinates to the coordinates on the scene sphere
@@ -76,9 +79,10 @@ public:
     void Init(const std::string& meshPath); // Used to generate the mesh for entities
 
     void Render(); // Render the scene (possibly in multiple passes due to shadow mapping)
+    void Render2();
 
     // render the scene in a single pass
-    void RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix);
+    void RenderSinglePass(const openglframework::Matrix4& worldToCamereMatrix);
 
     void CreateVBOVAO(Mesh& mesh); // Create VBOs and VAO to render with OpenGL
 

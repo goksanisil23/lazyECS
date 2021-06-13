@@ -17,13 +17,16 @@ RenderingSystem::RenderingSystem() : mLastMouseX(0), mLastMouseY(0), mViewportX(
                                                   "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag")
 {}
 
-void RenderingSystem::Init(const std::string& meshPath) {
+void RenderingSystem::SetupSignature() {
     // Set the system signature based on the utilized Components below
     Signature signature;
     // signature.set(gOrchestrator.GetComponentTypeId<RigidBody3D>(), true);
     signature.set(gOrchestrator.GetComponentTypeId<Transform3D>(), true);
     signature.set(gOrchestrator.GetComponentTypeId<Mesh>(), true);
-    gOrchestrator.SetSystemSignature<RenderingSystem>(signature); 
+    gOrchestrator.SetSystemSignature<RenderingSystem>(signature);     
+}
+
+void RenderingSystem::Init(const std::string& meshPath) {
 
     // ------------- Scene setup (TODO: move to a new class/function) ------------------ //
     float lightsRadius = 30.0f;
@@ -37,10 +40,21 @@ void RenderingSystem::Init(const std::string& meshPath) {
 	mLight1.setDiffuseColor(openglframework::Color(0.6f, 0.6f, 0.6f, 1.0f));
 	mLight2.setDiffuseColor(openglframework::Color(0.6f, 0.6f, 0.6f, 1.0f));
 
-    openglframework::Vector3 center(0, 5, 0);
-    const float SCENE_RADIUS = 30.0f;
-    SetScenePosition(center, SCENE_RADIUS);
+    const float PI = 3.141592654f;
+	mShadowMapLightCameras[0].translateWorld(mLight0.getOrigin());
+	mShadowMapLightCameras[0].rotateLocal(openglframework::Vector3(1, 0, 0), -PI / 4.0f);
 
+	mShadowMapLightCameras[1].translateWorld(mLight1.getOrigin());
+	mShadowMapLightCameras[1].rotateLocal(openglframework::Vector3(0, 1, 0), -5.0f * PI/3.7f);
+	mShadowMapLightCameras[1].rotateLocal(openglframework::Vector3(1, 0, 0), -PI/4.0f);
+
+	mShadowMapLightCameras[2].translateWorld(mLight2.getOrigin());
+	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(0, 1, 0), 5 * PI/4.0f);
+	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(1, 0 , 0), -PI/4.0f);    
+
+    openglframework::Vector3 center(0, 0, 0);
+    const float SCENE_RADIUS = 300.0f; // 30
+    SetScenePosition(center, SCENE_RADIUS);
 
     // Populate the mesh for the entities that have a Mesh component, from a model file
     for(auto& entity : m_entities) {
@@ -59,12 +73,6 @@ void RenderingSystem::Init(const std::string& meshPath) {
             CreateVBOVAO(mesh);
         numRenderables++;
     }
-    
-    // Initialize shaders
-    // mPhongShader = openglframework::Shader("/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.vert",
-    //                                               "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.frag");
-    // mColorShader = openglframework::Shader("/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.vert",
-    //                                               "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag");      
 }
 
 void RenderingSystem::CreateVBOVAO(Mesh& mesh) {
@@ -120,7 +128,7 @@ void RenderingSystem::SetScenePosition(const openglframework::Vector3& position,
 void RenderingSystem::ResetCameraToViewAll() {
     mCamera.translateWorld(-mCamera.getOrigin()); // move the camera to the origin of the scene (0,0,0)
     mCamera.translateWorld(mSceneCenter); // then move the camera to the center of the scene (user defined)
-    mCamera.setZoom(1.0); // set the zoom of the camera so that the scene is in negative view direction of the camera
+    mCamera.setZoom(1); // set the zoom of the camera so that the scene is in negative view direction of the camera
 }
 
 bool RenderingSystem::MapMouseCoordinatesToSphere(double xMouse, double yMouse, openglframework::Vector3& spherePoint) const {
@@ -226,6 +234,10 @@ void RenderingSystem::Rotate(int xMouse, int yMouse) {
     }
 }
 
+void RenderingSystem::Render2() {
+
+}
+
 void RenderingSystem::Render() {
 
     glEnable(GL_DEPTH_TEST);
@@ -245,9 +257,12 @@ void RenderingSystem::Render() {
 
     mPhongShader.bind();
 
-    // gisil
-    std::cout << "phong shader program id: " << mPhongShader.getProgramObjectId() << std::endl;
-    std::cout << "color shader program id: " << mColorShader.getProgramObjectId() << std::endl;     
+    // TEMP
+    mShadowMapBiasMatrix.setAllValues(0.5, 0.0, 0.0, 0.5,
+                                      0.0, 0.5, 0.0, 0.5,
+                                      0.0, 0.0, 0.5, 0.5,
+                                      0.0, 0.0, 0.0, 1.0);
+    // END OF TEMP
 
     // Set the variables of the phong shader
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
@@ -264,9 +279,9 @@ void RenderingSystem::Render() {
     mPhongShader.setVector3Uniform("light0DiffuseColor", openglframework::Vector3(mLight0.getDiffuseColor().r, mLight0.getDiffuseColor().g, mLight0.getDiffuseColor().b));
     mPhongShader.setVector3Uniform("light1DiffuseColor", openglframework::Vector3(mLight1.getDiffuseColor().r, mLight1.getDiffuseColor().g, mLight1.getDiffuseColor().b));
     mPhongShader.setVector3Uniform("light2DiffuseColor", openglframework::Vector3(mLight2.getDiffuseColor().r, mLight2.getDiffuseColor().g, mLight2.getDiffuseColor().b));
-    mPhongShader.setIntUniform("shadowMapSampler0", textureUnits[0]);
-    mPhongShader.setIntUniform("shadowMapSampler1", textureUnits[1]);
-    mPhongShader.setIntUniform("shadowMapSampler2", textureUnits[2]);
+    // mPhongShader.setIntUniform("shadowMapSampler0", textureUnits[0]);
+    // mPhongShader.setIntUniform("shadowMapSampler1", textureUnits[1]);
+    // mPhongShader.setIntUniform("shadowMapSampler2", textureUnits[2]);
     mPhongShader.setIntUniform("isShadowEnabled", mIsShadowMappingEnabled);
     mPhongShader.setVector2Uniform("shadowMapDimension", openglframework::Vector2(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT));
 
@@ -281,46 +296,44 @@ void RenderingSystem::Render() {
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // enable writing of frame buffer color components (disabled in z-buffer rendering)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear previous frame values
 
-    RenderSinglePass(mPhongShader, worldToCameraMatrix);
+    RenderSinglePass(worldToCameraMatrix);
 
     mPhongShader.unbind();
-    
-
 }
 
-void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix) {
+void RenderingSystem::RenderSinglePass(const openglframework::Matrix4& worldToCamereMatrix) {
     
-    shader.bind();
+    mPhongShader.bind();
 
     // For all objects, render
     for (auto const& entity : m_entities) {
         // auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity);
         auto& mesh = gOrchestrator.GetComponent<Mesh>(entity);
 
-        shader.bind();
+        mPhongShader.bind();
         // Set the model to camera matrix
         auto& transform = gOrchestrator.GetComponent<Transform3D>(entity);
-        shader.setMatrix4x4Uniform("localToWorldMatrix", transform.opengl_transform.getTransformMatrix());
-        shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCamereMatrix);
+        mPhongShader.setMatrix4x4Uniform("localToWorldMatrix", transform.opengl_transform.getTransformMatrix());
+        mPhongShader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCamereMatrix);
 
         // Set the normal matrix (Inverse Transpose of the 3x3 upper-left part of the model-view matrix)
         const openglframework::Matrix4 localToCameraMatrix = worldToCamereMatrix * transform.opengl_transform.getTransformMatrix();
         const openglframework::Matrix3 normalMatrix = localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
-        shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
+        mPhongShader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
         // Set the vertex color
         // openglframework::Color currentColor = rigidBody.rp3d_rigidBody->isSleeping() ? mesh.mSleepingColor : mesh.mColor;
         // openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
-        openglframework::Vector4 color;
-        shader.setVector4Uniform("globalVertexColor", color, false);
+        openglframework::Vector4 color(1,1,1,1);
+        mPhongShader.setVector4Uniform("globalVertexColor", color, false);
 
         // Bind VAO
         mVAO.bind();
         mVBOVertices.bind();
 
         // Get the location of shader attribute variables
-        GLint vertexPositionAttLoc = shader.getAttribLocation("vertexPosition");
-        GLint vertexNormalAttLoc = shader.getAttribLocation("vertexNormal", false);
+        GLint vertexPositionAttLoc = mPhongShader.getAttribLocation("vertexPosition");
+        GLint vertexNormalAttLoc = mPhongShader.getAttribLocation("vertexNormal", false);
         glEnableVertexAttribArray(vertexPositionAttLoc);
         glVertexAttribPointer(vertexPositionAttLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
 
@@ -339,10 +352,10 @@ void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const op
         mVBONormals.unbind();
         mVBOVertices.unbind();
         mVAO.unbind();
-        shader.unbind();
+        mPhongShader.unbind();
     }
 
-    shader.unbind();
+    mPhongShader.unbind();
 }
 
 

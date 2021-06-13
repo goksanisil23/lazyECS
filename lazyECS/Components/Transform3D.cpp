@@ -2,10 +2,10 @@
 
 namespace lazyECS {
 
-openglframework::Matrix4 Transform3D::ConvertRP3DToOpenglTransform(const float& interpolationFactor) {
+void Transform3D::ConvertRP3DToOpenglTransform(const float& interpolationFactor) {
     
     // Interpolate the graphics transform between the previous one and the new one
-    rp3d::Transform interpTrans = rp3d::Transform::interpolateTransforms(rp3d_prev_transform, rp3d_prev_transform, interpolationFactor);
+    rp3d::Transform interpTrans = rp3d::Transform::interpolateTransforms(rp3d_prev_transform, rp3d_transform, interpolationFactor);
     rp3d_prev_transform = rp3d_transform; // update the previous transform
     
     // Computer the transform used for rendering
@@ -16,7 +16,7 @@ openglframework::Matrix4 Transform3D::ConvertRP3DToOpenglTransform(const float& 
                                              temp_matrix[2], temp_matrix[6], temp_matrix[10], temp_matrix[14],
                                              temp_matrix[3], temp_matrix[7], temp_matrix[11], temp_matrix[15]);
     // Apply the scaling matrix
-    return newInterpMatrix * mScalingMatrix;
+    opengl_transform.setTransformMatrix(newInterpMatrix * mScalingMatrix);
 }
 
 }

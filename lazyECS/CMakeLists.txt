@@ -88,6 +88,8 @@ set(
     Systems/PhysicsSystem.cpp
     Systems/Rendering/RenderingSystem.hpp
     Systems/Rendering/RenderingSystem.cpp
+    # Systems/Rendering/Gui.h
+    # Systems/Rendering/Gui.cpp
     # Systems/RenderingSystemRaylib.cpp
     # Systems/RenderingSystemRaylib.hpp
 
@@ -99,7 +101,6 @@ set(
 # add_library(lazyECS SHARED ${LAZY_ECS_SOURCES})
 add_library(lazyECS ${LAZY_ECS_SOURCES})
 
-target_link_libraries(lazyECS ReactPhysics3D::ReactPhysics3D nanogui ${NANOGUI_EXTRA_LIBS})
 target_include_directories(lazyECS PUBLIC
                                         ${CMAKE_CURRENT_SOURCE_DIR}
                                         ${CMAKE_CURRENT_SOURCE_DIR}/Components
@@ -117,4 +118,4 @@ endforeach()
 # Compile definitions
 message("NANOGUI_EXTRA_DEFS: ${NANOGUI_EXTRA_DEFS}")
 target_compile_definitions(lazyECS PUBLIC ${NANOGUI_EXTRA_DEFS})
-
+target_link_libraries(lazyECS ReactPhysics3D::ReactPhysics3D nanogui ${NANOGUI_EXTRA_LIBS})
