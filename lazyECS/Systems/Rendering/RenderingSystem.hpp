@@ -65,7 +65,7 @@ public:
     void Zoom(float zoomDiff); // Zoom the camera
     void Translate(int xMouse, int yMouse); // Translate the camera
     void Rotate(int xMouse, int yMouse); // Rotate the camera
-    void Reshape(int width, int height); // reshape the view
+    void ReshapeCameraView(int width, int height); // reshape the view
 
     void SetWindowDimension(int width, int height); // set window dimension
     void SetViewport(int x, int y, int width, int height); // Set the viewport to render the scene
@@ -89,7 +89,7 @@ public:
 };
 
 /// Reshape the view
-inline void RenderingSystem::Reshape(int width, int height) {
+inline void RenderingSystem::ReshapeCameraView(int width, int height) {
     mCamera.setDimensions(width, height);
 }
 

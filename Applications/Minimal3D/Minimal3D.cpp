@@ -54,8 +54,15 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) :
     }
 
     // Init requires the entities to be initialized and entities requires system's signature to be set
-    renderSys->Init("/home/goksan/Work/lazyECS/Applications/meshes/cube.obj"); 
+    renderSys->Init("/home/goksan/Work/lazyECS/Applications/meshes/cube.obj");
 
+    // Set window and camera size
+    int bufferWidth, bufferHeight;
+    glfwGetFramebufferSize(m_glfw_window, &bufferWidth, &bufferHeight);
+    renderSys->ReshapeCameraView(bufferWidth, bufferHeight);
+    // int windowWidth, windowHeight;
+    // glfwGetWindowSize(m_glfw_window, &windowWidth, &windowHeight);
+    renderSys->SetWindowDimension(windowWidth, windowHeight);
 }
 
 
@@ -71,7 +78,6 @@ void Minimal3D::draw_contents(){
 }
 
 bool Minimal3D::mouse_button_event(const nanogui::Vector2i& p, int button, bool down, int modifiers) {
-    std::cout << "Mouse Button Event" << std::endl;
     if(Screen::mouse_button_event(p, button, down, modifiers))
         return true;
     
@@ -82,7 +88,6 @@ bool Minimal3D::mouse_button_event(const nanogui::Vector2i& p, int button, bool 
 }
 
 bool Minimal3D::mouse_motion_event(const nanogui::Vector2i& p, const nanogui::Vector2i& rel, int button, int modifiers) {
-    std::cout << "Mouse Motion Event" << std::endl;
     if(Screen::mouse_motion_event(p, rel, button, modifiers))
         return true;
 
@@ -95,10 +100,23 @@ bool Minimal3D::mouse_motion_event(const nanogui::Vector2i& p, const nanogui::Ve
 }
 
 bool Minimal3D::scroll_event(const nanogui::Vector2i& p, const nanogui::Vector2f& rel) {
-    std::cout << "Scroll Event" << std::endl;
 
     if(Screen::scroll_event(p, rel))
         return true;
     
     return renderSys->ScrollingEvent(rel[0], rel[1], 0.08f);
+}
+
+bool Minimal3D::resize_event(const nanogui::Vector2i& size) {
+
+    int width, height;
+    glfwGetFramebufferSize(m_glfw_window, &width, &height); // Get the framebuffer dimension
+    renderSys->ReshapeCameraView(width, height); // Resize the camera viewport
+
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(m_glfw_window, &windowWidth, &windowHeight); // Update the window size of the scene
+    renderSys->SetWindowDimension(windowWidth, windowHeight);
+
+    return true;
+
 }
