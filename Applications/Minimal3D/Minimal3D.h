@@ -29,5 +29,5 @@ public:
     virtual bool mouse_motion_event(const nanogui::Vector2i& p, const nanogui::Vector2i& rel, int button, int modifiers) override;
     virtual bool scroll_event(const nanogui::Vector2i& p, const nanogui::Vector2f& rel) override;
     virtual bool resize_event(const nanogui::Vector2i& size) override;
-
+    virtual bool keyboard_event(int key, int scancode, int action, int modifiers) override;
 };

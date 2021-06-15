@@ -132,9 +132,7 @@ void RenderingSystem::ResetCameraToViewAll() {
 }
 
 bool RenderingSystem::MapMouseCoordinatesToSphere(double xMouse, double yMouse, openglframework::Vector3& spherePoint) const {
-    printf("xMouse: %f, yMouse: %f, windowWidth: %d, windowHeight: %d\n");
     if ((xMouse >= 0) && (xMouse <= mWindowWidth) && (yMouse >= 0) && (yMouse <= mWindowHeight)) {
-        std::cout << "inside the sphere" << std::endl;
         float x = float(xMouse - 0.5f * mWindowWidth) / float(mWindowWidth);
         float y = float(0.5f * mWindowHeight - yMouse) / float(mWindowHeight);
         float sinx = std::sin(openglframework::PI * x * 0.5f);
@@ -176,18 +174,15 @@ bool RenderingSystem::MouseMotionEvent(double xMouse, double yMouse, int leftBut
         float dy = static_cast<float>(yMouse - mLastMouseY);
         float h = static_cast<float>(mWindowHeight);
 
-        std::cout << "ZOOM" << std::endl;
         Zoom(-dy / h); // Zoom the camera
     }
     // Translation
     else if (middleButtonState == GLFW_PRESS || rightButtonState == GLFW_PRESS ||
              (leftButtonState == GLFW_PRESS && altKeyState == GLFW_PRESS)) {
-        std::cout << "TRANSLATE" << std::endl;
         Translate(xMouse, yMouse);
     }
     // Rotation
     else if (leftButtonState == GLFW_PRESS) {
-        std::cout << "ROTATE" << std::endl;
         Rotate(xMouse, yMouse);
     }
 
@@ -219,7 +214,6 @@ void RenderingSystem::Translate(int xMouse, int yMouse) {
 
 void RenderingSystem::Rotate(int xMouse, int yMouse) {
     if (mIsLastPointOnSphereValid) {
-        std::cout << "LastPointOnSphereValid" << std::endl;
 
         openglframework::Vector3 newPoint3D;
         bool isNewPointOK = MapMouseCoordinatesToSphere(xMouse, yMouse, newPoint3D);
@@ -238,10 +232,6 @@ void RenderingSystem::Rotate(int xMouse, int yMouse) {
             }
         }
     }
-}
-
-void RenderingSystem::Render2() {
-
 }
 
 void RenderingSystem::Render() {
@@ -365,5 +355,5 @@ void RenderingSystem::RenderSinglePass(const openglframework::Matrix4& worldToCa
 }
 
 
-}
+} // namespace lazyECS
 

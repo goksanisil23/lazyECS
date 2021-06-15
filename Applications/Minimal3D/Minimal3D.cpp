@@ -39,7 +39,7 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) :
                                                                 0, boxSize[1]*0.5f, 0, 0,
                                                                 0, 0, boxSize[2]*0.5f, 0,
                                                                 0, 0, 0, 1);
-        spawn_trans.ConvertRP3DToOpenglTransform(0.9);
+        spawn_trans.ConvertRP3DToOpenglTransform(0.9); // temporary interpolation factor
         
         gOrchestrator.AddComponent<lazyECS::Transform3D>(entity,spawn_trans);
 
@@ -118,5 +118,15 @@ bool Minimal3D::resize_event(const nanogui::Vector2i& size) {
     renderSys->SetWindowDimension(windowWidth, windowHeight);
 
     return true;
+}
 
+bool Minimal3D::keyboard_event(int key, int scancode, int action, int modifiers) {
+    if(Screen::keyboard_event(key, scancode, action, modifiers)) {
+        return true;
+    }
+    // Close app on Esc key
+    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(m_glfw_window, GL_TRUE);
+        return true;
+    }
 }

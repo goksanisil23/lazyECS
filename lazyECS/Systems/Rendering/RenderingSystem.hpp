@@ -79,7 +79,6 @@ public:
     void Init(const std::string& meshPath); // Used to generate the mesh for entities
 
     void Render(); // Render the scene (possibly in multiple passes due to shadow mapping)
-    void Render2();
 
     // render the scene in a single pass
     void RenderSinglePass(const openglframework::Matrix4& worldToCamereMatrix);
