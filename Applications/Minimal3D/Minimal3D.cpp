@@ -1,7 +1,6 @@
 #include "Minimal3D.h"
 
-Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) :
-    nanogui::Screen(nanogui::Vector2i(windowWidth, windowHeight), "Minimal 3D", true, isFullscreen, true, true, false, 4, 1) 
+Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight)
 {
     
     // --------------- lAZYECS -------------- //
@@ -17,9 +16,9 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) :
     physicsSys = gOrchestrator.RegisterSystem<lazyECS::PhysicsSystem>();
     // Rendering system is registered and initialized here since it has dependency on OpenGL context to be initialized first
     // which is happening during nanogui::Screen initialization
-    renderSys = gOrchestrator.RegisterSystem<lazyECS::RenderingSystem>(); // constructs the System
+    renderSys = gOrchestrator.RegisterSystem<lazyECS::RenderingSystem>(isFullscreen, windowWidth, windowHeight); // constructs the System
 
-    renderSys->SetupSignature(); // entities below will be matched with systems so signature of the system is set
+    // renderSys->SetupSignature(); // entities below will be matched with systems so signature of the system is set
 
     // Create the entities and assign components
     std::vector<lazyECS::Entity> entities(10);
@@ -55,78 +54,6 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) :
 
     // Init requires the entities to be initialized and entities requires system's signature to be set
     renderSys->Init("/home/goksan/Work/lazyECS/Applications/meshes/cube.obj");
-
-    // Set window and camera size
-    int bufferWidth, bufferHeight;
-    glfwGetFramebufferSize(m_glfw_window, &bufferWidth, &bufferHeight);
-    renderSys->ReshapeCameraView(bufferWidth, bufferHeight);
-    // int windowWidth, windowHeight;
-    // glfwGetWindowSize(m_glfw_window, &windowWidth, &windowHeight);
-    renderSys->SetWindowDimension(windowWidth, windowHeight);
-}
-
-
-void Minimal3D::draw_contents(){
     
-    int bufferWidth, bufferHeight;
-    glfwMakeContextCurrent(m_glfw_window);
-    glfwGetFramebufferSize(m_glfw_window, &bufferWidth, &bufferHeight);
-    renderSys->SetViewport(0, 0, bufferWidth, bufferHeight);
-
-    renderSys->Render();
-    // renderSys->Render2();
-}
-
-bool Minimal3D::mouse_button_event(const nanogui::Vector2i& p, int button, bool down, int modifiers) {
-    if(Screen::mouse_button_event(p, button, down, modifiers))
-        return true;
-    
-    double x, y;
-    glfwGetCursorPos(m_glfw_window, &x, &y);
-
-    return renderSys->MouseButtonEvent(button, down, modifiers, x, y);
-}
-
-bool Minimal3D::mouse_motion_event(const nanogui::Vector2i& p, const nanogui::Vector2i& rel, int button, int modifiers) {
-    if(Screen::mouse_motion_event(p, rel, button, modifiers))
-        return true;
-
-    int leftButtonState = glfwGetMouseButton(m_glfw_window, GLFW_MOUSE_BUTTON_LEFT);
-    int rightButtonState = glfwGetMouseButton(m_glfw_window, GLFW_MOUSE_BUTTON_RIGHT);
-    int middleButtonState = glfwGetMouseButton(m_glfw_window, GLFW_MOUSE_BUTTON_MIDDLE);
-    int altKeyState = glfwGetKey(m_glfw_window, GLFW_KEY_LEFT_ALT);        
-
-    return renderSys->MouseMotionEvent(p[0], p[1], leftButtonState, rightButtonState, middleButtonState, altKeyState);
-}
-
-bool Minimal3D::scroll_event(const nanogui::Vector2i& p, const nanogui::Vector2f& rel) {
-
-    if(Screen::scroll_event(p, rel))
-        return true;
-    
-    return renderSys->ScrollingEvent(rel[0], rel[1], 0.08f);
-}
-
-bool Minimal3D::resize_event(const nanogui::Vector2i& size) {
-
-    int width, height;
-    glfwGetFramebufferSize(m_glfw_window, &width, &height); // Get the framebuffer dimension
-    renderSys->ReshapeCameraView(width, height); // Resize the camera viewport
-
-    int windowWidth, windowHeight;
-    glfwGetWindowSize(m_glfw_window, &windowWidth, &windowHeight); // Update the window size of the scene
-    renderSys->SetWindowDimension(windowWidth, windowHeight);
-
-    return true;
-}
-
-bool Minimal3D::keyboard_event(int key, int scancode, int action, int modifiers) {
-    if(Screen::keyboard_event(key, scancode, action, modifiers)) {
-        return true;
-    }
-    // Close app on Esc key
-    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(m_glfw_window, GL_TRUE);
-        return true;
-    }
+    renderSys->set_visible(true); // nanogui set visibility
 }

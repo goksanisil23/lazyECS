@@ -3,7 +3,7 @@
 #include <bitset>
 #include <unordered_set>
 
-#include "ECSCore/ECSConstants.hpp"
+#include "ECSConstants.hpp"
 
 //////////// ECS types /////////////
 

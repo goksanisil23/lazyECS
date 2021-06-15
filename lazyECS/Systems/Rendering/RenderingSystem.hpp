@@ -8,9 +8,13 @@
 #include <reactphysics3d/reactphysics3d.h>
 #include "openglframework.h"
 
+// #include <nanogui/opengl.h>
+#include <nanogui/nanogui.h>
+#include <GLFW/glfw3.h>
+
 namespace lazyECS {
 
-class RenderingSystem : public System {
+class RenderingSystem : public System, public nanogui::Screen { // NanoGUI will initialize and manage the openGL context via Screen
 
 protected:
     // ----------------- Member variables ----------------- //
@@ -55,7 +59,15 @@ protected:
 
 public:
 
-    RenderingSystem();
+    RenderingSystem(bool isFullscreen, int windowWidth, int windowHeight);
+
+    // nanogui::Screen overrides
+    virtual void draw_contents() override; // render the contents of the application
+    virtual bool mouse_button_event(const nanogui::Vector2i& p, int button, bool down, int modifiers) override;
+    virtual bool mouse_motion_event(const nanogui::Vector2i& p, const nanogui::Vector2i& rel, int button, int modifiers) override;
+    virtual bool scroll_event(const nanogui::Vector2i& p, const nanogui::Vector2f& rel) override;
+    virtual bool resize_event(const nanogui::Vector2i& size) override;
+    virtual bool keyboard_event(int key, int scancode, int action, int modifiers) override;    
 
     void SetupSignature(); // sets the signature of the system based on components its using
 

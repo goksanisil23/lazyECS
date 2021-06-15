@@ -13,13 +13,14 @@ namespace lazyECS {
 class SystemManager{
 public:
 
-    template<typename TSystemType>
-    std::shared_ptr<TSystemType> RegisterSystem() {
+    // Variadic template since each system will need different sets of parameters
+    template<typename TSystemType, typename... TSystemInputTypes>
+    std::shared_ptr<TSystemType> RegisterSystem(TSystemInputTypes... inputVars) {
         std::type_index typIdx = std::type_index(typeid(TSystemType));
 
         assert(m_Systems.find(typIdx) == m_Systems.end() && "This system is already registered!");
 
-        auto system = std::make_shared<TSystemType>();
+        auto system = std::make_shared<TSystemType>(inputVars...);
         m_Systems[typIdx] = system;
         return system;
     }

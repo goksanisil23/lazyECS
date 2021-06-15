@@ -1,15 +1,7 @@
-// #include "lazyECS/Components/Transform3D.hpp"
-// #include "lazyECS/Components/RigidBody3D.hpp"
-
-#include "lazyECS/ECSCore/Orchestrator.hpp"
-
-#include "lazyECS/Systems/PhysicsSystem.hpp"
-#include "lazyECS/Systems/Rendering/RenderingSystem.hpp"
+#include "Orchestrator.hpp"
 
 #include <chrono>
 #include <iostream>
-
-#include "nanogui/nanogui.h"
 
 #include "Minimal3D.h"
 
@@ -24,21 +16,8 @@ int main() {
     nanogui::init();
 
     {
-        bool isFullscreen = false;
-        // Get the primary monitor
-        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        // Initial window size
-        int windowWidth = mode->width;
-        int windowHeight = mode->height;
-        if(!isFullscreen) {
-            windowWidth *= 0.3;
-            windowHeight *= 0.3;
-        }
-
-        // nanogui::ref<Minimal3D> minimal3d_app = new Minimal3D(isFullscreen, windowWidth, windowHeight, renderSys);
-        nanogui::ref<Minimal3D> minimal3d_app = new Minimal3D(isFullscreen, windowWidth, windowHeight);
-        minimal3d_app->set_visible(true);
+        nanogui::ref<Minimal3D> minimal3d_app = new Minimal3D(false, 800, 600); // Minimal3D(isFullscreen, windowWidth, windowHeight)
+        // minimal3d_app->set_visible(true);
         
         nanogui::mainloop(); // calls nanogui::Screen::draw_all --> 
                                                                     // draw_setup();

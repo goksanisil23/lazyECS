@@ -6,16 +6,93 @@ extern lazyECS::Orchestrator gOrchestrator; // expected to be defined globally i
 
 namespace lazyECS {
 
-RenderingSystem::RenderingSystem() : mLastMouseX(0), mLastMouseY(0), mViewportX(0), mViewportY(0),
-                                     mViewportWidth(0), mViewportHeight(0), 
-                                     mIsShadowMappingEnabled(false), mIsShadowMappingInitialized(false),
-                                     mVBOVertices(GL_ARRAY_BUFFER), mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-                                     mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mVAO(), numRenderables(0),
-                                     mPhongShader("/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.vert",
-                                                  "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.frag"),
-                                     mColorShader("/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.vert",
-                                                  "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag")
-{}
+RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowHeight) :
+    // Its important to have nanogui::Screen initialized first since it's creating openGL context for the rest of the Opengl variables in the render System
+                nanogui::Screen(nanogui::Vector2i(windowWidth, windowHeight), "Minimal 3D", true, isFullscreen, true, true, false, 4, 1),
+                mLastMouseX(0), mLastMouseY(0), mViewportX(0), mViewportY(0),
+                mViewportWidth(0), mViewportHeight(0), 
+                mIsShadowMappingEnabled(false), mIsShadowMappingInitialized(false),
+                mVBOVertices(GL_ARRAY_BUFFER), mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
+                mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mVAO(), numRenderables(0),
+                mPhongShader("/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.vert",
+                            "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.frag"),
+                mColorShader("/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.vert",
+                            "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag")
+{
+    // Set the system signature based on the utilized Components below
+    Signature signature;
+    // signature.set(gOrchestrator.GetComponentTypeId<RigidBody3D>(), true);
+    signature.set(gOrchestrator.GetComponentTypeId<Transform3D>(), true);
+    signature.set(gOrchestrator.GetComponentTypeId<Mesh>(), true);
+    gOrchestrator.SetSystemSignature<RenderingSystem>(signature);      
+}
+
+// ----------------- nanogui::Screen overrides --------------- //
+void RenderingSystem::draw_contents(){
+    
+    int bufferWidth, bufferHeight;
+    glfwMakeContextCurrent(m_glfw_window);
+    glfwGetFramebufferSize(m_glfw_window, &bufferWidth, &bufferHeight);
+    this->SetViewport(0, 0, bufferWidth, bufferHeight);
+
+    this->Render();
+}
+
+bool RenderingSystem::mouse_button_event(const nanogui::Vector2i& p, int button, bool down, int modifiers) {
+    if(Screen::mouse_button_event(p, button, down, modifiers))
+        return true;
+    
+    double x, y;
+    glfwGetCursorPos(m_glfw_window, &x, &y);
+
+    return this->MouseButtonEvent(button, down, modifiers, x, y);
+}
+
+bool RenderingSystem::mouse_motion_event(const nanogui::Vector2i& p, const nanogui::Vector2i& rel, int button, int modifiers) {
+    if(Screen::mouse_motion_event(p, rel, button, modifiers))
+        return true;
+
+    int leftButtonState = glfwGetMouseButton(m_glfw_window, GLFW_MOUSE_BUTTON_LEFT);
+    int rightButtonState = glfwGetMouseButton(m_glfw_window, GLFW_MOUSE_BUTTON_RIGHT);
+    int middleButtonState = glfwGetMouseButton(m_glfw_window, GLFW_MOUSE_BUTTON_MIDDLE);
+    int altKeyState = glfwGetKey(m_glfw_window, GLFW_KEY_LEFT_ALT);        
+
+    return this->MouseMotionEvent(p[0], p[1], leftButtonState, rightButtonState, middleButtonState, altKeyState);
+}
+
+bool RenderingSystem::scroll_event(const nanogui::Vector2i& p, const nanogui::Vector2f& rel) {
+
+    if(Screen::scroll_event(p, rel))
+        return true;
+    
+    return this->ScrollingEvent(rel[0], rel[1], 0.08f);
+}
+
+bool RenderingSystem::resize_event(const nanogui::Vector2i& size) {
+
+    int width, height;
+    glfwGetFramebufferSize(m_glfw_window, &width, &height); // Get the framebuffer dimension
+    this->ReshapeCameraView(width, height); // Resize the camera viewport
+
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(m_glfw_window, &windowWidth, &windowHeight); // Update the window size of the scene
+    this->SetWindowDimension(windowWidth, windowHeight);
+
+    return true;
+}
+
+bool RenderingSystem::keyboard_event(int key, int scancode, int action, int modifiers) {
+    if(Screen::keyboard_event(key, scancode, action, modifiers)) {
+        return true;
+    }
+    // Close app on Esc key
+    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(m_glfw_window, GL_TRUE);
+        return true;
+    }
+}
+ // ----------------- end of Nanogui overrides --------------- //
+
 
 void RenderingSystem::SetupSignature() {
     // Set the system signature based on the utilized Components below
@@ -73,6 +150,14 @@ void RenderingSystem::Init(const std::string& meshPath) {
             CreateVBOVAO(mesh);
         numRenderables++;
     }
+
+    // Set window and camera size
+    int bufferWidth, bufferHeight;
+    glfwGetFramebufferSize(m_glfw_window, &bufferWidth, &bufferHeight);
+    this->ReshapeCameraView(bufferWidth, bufferHeight);
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(m_glfw_window, &windowWidth, &windowHeight);
+    this->SetWindowDimension(windowWidth, windowHeight);    
 }
 
 void RenderingSystem::CreateVBOVAO(Mesh& mesh) {

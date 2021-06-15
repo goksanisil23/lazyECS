@@ -60,9 +60,11 @@ public:
     }
 
     /////////////////////////// SYSTEM METHODS ///////////////////////////
-    template<typename TSytemType>
-    std::shared_ptr<TSytemType> RegisterSystem() {
-        return m_systemManager->RegisterSystem<TSytemType>();
+
+    // Variadic template since each system will need different sets of parameters
+    template<typename TSytemType, typename... TSystemInputTypes>
+    std::shared_ptr<TSytemType> RegisterSystem(TSystemInputTypes... inputVars) {
+        return m_systemManager->RegisterSystem<TSytemType>(inputVars...);
     }
 
     template<typename TSytemType>
