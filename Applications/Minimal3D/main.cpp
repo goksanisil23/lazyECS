@@ -28,7 +28,7 @@ int main() {
         // Get the primary monitor
         GLFWmonitor* monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        // Window size
+        // Initial window size
         int windowWidth = mode->width;
         int windowHeight = mode->height;
         if(!isFullscreen) {
@@ -39,7 +39,12 @@ int main() {
         // nanogui::ref<Minimal3D> minimal3d_app = new Minimal3D(isFullscreen, windowWidth, windowHeight, renderSys);
         nanogui::ref<Minimal3D> minimal3d_app = new Minimal3D(isFullscreen, windowWidth, windowHeight);
         minimal3d_app->set_visible(true);
-        nanogui::mainloop(10);
+        
+        nanogui::mainloop(); // calls nanogui::Screen::draw_all --> 
+                                                                    // draw_setup();
+                                                                    // draw_contents();
+                                                                    // draw_widgets();
+                                                                    // draw_teardown();
 
     }
 
