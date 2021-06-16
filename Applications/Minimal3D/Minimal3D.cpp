@@ -40,7 +40,7 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) :
                                                                 0, boxSize[1]*0.5f, 0, 0,
                                                                 0, 0, boxSize[2]*0.5f, 0,
                                                                 0, 0, 0, 1);
-        spawn_trans.ConvertRP3DToOpenglTransform(0.9); // temporary interpolation factor
+        spawn_trans.ConvertRP3DToOpenglTransform(); // temporary interpolation factor
         gOrchestrator.AddComponent<lazyECS::Transform3D>(entity,spawn_trans);
 
 
@@ -62,19 +62,19 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) :
 
 void Minimal3D::main_loop(const float& update_rate_sec) {
 
-    int ctr = 0;
-
     auto& nanogui_screens = renderSys->GetScreen();
 
     if(lazyECS_mainloop_active)
         throw std::runtime_error("Main loop is already running!");
 
     auto main_loop_step = [&nanogui_screens, this](){
-        // Move the entity by manually setting position in physics and then updating graphics
+        // Update physics
+        this->physicsSys->Update();
+        // Update graphics
         for(auto& entity : this->renderSys->m_entities) {
             auto& transform = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
-            transform.rp3d_transform.setPosition(transform.rp3d_transform.getPosition() + rp3d::Vector3(0.1,0.0,0.0));
-            transform.ConvertRP3DToOpenglTransform(0.9); // temporary interpolation factor
+            // transform.rp3d_transform.setPosition(transform.rp3d_transform.getPosition() + rp3d::Vector3(0.1,0.0,0.0));
+            transform.ConvertRP3DToOpenglTransform(); // temporary interpolation factor
         }
 
         int num_nanogui_screens = 0;
@@ -116,8 +116,7 @@ void Minimal3D::main_loop(const float& update_rate_sec) {
         while(true) {
             if(!lazyECS_mainloop_active)
                 return;
-            else {
-                std::cout << "sleep dur:" << _sleep_duration.count() << std::endl;
+            else {                
                 std::this_thread::sleep_for(_sleep_duration);
                 // This is the main draw interrupt which allows steady render rate (irrespective of mouse/keyboard callbacks)
                 // after sleeping for update_rate_sec
@@ -141,7 +140,6 @@ void Minimal3D::main_loop(const float& update_rate_sec) {
                 sleep_duration = std::chrono::duration<float>(0);
             }
             main_loop_step();
-            ctr++;
         }
         
         // Process events one final time

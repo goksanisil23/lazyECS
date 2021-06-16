@@ -53,7 +53,13 @@ public:
 
     void Init();
 
-    void Update(float dt);
+    void Update();
+
+    const float& GetInterpFactor();
+
+    float timeAccumulator; // to keep track of the leftover time from last physics iteration
+
+    float interpFactor; // interpolation ratio [0,1] calculated based on the left over time in physics period 
 
 private:
     // PhysicsCommon is a factory module that is used to create physics world and objects and handling memory and logging
@@ -68,7 +74,6 @@ private:
 
     float timeStep; // fixed time step for the physics solver iteration
     std::chrono::_V2::system_clock::time_point prevFrameTime;
-    float timeAccumulator; // to keep track of the leftover time from last physics iteration
     rp3d::Transform prevTrans; // Transform value to calculate interpolation
 
 };

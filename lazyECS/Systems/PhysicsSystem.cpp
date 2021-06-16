@@ -32,7 +32,11 @@ void PhysicsSystem::Init(){
     }
 }
 
-void PhysicsSystem::Update(float dt) {
+const float& PhysicsSystem::GetInterpFactor() {
+    return interpFactor;
+}
+
+void PhysicsSystem::Update() {
 
     auto currentFrameTime = std::chrono::high_resolution_clock::now();
     auto deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentFrameTime-prevFrameTime).count();
@@ -49,7 +53,7 @@ void PhysicsSystem::Update(float dt) {
     }
 
     // Compute time interpolation factor
-    float interpFactor = this->timeAccumulator / this->timeStep;
+    interpFactor = this->timeAccumulator / this->timeStep;
 
     for (auto const& entity : m_entities) {
 

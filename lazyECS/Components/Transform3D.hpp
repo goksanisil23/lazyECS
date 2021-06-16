@@ -27,7 +27,9 @@ public:
     float mSize[3];
 
     // Convert the physics Transform to Graphics (OpenGL) Transform format
-    void ConvertRP3DToOpenglTransform(const float& interpolationFactor);
+    void ConvertRP3DToOpenglTransform();
+    void ConvertRP3DToOpenglTransformInterp(const float& interpolationFactor);
+    
 
 };
 
