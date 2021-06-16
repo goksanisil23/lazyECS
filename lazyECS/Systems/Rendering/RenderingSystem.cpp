@@ -36,6 +36,12 @@ void RenderingSystem::draw_contents(){
     this->SetViewport(0, 0, bufferWidth, bufferHeight);
 
     this->Render();
+
+    // measure time diff
+    auto currentFrameTime = std::chrono::high_resolution_clock::now();
+    auto deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentFrameTime-prevFrameTime).count();
+    this->prevFrameTime = currentFrameTime; // update previous time
+    std::cout << "dt: " << deltaTime << std::endl;   
 }
 
 bool RenderingSystem::mouse_button_event(const nanogui::Vector2i& p, int button, bool down, int modifiers) {

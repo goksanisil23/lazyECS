@@ -54,6 +54,8 @@ protected:
     openglframework::VertexArrayObject mVAO; // vertex array object for vertex data above
     
     int numRenderables; // total number of renderables created
+    
+    std::chrono::_V2::system_clock::time_point prevFrameTime;
 
     // ----------------- Member functions ----------------- //
 
