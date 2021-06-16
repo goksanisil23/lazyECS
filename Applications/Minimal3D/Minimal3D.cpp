@@ -2,7 +2,9 @@
 
 bool Minimal3D::lazyECS_mainloop_active{false};
 
-Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight)
+Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) :
+    prevFrameTime{std::chrono::high_resolution_clock::now()}, currentFrameTime{std::chrono::high_resolution_clock::now()}, 
+    deltaTime{0.0f}, sleep_duration{0}
 {
     
     // --------------- lAZYECS -------------- //
@@ -16,11 +18,9 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight)
 
     // Register the systems
     physicsSys = gOrchestrator.RegisterSystem<lazyECS::PhysicsSystem>();
-    // Rendering system is registered and initialized here since it has dependency on OpenGL context to be initialized first
-    // which is happening during nanogui::Screen initialization
     renderSys = gOrchestrator.RegisterSystem<lazyECS::RenderingSystem>(isFullscreen, windowWidth, windowHeight); // constructs the System
 
-    // renderSys->SetupSignature(); // entities below will be matched with systems so signature of the system is set
+    renderSys->SetupSignature(); // entities below will be matched with systems so signature of the system is set
 
     // Create the entities and assign components
     std::vector<lazyECS::Entity> entities(10);
@@ -60,14 +60,23 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight)
     physicsSys->Init();
 }
 
-void Minimal3D::main_loop(const float& update_rate) {
+void Minimal3D::main_loop(const float& update_rate_sec) {
+
+    int ctr = 0;
 
     auto& nanogui_screens = renderSys->GetScreen();
 
     if(lazyECS_mainloop_active)
         throw std::runtime_error("Main loop is already running!");
 
-    auto main_loop_iter = [nanogui_screens](){
+    auto main_loop_step = [&nanogui_screens, this](){
+        // Move the entity by manually setting position in physics and then updating graphics
+        for(auto& entity : this->renderSys->m_entities) {
+            auto& transform = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
+            transform.rp3d_transform.setPosition(transform.rp3d_transform.getPosition() + rp3d::Vector3(0.1,0.0,0.0));
+            transform.ConvertRP3DToOpenglTransform(0.9); // temporary interpolation factor
+        }
+
         int num_nanogui_screens = 0;
         for(auto screen_pair : nanogui_screens) {
             nanogui::Screen* screen = screen_pair.second;
@@ -88,7 +97,10 @@ void Minimal3D::main_loop(const float& update_rate) {
                 return;
             }
 
-            glfwWaitEvents();
+            // Blocks next iteration until:
+            // a) A keyboard/mouse event is made
+            // b) update_thread below periodically interrupts it by a glfwPostEmptyEvent call for steady render rate
+            glfwWaitEvents();         
 
         }
     };
@@ -97,38 +109,40 @@ void Minimal3D::main_loop(const float& update_rate) {
 
     std::thread update_thread;
     std::chrono::microseconds quantum;
-    size_t quantum_count = 1;
-    // We divide the update interval to approx. 50ms. chunks, since GUI elements better be drawn in this rate
-    // If the  update interval is already faster than 50ms., no chunking happens
-    quantum = std::chrono::microseconds((int64_t)(update_rate*1'000));
-    while(quantum.count() > 50'000) {
-        quantum /= 2;
-        quantum_count *= 2;
-    }
-    // Below thread will update the rendering with at least 50ms., and at most with update_rate
-    // redraw() function calls glfwPostEmptyEvent(), which allows glfwWaitEvents called above to return
-    auto thread_func = [quantum, quantum_count, nanogui_screens]() {
+    quantum = std::chrono::microseconds((int64_t)(update_rate_sec*1'000'000));
+    // auto& _sleep_duration = this->sleep_duration;
+    auto _sleep_duration = std::chrono::duration<float>(update_rate_sec);
+    auto thread_func = [quantum, nanogui_screens, &_sleep_duration]() {
         while(true) {
-            for(size_t i = 0; i < quantum_count; i++) {
-                if(!lazyECS_mainloop_active)
-                    return;
-                std::this_thread::sleep_for(quantum);
-                for(auto screen : nanogui_screens) {
-                    if(screen.second->tooltip_fade_in_progress()) // if some gui element is active
-                        screen.second->redraw();    // make an additional draw call, that is additional to the fixed update rate we specified
-                }
+            if(!lazyECS_mainloop_active)
+                return;
+            else {
+                std::cout << "sleep dur:" << _sleep_duration.count() << std::endl;
+                std::this_thread::sleep_for(_sleep_duration);
+                // This is the main draw interrupt which allows steady render rate (irrespective of mouse/keyboard callbacks)
+                // after sleeping for update_rate_sec
+                // redraw() calls glfwPostEmptyEvent() which allows the iteration to proceed from the blocked glfwWaitEvents() state
+                for(auto screen : nanogui_screens)
+                    screen.second->redraw();                
             }
-            // This is the main draw callback which allows steady render rate (irrespective of mouse/keyboard callbacks)
-            // after sleeping for (quantum*quantum_count=update_rate) miliseconds
-            for(auto screen : nanogui_screens)
-                screen.second->redraw();
         }
-    };
+    };    
     update_thread = std::thread(thread_func);
 
     try {
-        while(lazyECS_mainloop_active)
-            main_loop_iter();
+        while(lazyECS_mainloop_active) {
+            this->currentFrameTime = std::chrono::high_resolution_clock::now();
+            this->deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentFrameTime-prevFrameTime).count();
+            this->prevFrameTime = currentFrameTime; // update previous time
+            if(deltaTime < update_rate_sec) { // we have time to sleep
+                sleep_duration = std::chrono::duration<float>(update_rate_sec-deltaTime);
+            }
+            else {
+                sleep_duration = std::chrono::duration<float>(0);
+            }
+            main_loop_step();
+            ctr++;
+        }
         
         // Process events one final time
         glfwPollEvents();

@@ -25,7 +25,7 @@ int main() {
                                                                     // draw_widgets();
                                                                     // draw_teardown();
 
-        minimal3d_app->main_loop(1.0f/60.0f);
+        minimal3d_app->main_loop(1.0f/60.0f); // update interval in sec.
 
     }
 

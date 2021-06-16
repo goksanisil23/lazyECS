@@ -8,24 +8,18 @@ namespace lazyECS {
 
 RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowHeight) :
     // Its important to have nanogui::Screen initialized first since it's creating openGL context for the rest of the Opengl variables in the render System
-                nanogui::Screen(nanogui::Vector2i(windowWidth, windowHeight), "Minimal 3D", true, isFullscreen, true, true, false, 4, 1),
-                mLastMouseX(0), mLastMouseY(0), mViewportX(0), mViewportY(0),
-                mViewportWidth(0), mViewportHeight(0), 
-                mIsShadowMappingEnabled(false), mIsShadowMappingInitialized(false),
-                mVBOVertices(GL_ARRAY_BUFFER), mVBONormals(GL_ARRAY_BUFFER), mVBOTextureCoords(GL_ARRAY_BUFFER),
-                mVBOIndices(GL_ELEMENT_ARRAY_BUFFER), mVAO(), numRenderables(0),
-                mPhongShader("/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.vert",
-                            "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.frag"),
-                mColorShader("/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.vert",
-                            "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag")
-{
-    // Set the system signature based on the utilized Components below
-    Signature signature;
-    // signature.set(gOrchestrator.GetComponentTypeId<RigidBody3D>(), true);
-    signature.set(gOrchestrator.GetComponentTypeId<Transform3D>(), true);
-    signature.set(gOrchestrator.GetComponentTypeId<Mesh>(), true);
-    gOrchestrator.SetSystemSignature<RenderingSystem>(signature);      
-}
+                nanogui::Screen{nanogui::Vector2i(windowWidth, windowHeight), "Minimal 3D", true, isFullscreen, true, true, false, 4, 1},
+                mLastMouseX{0}, mLastMouseY{0}, mViewportX{0}, mViewportY{0},
+                mViewportWidth{0}, mViewportHeight{0}, 
+                mIsShadowMappingEnabled{false}, mIsShadowMappingInitialized{false},
+                mVBOVertices{GL_ARRAY_BUFFER}, mVBONormals{GL_ARRAY_BUFFER}, mVBOTextureCoords{GL_ARRAY_BUFFER},
+                mVBOIndices{GL_ELEMENT_ARRAY_BUFFER}, mVAO(), numRenderables{0},
+                mPhongShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.vert",
+                            "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.frag"},
+                mColorShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.vert",
+                            "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag"},
+                prevFrameTime{std::chrono::high_resolution_clock::now()}
+{}
 
 // ----------------- nanogui::Screen overrides --------------- //
 void RenderingSystem::draw_contents(){
