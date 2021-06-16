@@ -1,0 +1,3 @@
+[submodule "lazyECS/External/nanogui"]
+	path = lazyECS/External/nanogui
+	url = git@github.com:goksanisil23/nanogui.git
