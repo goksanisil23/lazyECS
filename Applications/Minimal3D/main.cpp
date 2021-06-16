@@ -19,7 +19,7 @@ int main() {
         nanogui::ref<Minimal3D> minimal3d_app = new Minimal3D(false, 800, 600); // Minimal3D(isFullscreen, windowWidth, windowHeight)
         // minimal3d_app->set_visible(true);
         
-        nanogui::mainloop(); // calls nanogui::Screen::draw_all --> 
+        nanogui::mainloop(10); // calls nanogui::Screen::draw_all --> 
                                                                     // draw_setup();
                                                                     // draw_contents();
                                                                     // draw_widgets();
