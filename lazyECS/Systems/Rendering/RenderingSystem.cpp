@@ -44,6 +44,10 @@ void RenderingSystem::draw_contents(){
     std::cout << "dt: " << deltaTime << std::endl;   
 }
 
+std::map<GLFWwindow*, nanogui::Screen*>& RenderingSystem::GetNanoguiScreen() {
+    return nanogui::Screen::GetScreen();
+}
+
 bool RenderingSystem::mouse_button_event(const nanogui::Vector2i& p, int button, bool down, int modifiers) {
     if(Screen::mouse_button_event(p, button, down, modifiers))
         return true;

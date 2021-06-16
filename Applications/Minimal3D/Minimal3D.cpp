@@ -1,6 +1,6 @@
 #include "Minimal3D.h"
 
-static bool lazyECS_mainloop_active = false;
+bool Minimal3D::lazyECS_mainloop_active{false};
 
 Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight)
 {
@@ -61,10 +61,37 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight)
 }
 
 void Minimal3D::main_loop(const float& update_rate) {
+
+    auto& nanogui_screens = renderSys->GetScreen();
+
     if(lazyECS_mainloop_active)
         throw std::runtime_error("Main loop is already running!");
 
-    auto mainloop_iter = [](){};
+    auto main_loop_iter = [nanogui_screens](){
+        int num_nanogui_screens = 0;
+        for(auto screen_pair : nanogui_screens) {
+            nanogui::Screen* screen = screen_pair.second;
+            if(!screen->visible()) {
+                continue;
+            }
+            else if(glfwWindowShouldClose(screen->glfw_window())) {
+                screen->set_visible(false);
+                continue;
+            }
+            else{
+                screen->draw_all();
+                num_nanogui_screens++;
+            }
+
+            if(num_nanogui_screens == 0) {
+                lazyECS_mainloop_active = false;
+                return;
+            }
+
+            glfwWaitEvents();
+
+        }
+    };
 
     lazyECS_mainloop_active = true;
 
@@ -80,15 +107,36 @@ void Minimal3D::main_loop(const float& update_rate) {
     }
     // Below thread will update the rendering with at least 50ms., and at most with update_rate
     // redraw() function calls glfwPostEmptyEvent(), which allows glfwWaitEvents called above to return
-    auto thread_func = [quantum, quantum_count]() {
+    auto thread_func = [quantum, quantum_count, nanogui_screens]() {
         while(true) {
             for(size_t i = 0; i < quantum_count; i++) {
                 if(!lazyECS_mainloop_active)
                     return;
                 std::this_thread::sleep_for(quantum);
-                for(auto this_screen : renderSys)
+                for(auto screen : nanogui_screens) {
+                    if(screen.second->tooltip_fade_in_progress()) // if some gui element is active
+                        screen.second->redraw();    // make an additional draw call, that is additional to the fixed update rate we specified
+                }
             }
+            // This is the main draw callback which allows steady render rate (irrespective of mouse/keyboard callbacks)
+            // after sleeping for (quantum*quantum_count=update_rate) miliseconds
+            for(auto screen : nanogui_screens)
+                screen.second->redraw();
         }
+    };
+    update_thread = std::thread(thread_func);
+
+    try {
+        while(lazyECS_mainloop_active)
+            main_loop_iter();
+        
+        // Process events one final time
+        glfwPollEvents();
     }
-    // update_thread = 
+    catch (const std::exception& e) {
+        std::cerr << "Caught exception in lazyECS main loop: " << e.what() << std::endl;
+        lazyECS_mainloop_active=false;
+    }
+
+    update_thread.join();
 }
