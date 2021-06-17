@@ -36,6 +36,7 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) :
         reactphysics3d::Quaternion spawn_rot(reactphysics3d::Quaternion::identity());
         lazyECS::Transform3D spawn_trans;
         spawn_trans.rp3d_transform = reactphysics3d::Transform(spawn_pos, spawn_rot);
+        spawn_trans.rp3d_prev_transform = spawn_trans.rp3d_transform;
         spawn_trans.mScalingMatrix = openglframework::Matrix4(  boxSize[0]*0.5f, 0, 0, 0,
                                                                 0, boxSize[1]*0.5f, 0, 0,
                                                                 0, 0, boxSize[2]*0.5f, 0,
@@ -68,13 +69,15 @@ void Minimal3D::main_loop(const float& update_rate_sec) {
         throw std::runtime_error("Main loop is already running!");
 
     auto main_loop_step = [&nanogui_screens, this](){
+
         // Update physics
         this->physicsSys->Update();
+        
         // Update graphics
         for(auto& entity : this->renderSys->m_entities) {
             auto& transform = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
             // transform.rp3d_transform.setPosition(transform.rp3d_transform.getPosition() + rp3d::Vector3(0.1,0.0,0.0));
-            transform.ConvertRP3DToOpenglTransform(); // temporary interpolation factor
+            transform.ConvertRP3DToOpenglTransform(); // convert the physics transform to graphics transform
         }
 
         int num_nanogui_screens = 0;
@@ -130,15 +133,15 @@ void Minimal3D::main_loop(const float& update_rate_sec) {
 
     try {
         while(lazyECS_mainloop_active) {
-            this->currentFrameTime = std::chrono::high_resolution_clock::now();
-            this->deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentFrameTime-prevFrameTime).count();
-            this->prevFrameTime = currentFrameTime; // update previous time
-            if(deltaTime < update_rate_sec) { // we have time to sleep
-                sleep_duration = std::chrono::duration<float>(update_rate_sec-deltaTime);
-            }
-            else {
-                sleep_duration = std::chrono::duration<float>(0);
-            }
+            // this->currentFrameTime = std::chrono::high_resolution_clock::now();
+            // this->deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentFrameTime-prevFrameTime).count();
+            // this->prevFrameTime = currentFrameTime; // update previous time
+            // if(deltaTime < update_rate_sec) { // we have time to sleep
+            //     sleep_duration = std::chrono::duration<float>(update_rate_sec-deltaTime);
+            // }
+            // else {
+            //     sleep_duration = std::chrono::duration<float>(0);
+            // }
             main_loop_step();
         }
         

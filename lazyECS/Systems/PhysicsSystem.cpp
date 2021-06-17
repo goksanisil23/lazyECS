@@ -9,8 +9,8 @@ extern lazyECS::Orchestrator gOrchestrator; // expected to be defined globally i
 namespace lazyECS {
 
 PhysicsSystem::PhysicsSystem() : timeStep{PHYSICS_TIME_STEP}, timeAccumulator{0.0f}, 
-                                prevFrameTime{std::chrono::high_resolution_clock::now()},
-                                prevTrans{rp3d::Transform()}, mEngineSettings(EngineSettings::defaultSettings()) {}
+                                prevFrameTime{std::chrono::high_resolution_clock::now()} 
+                                {}
 
 void PhysicsSystem::Init(){
 
@@ -26,8 +26,8 @@ void PhysicsSystem::Init(){
     // Create rp3d rigid body for the entities that have rigid body components
     for(auto& entity : m_entities) {
         auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity); // uninitialized here
-        auto& transform = gOrchestrator.GetComponent<Transform3D>(entity); // Initial Transform of entities must be assigned outside of Physics Sys. 
-        // we give the actual rigidBody here
+        auto& transform = gOrchestrator.GetComponent<Transform3D>(entity); // Initial Transform of entities given outside Physics system 
+        // we assign the actual rigidBody here, whose initial position is determined by what was assigned to lazyECS::Transform component outside
         rigidBody.rp3d_rigidBody = std::shared_ptr<rp3d::RigidBody>(this->physicsWorld->createRigidBody(transform.rp3d_transform)); 
     }
 }
@@ -53,7 +53,7 @@ void PhysicsSystem::Update() {
     }
 
     // Compute time interpolation factor
-    interpFactor = this->timeAccumulator / this->timeStep;
+    this->interpFactor = this->timeAccumulator / this->timeStep;
 
     for (auto const& entity : m_entities) {
 
@@ -66,13 +66,13 @@ void PhysicsSystem::Update() {
             rp3d::Transform currentTrans = rigidBody.rp3d_rigidBody->getTransform(); 
 
             // compute the interpolated transform of the rigid body based on the leftover time
-            rp3d::Transform interpTrans = rp3d::Transform::interpolateTransforms(prevTrans, currentTrans, interpFactor);
+            rp3d::Transform interpTrans = rp3d::Transform::interpolateTransforms(transform.rp3d_prev_transform, currentTrans, interpFactor);
 
             // use the interpolated transform as the final transform value for the entity (for rendering, AI, etc)
             transform.rp3d_transform = interpTrans;
 
             // Update the previous transform
-            prevTrans = currentTrans;
+            transform.rp3d_prev_transform = currentTrans;
 
             // Debug print
             const reactphysics3d::Vector3& position = transform.rp3d_transform.getPosition();

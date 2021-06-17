@@ -74,7 +74,6 @@ private:
 
     float timeStep; // fixed time step for the physics solver iteration
     std::chrono::_V2::system_clock::time_point prevFrameTime;
-    rp3d::Transform prevTrans; // Transform value to calculate interpolation
 
 };
 

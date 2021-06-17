@@ -4,6 +4,7 @@
 
 namespace lazyECS {
 
+// Just a wrapper class for the RP3D rigid body component
 class RigidBody3D {
 
 public:

@@ -7,6 +7,10 @@
 namespace lazyECS {
 
 // Class to represent the position & orientation of a generic 3D entity in the scene
+// It contains 2 realizations of Transforms in different representation: 1 for physics and 1 for graphics
+// In case an entity is not moved by physics, but teleported instead, its still more convenient to describe the
+// body motion in reactphysics3d::Transform rather than openglframework TransformMatrix
+// When the body is moved by react physics, rp3d_transform in lazyECS::Transform3D will be updated by lazyECS::RigidBody3D's transform component
 class Transform3D  {
 
 public:
