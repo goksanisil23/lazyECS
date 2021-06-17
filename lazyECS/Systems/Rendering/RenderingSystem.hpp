@@ -61,7 +61,7 @@ protected:
 
 public:
 
-    RenderingSystem(bool isFullscreen, int windowWidth, int windowHeight);
+    RenderingSystem(bool isFullscreen, int windowWidth, int windowHeight, const std::string& appName);
 
     // nanogui::Screen overrides
     virtual void draw_contents() override; // render the contents of the application
@@ -91,7 +91,7 @@ public:
     bool MouseMotionEvent(double xMouse, double yMouse, int leftButtonState, int rightButtonState, int middleButtonState, int altKeyState);
     bool ScrollingEvent(float xAxis, float yAxis, float scrollSensitivy); // called when scrolling event occurs
 
-    void Init(const std::string& meshPath); // Used to generate the mesh for entities
+    void Init(); // Used to generate the mesh for entities
 
     void Render(); // Render the scene (possibly in multiple passes due to shadow mapping)
 

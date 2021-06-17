@@ -47,6 +47,8 @@ public:
             auto const& system = pair.second;
             auto const& sysSig = m_systemSignatures[sysType];
 
+            // Note that entity signature and system signature do not have to match exactly
+            // For a system to act on entity, system needs to contain a SUBSET of the entity signature (components)
             if ( (newEntitySignature & sysSig) == sysSig) {
                 system->m_entities.insert(entity);
             }

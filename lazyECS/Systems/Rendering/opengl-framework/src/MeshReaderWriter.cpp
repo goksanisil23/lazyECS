@@ -229,7 +229,7 @@ void MeshReaderWriter::loadOBJFile(const string &filename, lazyECS::Mesh& meshTo
     // ---------- Merge the data that we have collected from the file ---------- //
 
     // Destroy the current mesh
-    meshToCreate.destroy();
+    meshToCreate.destroy(); // Note that it doesnt destroy the meshPath
 
 	// This is used to create duplicate vertices if a vertex with index "i" from a face does not
 	// have same texture coordinates or normals as a previous vertex with index "i".

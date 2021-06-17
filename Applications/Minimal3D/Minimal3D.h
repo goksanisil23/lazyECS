@@ -24,9 +24,4 @@ public:
 
     static bool lazyECS_mainloop_active;
 
-    std::chrono::_V2::system_clock::time_point prevFrameTime;
-    std::chrono::_V2::system_clock::time_point currentFrameTime;
-    std::chrono::duration<float> sleep_duration;
-    float deltaTime;
-
 };

@@ -6,9 +6,9 @@ extern lazyECS::Orchestrator gOrchestrator; // expected to be defined globally i
 
 namespace lazyECS {
 
-RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowHeight) :
+RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowHeight, const std::string& appName) :
     // Its important to have nanogui::Screen initialized first since it's creating openGL context for the rest of the Opengl variables in the render System
-                nanogui::Screen{nanogui::Vector2i(windowWidth, windowHeight), "Minimal 3D", true, isFullscreen, true, true, false, 4, 1},
+                nanogui::Screen{nanogui::Vector2i(windowWidth, windowHeight), appName, true, isFullscreen, true, true, false, 4, 1},
                 mLastMouseX{0}, mLastMouseY{0}, mViewportX{0}, mViewportY{0},
                 mViewportWidth{0}, mViewportHeight{0}, 
                 mIsShadowMappingEnabled{false}, mIsShadowMappingInitialized{false},
@@ -107,7 +107,7 @@ void RenderingSystem::SetupSignature() {
     gOrchestrator.SetSystemSignature<RenderingSystem>(signature);     
 }
 
-void RenderingSystem::Init(const std::string& meshPath) {
+void RenderingSystem::Init() {
 
     // ------------- Scene setup (TODO: move to a new class/function) ------------------ //
     float lightsRadius = 30.0f;
@@ -133,15 +133,16 @@ void RenderingSystem::Init(const std::string& meshPath) {
 	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(0, 1, 0), 5 * PI/4.0f);
 	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(1, 0 , 0), -PI/4.0f);    
 
-    openglframework::Vector3 center(0, 0, 0);
-    const float SCENE_RADIUS = 100.0f; // 30
+    openglframework::Vector3 center(0, 120, 30);
+    const float SCENE_RADIUS = 100.0f;
     SetScenePosition(center, SCENE_RADIUS);
+    mCamera.rotateLocal(openglframework::Vector3(1, 0, 0), -50.0 * PI/180.0f);
 
     // Populate the mesh for the entities that have a Mesh component, from a model file
     for(auto& entity : m_entities) {
         auto& transform = gOrchestrator.GetComponent<Transform3D>(entity); // initialized outsize
-        auto& mesh = gOrchestrator.GetComponent<Mesh>(entity); // uninitialized here
-        openglframework::MeshReaderWriter::loadMeshFromFile(meshPath, mesh); // mesh is initialized here
+        auto& mesh = gOrchestrator.GetComponent<Mesh>(entity); // uninitialized here, only contains the mesh path given by the user
+        openglframework::MeshReaderWriter::loadMeshFromFile(mesh.meshPath, mesh); // mesh is initialized here
         if(mesh.getNormals().empty()) { // if the mesh file don't have the normals, calculate them
             mesh.calculateNormals();
         }
@@ -161,7 +162,9 @@ void RenderingSystem::Init(const std::string& meshPath) {
     this->ReshapeCameraView(bufferWidth, bufferHeight);
     int windowWidth, windowHeight;
     glfwGetWindowSize(m_glfw_window, &windowWidth, &windowHeight);
-    this->SetWindowDimension(windowWidth, windowHeight);    
+    this->SetWindowDimension(windowWidth, windowHeight); 
+
+    this->set_visible(true); // nanogui set visibility   
 }
 
 void RenderingSystem::CreateVBOVAO(Mesh& mesh) {
@@ -204,9 +207,10 @@ void RenderingSystem::CreateVBOVAO(Mesh& mesh) {
     if (mesh.hasTexture()) mVBOTextureCoords.bind();
     mVBOIndices.bind();
 
-    mVAO.unbind(); 
+    mVAO.unbind();
 }
 
+// set where main scene camera looks at
 void RenderingSystem::SetScenePosition(const openglframework::Vector3& position, float sceneRadius) {
     // Set the position and radius of the scene
     mSceneCenter = position;
@@ -384,6 +388,9 @@ void RenderingSystem::Render() {
     RenderSinglePass(worldToCameraMatrix);
 
     mPhongShader.unbind();
+
+    // show where camera is
+    std::cout << "camera: " << mCamera.getOrigin().x << " " << mCamera.getOrigin().y << " " << mCamera.getOrigin().z << std::endl;
 }
 
 void RenderingSystem::RenderSinglePass(const openglframework::Matrix4& worldToCamereMatrix) {

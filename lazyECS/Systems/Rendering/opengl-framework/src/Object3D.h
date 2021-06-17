@@ -40,7 +40,7 @@ class Object3D {
 
         // -------------------- Attributes -------------------- //
 
-        // Transformation matrix that convert local-space (camera space = View Space)
+        // Transformation matrix that convert local-space
         // coordinates to world-space coordinates
         Matrix4 mTransformMatrix;
 

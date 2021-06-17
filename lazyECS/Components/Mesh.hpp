@@ -30,6 +30,7 @@ public:
 
     openglframework::Color mColor;
     openglframework::Color mSleepingColor;
+    std::string meshPath; // path of the obj file where the mesh description is loaded
 
     // ----------------- Member functions ----------------- //
 

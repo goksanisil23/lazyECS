@@ -11,9 +11,12 @@ namespace lazyECS {
 // In case an entity is not moved by physics, but teleported instead, its still more convenient to describe the
 // body motion in reactphysics3d::Transform rather than openglframework TransformMatrix
 // When the body is moved by react physics, rp3d_transform in lazyECS::Transform3D will be updated by lazyECS::RigidBody3D's transform component
+// When the body is moved kinematically, no need to update rp3d_prev_transform
 class Transform3D  {
 
 public:
+
+    Transform3D(const rp3d::Vector3& init_pos, const rp3d::Quaternion& init_rot);
     
     // Transform for physics
     reactphysics3d::Transform rp3d_transform;
@@ -28,13 +31,15 @@ public:
     openglframework::Matrix4 mScalingMatrix;
 
     // Shape size information : TODO: handle multiple shapes
-    float mSize[3];
+    float halfExtent[3]; // used by PhysicsSystem to create collision shape accordingly
 
     // Convert the physics Transform to Graphics (OpenGL) Transform format
     void ConvertRP3DToOpenglTransform();
     void ConvertRP3DToOpenglTransformInterp(const float& interpolationFactor);
-    
 
+    // scales the 3d shape in 3 directions : TODO: handle multiple shapes
+    void SetScale(const float& xScale, const float& yScale, const float& zScale);  
+    
 };
 
 }

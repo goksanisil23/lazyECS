@@ -53,6 +53,8 @@ public:
 
     void Init();
 
+    void SetupSignature();
+
     void Update();
 
     const float& GetInterpFactor();
