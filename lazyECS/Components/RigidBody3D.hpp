@@ -8,8 +8,13 @@ namespace lazyECS {
 class RigidBody3D {
 
 public:
-    // This is uninitialized. PhysicsSystem needs to initialize via world->createRigidBody(Transform)  
-    std::shared_ptr<reactphysics3d::RigidBody> rp3d_rigidBody; 
+      
+    std::shared_ptr<rp3d::RigidBody> rp3d_rigidBody; // uninitialized. PhysicsSystem needs to initialize via world->createRigidBody(Transform)
+    std::shared_ptr<rp3d::Collider> rp3d_collider; // uninitialized. PhysicsSystem needs to initialize via rp3d::RigidBody::addCoolider
+    rp3d::BoxShape* rp3d_collision_shape; //uninitialized PhysicsSystem needs to initialize via rp3d::PhysicsCommon::createBoxShape
+
+    bool isStatic;
+    float bounciness;
 
 };
 

@@ -134,7 +134,7 @@ void RenderingSystem::Init(const std::string& meshPath) {
 	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(1, 0 , 0), -PI/4.0f);    
 
     openglframework::Vector3 center(0, 0, 0);
-    const float SCENE_RADIUS = 30.0f; // 30
+    const float SCENE_RADIUS = 100.0f; // 30
     SetScenePosition(center, SCENE_RADIUS);
 
     // Populate the mesh for the entities that have a Mesh component, from a model file
@@ -394,6 +394,7 @@ void RenderingSystem::RenderSinglePass(const openglframework::Matrix4& worldToCa
     for (auto const& entity : m_entities) {
         // auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity);
         auto& mesh = gOrchestrator.GetComponent<Mesh>(entity);
+        auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity);
 
         mPhongShader.bind();
         // Set the model to camera matrix
@@ -409,7 +410,7 @@ void RenderingSystem::RenderSinglePass(const openglframework::Matrix4& worldToCa
         // Set the vertex color
         // openglframework::Color currentColor = rigidBody.rp3d_rigidBody->isSleeping() ? mesh.mSleepingColor : mesh.mColor;
         // openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
-        openglframework::Vector4 color(1,1,1,1);
+        openglframework::Vector4 color = rigidBody.isStatic ? openglframework::Vector4(1,1,1,1) : openglframework::Vector4(1,0,0,1);
         mPhongShader.setVector4Uniform("globalVertexColor", color, false);
 
         // Bind VAO

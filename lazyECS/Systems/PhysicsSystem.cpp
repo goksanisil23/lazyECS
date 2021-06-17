@@ -28,7 +28,12 @@ void PhysicsSystem::Init(){
         auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity); // uninitialized here
         auto& transform = gOrchestrator.GetComponent<Transform3D>(entity); // Initial Transform of entities given outside Physics system 
         // we assign the actual rigidBody here, whose initial position is determined by what was assigned to lazyECS::Transform component outside
-        rigidBody.rp3d_rigidBody = std::shared_ptr<rp3d::RigidBody>(this->physicsWorld->createRigidBody(transform.rp3d_transform)); 
+        rigidBody.rp3d_rigidBody = std::shared_ptr<rp3d::RigidBody>(this->physicsWorld->createRigidBody(transform.rp3d_transform));
+        rigidBody.rp3d_collision_shape = physicsCommon.createBoxShape(rp3d::Vector3(transform.mSize[0], transform.mSize[1], transform.mSize[2]));
+        rigidBody.rp3d_collider = std::shared_ptr<rp3d::Collider>(rigidBody.rp3d_rigidBody->addCollider(rigidBody.rp3d_collision_shape, rp3d::Transform::identity()));
+        rigidBody.rp3d_rigidBody->updateMassPropertiesFromColliders();
+        if(rigidBody.isStatic) // o/w dynamic by default
+            rigidBody.rp3d_rigidBody->setType(rp3d::BodyType::STATIC);
     }
 }
 
@@ -75,8 +80,8 @@ void PhysicsSystem::Update() {
             transform.rp3d_prev_transform = currentTrans;
 
             // Debug print
-            // const reactphysics3d::Vector3& position = transform.rp3d_transform.getPosition();
-            // std::cout << "entity: " << ent_ctr << " position: " << position.x << " " << position.y << " " << position.z << std::endl; 
+            const reactphysics3d::Vector3& position = transform.rp3d_transform.getPosition();
+            std::cout << "entity: " << ent_ctr << " position: " << position.x << " " << position.y << " " << position.z << std::endl; 
             ent_ctr++;
         }
     }
