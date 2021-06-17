@@ -75,8 +75,8 @@ void PhysicsSystem::Update() {
             transform.rp3d_prev_transform = currentTrans;
 
             // Debug print
-            const reactphysics3d::Vector3& position = transform.rp3d_transform.getPosition();
-            std::cout << "entity: " << ent_ctr << " position: " << position.x << " " << position.y << " " << position.z << std::endl; 
+            // const reactphysics3d::Vector3& position = transform.rp3d_transform.getPosition();
+            // std::cout << "entity: " << ent_ctr << " position: " << position.x << " " << position.y << " " << position.z << std::endl; 
             ent_ctr++;
         }
     }
