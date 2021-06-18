@@ -20,21 +20,27 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
     renderSys->SetupSignature(); // entities below will be matched with systems so signature of the system is set
     physicsSys->SetupSignature();
 
-    // Create the entities and assign components
-    std::vector<lazyECS::Entity> entities(10);
-    float boxSize[3] = {2.0, 2.0, 2.0};                   
-    
+    // Entity properties
     // x = lateral(right=+), y = height (up=+), z = depth(towards cam = +)
+    float boxSize[3] = {1.0, 1.0, 1.0};                  
     const int box_x_pos = 0.0;
-    const int box_y_pos = 40.0;
+    const int box_y_pos = 15.0;
     const int box_z_pos = 0.0;
+    float floorSize[3] = {2.0, 2.0, 2.0};
+    // float floorSize[3] = {1.0, 1.0, 1.0};
+    const int floor_x_pos = 0.0;
+    const int floor_y_pos = 0.0;
+    const int floor_z_pos = 0.0;    
 
+    // Create the entities and assign components
+    // Dynamic entities, 5 spheres, 5 cubes
+    std::vector<lazyECS::Entity> entities(10);
     for (int i = 0; i < entities.size(); i++) {
         auto entity = entities.at(i);
         entity = gOrchestrator.CreateEntity();
 
         // Transform component (Initial position)
-        reactphysics3d::Vector3 spawn_pos(box_x_pos + i*5.0, box_y_pos , box_z_pos);
+        reactphysics3d::Vector3 spawn_pos(box_x_pos + i*1.0, box_y_pos , box_z_pos);
         reactphysics3d::Quaternion spawn_rot(reactphysics3d::Quaternion::identity());
         lazyECS::Transform3D spawn_trans(spawn_pos, spawn_rot);
         spawn_trans.SetScale(boxSize[0], boxSize[1], boxSize[2]);
@@ -42,12 +48,12 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
 
         // Mesh componenet (for rendering)
         if(i < 5) {
-            lazyECS::Mesh mesh(lazyECS::Shape::Box);
+            lazyECS::Mesh mesh(lazyECS::Shape::Sphere);
             gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
 
         }
         else {
-            lazyECS::Mesh mesh(lazyECS::Shape::Sphere);
+            lazyECS::Mesh mesh(lazyECS::Shape::Box);
             gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
         }   
 
@@ -59,12 +65,6 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
 
     {
     // Create entity as solid platform
-
-        float floorSize[3] = {100.0, 2.0, 100.0};
-        const int floor_x_pos = 0.0;
-        const int floor_y_pos = 0.0;
-        const int floor_z_pos = 0.0;
-
         lazyECS::Entity floor_entity(gOrchestrator.CreateEntity());
         // Transform component (Initial position)
         reactphysics3d::Vector3 floor_pos(floor_x_pos , floor_y_pos , floor_z_pos);
@@ -74,7 +74,7 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
         gOrchestrator.AddComponent<lazyECS::Transform3D>(floor_entity,floor_trans);
 
         // Mesh componenet (for rendering)
-        lazyECS::Mesh floor_mesh(lazyECS::Shape::Box);
+        lazyECS::Mesh floor_mesh(lazyECS::Shape::ConcaveMesh);
         gOrchestrator.AddComponent<lazyECS::Mesh>(floor_entity, floor_mesh);
 
         // Rigid Body component for physical motion

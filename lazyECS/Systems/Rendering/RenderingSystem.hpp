@@ -48,22 +48,14 @@ protected:
     openglframework::Matrix4 mShadowMapBiasMatrix; // Shadow map bias matrix
     openglframework::Camera mShadowMapLightCameras[NUM_SHADOW_MAPS]; // Cameras at lights position for the shadow maps
 
-    // Shared variables among all renderable entities
-    // openglframework::VertexBufferObject mVBOVertices; // vertex buffer object for the vertices data
-    // openglframework::VertexBufferObject mVBONormals; // vertex buffer object for the normals data
-    // openglframework::VertexBufferObject mVBOTextureCoords; // vertex buffer object for texture coordinates
-    // openglframework::VertexBufferObject mVBOIndices; //
-    // openglframework::VertexArrayObject mVAO; // vertex array object for vertex data above
+    // We need a separate set of VBO and VAO per each unique mesh = Shape (not Mesh instance) -> Shape is enum, for iteration convenience map is created with int key
+    std::unordered_map<int, openglframework::VertexBufferObject> mVBOVertices;
+    std::unordered_map<int, openglframework::VertexBufferObject> mVBONormals;
+    std::unordered_map<int, openglframework::VertexBufferObject> mVBOTextureCoords;
+    std::unordered_map<int, openglframework::VertexBufferObject> mVBOIndices;
+    std::unordered_map<int, openglframework::VertexArrayObject> mVAO;
 
-    // NEW: we need a separate set of variables per each unique mesh (not instance)
-    std::unordered_map<Shape, openglframework::VertexBufferObject> mVBOVertices;
-    std::unordered_map<Shape, openglframework::VertexBufferObject> mVBONormals;
-    std::unordered_map<Shape, openglframework::VertexBufferObject> mVBOTextureCoords;
-    std::unordered_map<Shape, openglframework::VertexBufferObject> mVBOIndices;
-    std::unordered_map<Shape, openglframework::VertexArrayObject> mVAO;
-
-    std::unordered_set<Shape> bufferedShapes;
-    int numRenderables; // total number of renderables created
+    std::unordered_set<Shape> bufferedShapes; // storing shapes for which VBO and VAO are already created
 
     std::chrono::_V2::system_clock::time_point prevFrameTime;
 

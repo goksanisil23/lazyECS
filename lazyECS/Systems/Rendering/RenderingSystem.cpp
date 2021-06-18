@@ -12,9 +12,6 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
                 mLastMouseX{0}, mLastMouseY{0}, mViewportX{0}, mViewportY{0},
                 mViewportWidth{0}, mViewportHeight{0}, 
                 mIsShadowMappingEnabled{false}, mIsShadowMappingInitialized{false},
-                // mVBOVertices{GL_ARRAY_BUFFER}, mVBONormals{GL_ARRAY_BUFFER}, mVBOTextureCoords{GL_ARRAY_BUFFER},
-                // mVBOIndices{GL_ELEMENT_ARRAY_BUFFER}, mVAO(), 
-                numRenderables{0},
                 mPhongShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.vert",
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.frag"},
                 mColorShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.vert",
@@ -22,17 +19,74 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
                 prevFrameTime{std::chrono::high_resolution_clock::now()}
 {
     // Allocate 1 buffer object per available shapes in LazyECS
-    mVBOVertices.emplace(std::make_pair(Shape::Box, GL_ARRAY_BUFFER));
-    mVBONormals.emplace(std::make_pair(Shape::Box, GL_ARRAY_BUFFER)); 
-    mVBOTextureCoords.emplace(std::make_pair(Shape::Box, GL_ARRAY_BUFFER));
-    mVBOIndices.emplace(std::make_pair(Shape::Box, GL_ELEMENT_ARRAY_BUFFER));
-    mVAO.emplace(std::make_pair(Shape::Box, openglframework::VertexArrayObject())); 
+    for(int _shape = Shape::Box; _shape < Shape::Last; _shape++) {
+        mVBOVertices.emplace(std::make_pair(_shape, GL_ARRAY_BUFFER));
+        mVBONormals.emplace(std::make_pair(_shape, GL_ARRAY_BUFFER)); 
+        mVBOTextureCoords.emplace(std::make_pair(_shape, GL_ARRAY_BUFFER));
+        mVBOIndices.emplace(std::make_pair(_shape, GL_ELEMENT_ARRAY_BUFFER));
+        mVAO.emplace(std::make_pair(_shape, openglframework::VertexArrayObject()));         
+    }
+}
 
-    mVBOVertices.emplace(std::make_pair(Shape::Sphere, GL_ARRAY_BUFFER));
-    mVBONormals.emplace(std::make_pair(Shape::Sphere, GL_ARRAY_BUFFER)); 
-    mVBOTextureCoords.emplace(std::make_pair(Shape::Sphere, GL_ARRAY_BUFFER));
-    mVBOIndices.emplace(std::make_pair(Shape::Sphere, GL_ELEMENT_ARRAY_BUFFER));
-    mVAO.emplace(std::make_pair(Shape::Sphere, openglframework::VertexArrayObject()));    
+void RenderingSystem::Init() {
+
+    // ------------- Scene setup (TODO: move to a new class/function) ------------------ //
+    float lightsRadius = 30.0f;
+    float lightsHeight = 20.0f;
+    mLight0.translateWorld(openglframework::Vector3(0*lightsRadius, lightsHeight, 1*lightsRadius));
+    mLight1.translateWorld(openglframework::Vector3(0.95f*lightsRadius, lightsHeight, -0.3f*lightsRadius));
+    mLight2.translateWorld(openglframework::Vector3(-0.58f*lightsRadius, lightsHeight, -0.81f*lightsRadius));
+
+    // Set the lights colors
+	mLight0.setDiffuseColor(openglframework::Color(0.6f, 0.6f, 0.6f, 1.0f));
+	mLight1.setDiffuseColor(openglframework::Color(0.6f, 0.6f, 0.6f, 1.0f));
+	mLight2.setDiffuseColor(openglframework::Color(0.6f, 0.6f, 0.6f, 1.0f));
+
+    const float PI = 3.141592654f;
+	mShadowMapLightCameras[0].translateWorld(mLight0.getOrigin());
+	mShadowMapLightCameras[0].rotateLocal(openglframework::Vector3(1, 0, 0), -PI / 4.0f);
+
+	mShadowMapLightCameras[1].translateWorld(mLight1.getOrigin());
+	mShadowMapLightCameras[1].rotateLocal(openglframework::Vector3(0, 1, 0), -5.0f * PI/3.7f);
+	mShadowMapLightCameras[1].rotateLocal(openglframework::Vector3(1, 0, 0), -PI/4.0f);
+
+	mShadowMapLightCameras[2].translateWorld(mLight2.getOrigin());
+	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(0, 1, 0), 5 * PI/4.0f);
+	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(1, 0 , 0), -PI/4.0f);    
+
+    openglframework::Vector3 center(0, 120, 30);
+    const float SCENE_RADIUS = 100.0f;
+    SetScenePosition(center, SCENE_RADIUS);
+    mCamera.rotateLocal(openglframework::Vector3(1, 0, 0), -50.0 * PI/180.0f);
+
+    // Populate the mesh for the entities that have a Mesh component, from a model file
+    for(auto& entity : m_entities) {
+        auto& transform = gOrchestrator.GetComponent<Transform3D>(entity); // initialized outsize
+        auto& mesh = gOrchestrator.GetComponent<Mesh>(entity); // uninitialized here, only contains the mesh path given by the user
+        openglframework::MeshReaderWriter::loadMeshFromFile(mesh.meshPath, mesh); // mesh is initialized here
+        if(mesh.getNormals().empty()) { // if the mesh file don't have the normals, calculate them
+            mesh.calculateNormals();
+        }
+        
+        // Set the scaling
+        transform.opengl_transform.setTransformMatrix(transform.opengl_transform.getTransformMatrix() * transform.mScalingMatrix);
+        
+        // Create Vertex Buffer object if it hasn't been created yet (we do it here since we need vertex info from the Mesh)
+        if(bufferedShapes.find(mesh.mShape) == bufferedShapes.end()) { // if this shape hasn't been buffered yet
+            CreateVBOVAO(mesh);
+            bufferedShapes.insert(mesh.mShape);
+        }
+    }
+
+    // Set window and camera size
+    int bufferWidth, bufferHeight;
+    glfwGetFramebufferSize(m_glfw_window, &bufferWidth, &bufferHeight);
+    this->ReshapeCameraView(bufferWidth, bufferHeight);
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(m_glfw_window, &windowWidth, &windowHeight);
+    this->SetWindowDimension(windowWidth, windowHeight); 
+
+    this->set_visible(true); // nanogui set visibility   
 }
 
 // ----------------- nanogui::Screen overrides --------------- //
@@ -119,72 +173,6 @@ void RenderingSystem::SetupSignature() {
     signature.set(gOrchestrator.GetComponentTypeId<Transform3D>(), true);
     signature.set(gOrchestrator.GetComponentTypeId<Mesh>(), true);
     gOrchestrator.SetSystemSignature<RenderingSystem>(signature);     
-}
-
-void RenderingSystem::Init() {
-
-    // ------------- Scene setup (TODO: move to a new class/function) ------------------ //
-    float lightsRadius = 30.0f;
-    float lightsHeight = 20.0f;
-    mLight0.translateWorld(openglframework::Vector3(0*lightsRadius, lightsHeight, 1*lightsRadius));
-    mLight1.translateWorld(openglframework::Vector3(0.95f*lightsRadius, lightsHeight, -0.3f*lightsRadius));
-    mLight2.translateWorld(openglframework::Vector3(-0.58f*lightsRadius, lightsHeight, -0.81f*lightsRadius));
-
-    // Set the lights colors
-	mLight0.setDiffuseColor(openglframework::Color(0.6f, 0.6f, 0.6f, 1.0f));
-	mLight1.setDiffuseColor(openglframework::Color(0.6f, 0.6f, 0.6f, 1.0f));
-	mLight2.setDiffuseColor(openglframework::Color(0.6f, 0.6f, 0.6f, 1.0f));
-
-    const float PI = 3.141592654f;
-	mShadowMapLightCameras[0].translateWorld(mLight0.getOrigin());
-	mShadowMapLightCameras[0].rotateLocal(openglframework::Vector3(1, 0, 0), -PI / 4.0f);
-
-	mShadowMapLightCameras[1].translateWorld(mLight1.getOrigin());
-	mShadowMapLightCameras[1].rotateLocal(openglframework::Vector3(0, 1, 0), -5.0f * PI/3.7f);
-	mShadowMapLightCameras[1].rotateLocal(openglframework::Vector3(1, 0, 0), -PI/4.0f);
-
-	mShadowMapLightCameras[2].translateWorld(mLight2.getOrigin());
-	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(0, 1, 0), 5 * PI/4.0f);
-	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(1, 0 , 0), -PI/4.0f);    
-
-    openglframework::Vector3 center(0, 120, 30);
-    const float SCENE_RADIUS = 100.0f;
-    SetScenePosition(center, SCENE_RADIUS);
-    mCamera.rotateLocal(openglframework::Vector3(1, 0, 0), -50.0 * PI/180.0f);
-
-    // Populate the mesh for the entities that have a Mesh component, from a model file
-    for(auto& entity : m_entities) {
-        auto& transform = gOrchestrator.GetComponent<Transform3D>(entity); // initialized outsize
-        auto& mesh = gOrchestrator.GetComponent<Mesh>(entity); // uninitialized here, only contains the mesh path given by the user
-        openglframework::MeshReaderWriter::loadMeshFromFile(mesh.meshPath, mesh); // mesh is initialized here
-        if(mesh.getNormals().empty()) { // if the mesh file don't have the normals, calculate them
-            mesh.calculateNormals();
-        }
-        
-        // Set the scaling
-        transform.opengl_transform.setTransformMatrix(transform.opengl_transform.getTransformMatrix() * transform.mScalingMatrix);
-        
-        // Create Vertex Buffer object if it hasn't been created yet (we do it here since we need vertex info from the Mesh)
-        if(bufferedShapes.find(mesh.mShape) == bufferedShapes.end()) { // if this shape hasn't been buffered yet
-            CreateVBOVAO(mesh);
-            bufferedShapes.insert(mesh.mShape);
-        } 
-            
-        // if(numRenderables == 0)
-        //     CreateVBOVAO(mesh);
-        // numRenderables++;
-        
-    }
-
-    // Set window and camera size
-    int bufferWidth, bufferHeight;
-    glfwGetFramebufferSize(m_glfw_window, &bufferWidth, &bufferHeight);
-    this->ReshapeCameraView(bufferWidth, bufferHeight);
-    int windowWidth, windowHeight;
-    glfwGetWindowSize(m_glfw_window, &windowWidth, &windowHeight);
-    this->SetWindowDimension(windowWidth, windowHeight); 
-
-    this->set_visible(true); // nanogui set visibility   
 }
 
 void RenderingSystem::CreateVBOVAO(Mesh& mesh) {

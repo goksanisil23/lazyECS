@@ -26,9 +26,9 @@ void Transform3D::ConvertRP3DToOpenglTransformInterp(const float& interpolationF
 
 void Transform3D::ConvertRP3DToOpenglTransform() {
         
-    // Computer the transform used for rendering
+    // Compute the transform used for rendering
     rp3d::decimal temp_matrix[16];
-    rp3d_transform.getOpenGLMatrix(temp_matrix); // (assumin already interpolated in the Physics System)
+    rp3d_transform.getOpenGLMatrix(temp_matrix); // (assuming already interpolated in the Physics System)
     openglframework::Matrix4 newTransMatrix(temp_matrix[0], temp_matrix[4], temp_matrix[8],  temp_matrix[12],
                                              temp_matrix[1], temp_matrix[5], temp_matrix[9],  temp_matrix[13],
                                              temp_matrix[2], temp_matrix[6], temp_matrix[10], temp_matrix[14],

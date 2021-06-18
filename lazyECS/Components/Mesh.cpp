@@ -11,6 +11,9 @@ Mesh::Mesh(const Shape& mesh_shape) : mColor{openglframework::Color(1,1,1,1)}, m
     } else if(mesh_shape ==  Shape::Sphere) {
         meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/sphere.obj";
     }
+    else if(mesh_shape == Shape::ConcaveMesh) {
+        meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/concavemesh.obj";
+    }
     else {
         std::runtime_error("Shape is not assigned to mesh, or no such shape is found!");
     }

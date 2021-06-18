@@ -35,13 +35,38 @@ void PhysicsSystem::Init(){
         auto& mesh = gOrchestrator.GetComponent<Mesh>(entity); // we get shape of the mesh to create a matching collider
         // we assign the actual rigidBody here, whose initial position is determined by what was assigned to lazyECS::Transform component outside
         rigidBody.rp3d_rigidBody = std::shared_ptr<rp3d::RigidBody>(this->physicsWorld->createRigidBody(transform.rp3d_transform));
-        if(mesh.mShape == Shape::Box)
-            rigidBody.rp3d_collision_shape = physicsCommon.createBoxShape(rp3d::Vector3(transform.halfExtent[0], transform.halfExtent[1], transform.halfExtent[2]));
-        else if(mesh.mShape == Shape::Sphere)
-            rigidBody.rp3d_collision_shape = physicsCommon.createSphereShape(transform.halfExtent[0]);
-        else
-            std::runtime_error("Shape is not assigned to mesh, or no such shape is found!");
-
+        // Assign collider based on the shape
+        switch(mesh.mShape) {
+            case Shape::Box:
+                rigidBody.rp3d_collision_shape = physicsCommon.createBoxShape(rp3d::Vector3(transform.halfExtent[0], transform.halfExtent[1], transform.halfExtent[2]));
+                break;
+            case Shape::Sphere:
+                rigidBody.rp3d_collision_shape = physicsCommon.createSphereShape(transform.halfExtent[0]);
+                break;
+            case Shape::ConcaveMesh: {
+                auto mPhysicsTriangleMesh = physicsCommon.createTriangleMesh();
+                for(unsigned int i = 0; i < mesh.getNbParts(); i++) {
+                    // Vertex and index array for the triangle mesh (data is shared from mesh)
+                    rp3d::TriangleVertexArray* vertexArray = 
+                        new rp3d::TriangleVertexArray(mesh.getNbVertices(), &(mesh.getVertex(0)), sizeof(openglframework::Vector3), 
+                                                      mesh.getNbFaces(i), &(mesh.getIndices(i)[0]), 3 * sizeof(int),
+                                                      rp3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+                                                      rp3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE);
+                    // Add this triangle vertex array subpart to triangle mesh
+                    mPhysicsTriangleMesh->addSubpart(vertexArray); 
+                }
+                // Create a collider from the triangle mesh
+                rigidBody.rp3d_collision_shape = physicsCommon.createConcaveMeshShape(mPhysicsTriangleMesh, rp3d::Vector3(transform.halfExtent[0],
+                                                                                                                          transform.halfExtent[1],
+                                                                                                                          transform.halfExtent[2]));
+                
+                break;
+            }
+            default:
+                assert(! "Invalid Shape enum in PhysicsSystem");
+                break;
+        }
+        
         rigidBody.rp3d_collider = std::shared_ptr<rp3d::Collider>(rigidBody.rp3d_rigidBody->addCollider(rigidBody.rp3d_collision_shape, rp3d::Transform::identity()));
         rigidBody.rp3d_rigidBody->updateMassPropertiesFromColliders();
         if(rigidBody.isStatic) // o/w dynamic by default
