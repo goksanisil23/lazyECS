@@ -22,7 +22,7 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
 
     // Entity properties
     // x = lateral(right=+), y = height (up=+), z = depth(towards cam = +)
-    float boxSize[3] = {1.0, 1.0, 1.0};                  
+    float boxSize[3] = {2.0, 2.0, 2.0};                  
     const int box_x_pos = 0.0;
     const int box_y_pos = 15.0;
     const int box_z_pos = 0.0;

@@ -54,8 +54,8 @@ void RenderingSystem::Init() {
 	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(0, 1, 0), 5 * PI/4.0f);
 	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(1, 0 , 0), -PI/4.0f);    
 
-    openglframework::Vector3 center(0, 120, 30);
-    const float SCENE_RADIUS = 100.0f;
+    openglframework::Vector3 center(0, 50, 20);
+    const float SCENE_RADIUS = 20.0f;
     SetScenePosition(center, SCENE_RADIUS);
     mCamera.rotateLocal(openglframework::Vector3(1, 0, 0), -50.0 * PI/180.0f);
 
