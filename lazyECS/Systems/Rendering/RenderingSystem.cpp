@@ -12,14 +12,28 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
                 mLastMouseX{0}, mLastMouseY{0}, mViewportX{0}, mViewportY{0},
                 mViewportWidth{0}, mViewportHeight{0}, 
                 mIsShadowMappingEnabled{false}, mIsShadowMappingInitialized{false},
-                mVBOVertices{GL_ARRAY_BUFFER}, mVBONormals{GL_ARRAY_BUFFER}, mVBOTextureCoords{GL_ARRAY_BUFFER},
-                mVBOIndices{GL_ELEMENT_ARRAY_BUFFER}, mVAO(), numRenderables{0},
+                // mVBOVertices{GL_ARRAY_BUFFER}, mVBONormals{GL_ARRAY_BUFFER}, mVBOTextureCoords{GL_ARRAY_BUFFER},
+                // mVBOIndices{GL_ELEMENT_ARRAY_BUFFER}, mVAO(), 
+                numRenderables{0},
                 mPhongShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.vert",
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.frag"},
                 mColorShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.vert",
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag"},
                 prevFrameTime{std::chrono::high_resolution_clock::now()}
-{}
+{
+    // Allocate 1 buffer object per available shapes in LazyECS
+    mVBOVertices.emplace(std::make_pair(Shape::Box, GL_ARRAY_BUFFER));
+    mVBONormals.emplace(std::make_pair(Shape::Box, GL_ARRAY_BUFFER)); 
+    mVBOTextureCoords.emplace(std::make_pair(Shape::Box, GL_ARRAY_BUFFER));
+    mVBOIndices.emplace(std::make_pair(Shape::Box, GL_ELEMENT_ARRAY_BUFFER));
+    mVAO.emplace(std::make_pair(Shape::Box, openglframework::VertexArrayObject())); 
+
+    mVBOVertices.emplace(std::make_pair(Shape::Sphere, GL_ARRAY_BUFFER));
+    mVBONormals.emplace(std::make_pair(Shape::Sphere, GL_ARRAY_BUFFER)); 
+    mVBOTextureCoords.emplace(std::make_pair(Shape::Sphere, GL_ARRAY_BUFFER));
+    mVBOIndices.emplace(std::make_pair(Shape::Sphere, GL_ELEMENT_ARRAY_BUFFER));
+    mVAO.emplace(std::make_pair(Shape::Sphere, openglframework::VertexArrayObject()));    
+}
 
 // ----------------- nanogui::Screen overrides --------------- //
 void RenderingSystem::draw_contents(){
@@ -151,9 +165,15 @@ void RenderingSystem::Init() {
         transform.opengl_transform.setTransformMatrix(transform.opengl_transform.getTransformMatrix() * transform.mScalingMatrix);
         
         // Create Vertex Buffer object if it hasn't been created yet (we do it here since we need vertex info from the Mesh)
-        if(numRenderables == 0)
+        if(bufferedShapes.find(mesh.mShape) == bufferedShapes.end()) { // if this shape hasn't been buffered yet
             CreateVBOVAO(mesh);
-        numRenderables++;
+            bufferedShapes.insert(mesh.mShape);
+        } 
+            
+        // if(numRenderables == 0)
+        //     CreateVBOVAO(mesh);
+        // numRenderables++;
+        
     }
 
     // Set window and camera size
@@ -169,45 +189,45 @@ void RenderingSystem::Init() {
 
 void RenderingSystem::CreateVBOVAO(Mesh& mesh) {
     // VBO for the vertices data
-    mVBOVertices.create();
-    mVBOVertices.bind();
+    mVBOVertices.at(mesh.mShape).create();
+    mVBOVertices.at(mesh.mShape).bind();
     size_t sizeVertices = mesh.getVertices().size() * sizeof(openglframework::Vector3);
-    mVBOVertices.copyDataIntoVBO(sizeVertices, mesh.getVerticesPointer(), GL_STATIC_DRAW);
-    mVBOVertices.unbind();
+    mVBOVertices.at(mesh.mShape).copyDataIntoVBO(sizeVertices, mesh.getVerticesPointer(), GL_STATIC_DRAW);
+    mVBOVertices.at(mesh.mShape).unbind();
 
     // Create the VBO for the normals data
-    mVBONormals.create();
-    mVBONormals.bind();
+    mVBONormals.at(mesh.mShape).create();
+    mVBONormals.at(mesh.mShape).bind();
     size_t sizeNormals = mesh.getNormals().size() * sizeof(openglframework::Vector3);
-    mVBONormals.copyDataIntoVBO(sizeNormals, mesh.getNormalsPointer(), GL_STATIC_DRAW);
-    mVBONormals.unbind();
+    mVBONormals.at(mesh.mShape).copyDataIntoVBO(sizeNormals, mesh.getNormalsPointer(), GL_STATIC_DRAW);
+    mVBONormals.at(mesh.mShape).unbind();
 
     // Create VBO for the texture coordinates
     if(mesh.hasTexture()) {
-        mVBOTextureCoords.create();
-        mVBOTextureCoords.bind();
+        mVBOTextureCoords.at(mesh.mShape).create();
+        mVBOTextureCoords.at(mesh.mShape).bind();
         size_t sizeTextureCoords = mesh.getUVs().size() * sizeof(openglframework::Vector2);
-        mVBOTextureCoords.copyDataIntoVBO(sizeTextureCoords, mesh.getUVTextureCoordinatesPointer(), GL_STATIC_DRAW);
-        mVBOTextureCoords.unbind();
+        mVBOTextureCoords.at(mesh.mShape).copyDataIntoVBO(sizeTextureCoords, mesh.getUVTextureCoordinatesPointer(), GL_STATIC_DRAW);
+        mVBOTextureCoords.at(mesh.mShape).unbind();
     }
 
     // Create VBO for the indices data
-    mVBOIndices.create();
-    mVBOIndices.bind();
+    mVBOIndices.at(mesh.mShape).create();
+    mVBOIndices.at(mesh.mShape).bind();
     size_t sizeIndices = mesh.getIndices().size() * sizeof(unsigned int);
-    mVBOIndices.copyDataIntoVBO(sizeIndices, mesh.getIndicesPointer(), GL_STATIC_DRAW);
-    mVBOIndices.unbind();
+    mVBOIndices.at(mesh.mShape).copyDataIntoVBO(sizeIndices, mesh.getIndicesPointer(), GL_STATIC_DRAW);
+    mVBOIndices.at(mesh.mShape).unbind();
 
     // Create VAO and bind all the VBOs
-    mVAO.create();
-    mVAO.bind();
+    mVAO.at(mesh.mShape).create();
+    mVAO.at(mesh.mShape).bind();
 
-    mVBOVertices.bind();
-    mVBONormals.bind();
-    if (mesh.hasTexture()) mVBOTextureCoords.bind();
-    mVBOIndices.bind();
+    mVBOVertices.at(mesh.mShape).bind();
+    mVBONormals.at(mesh.mShape).bind();
+    if (mesh.hasTexture()) mVBOTextureCoords.at(mesh.mShape).bind();
+    mVBOIndices.at(mesh.mShape).bind();
 
-    mVAO.unbind();
+    mVAO.at(mesh.mShape).unbind();
 }
 
 // set where main scene camera looks at
@@ -421,8 +441,8 @@ void RenderingSystem::RenderSinglePass(const openglframework::Matrix4& worldToCa
         mPhongShader.setVector4Uniform("globalVertexColor", color, false);
 
         // Bind VAO
-        mVAO.bind();
-        mVBOVertices.bind();
+        mVAO.at(mesh.mShape).bind();
+        mVBOVertices.at(mesh.mShape).bind();
 
         // Get the location of shader attribute variables
         GLint vertexPositionAttLoc = mPhongShader.getAttribLocation("vertexPosition");
@@ -430,7 +450,7 @@ void RenderingSystem::RenderSinglePass(const openglframework::Matrix4& worldToCa
         glEnableVertexAttribArray(vertexPositionAttLoc);
         glVertexAttribPointer(vertexPositionAttLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
 
-        mVBONormals.bind();
+        mVBONormals.at(mesh.mShape).bind();
         if(vertexNormalAttLoc != -1) glVertexAttribPointer(vertexNormalAttLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
         if(vertexNormalAttLoc != -1) glEnableVertexAttribArray(vertexNormalAttLoc);
 
@@ -442,9 +462,9 @@ void RenderingSystem::RenderSinglePass(const openglframework::Matrix4& worldToCa
         glDisableVertexAttribArray(vertexPositionAttLoc);
         if (vertexNormalAttLoc != -1) glDisableVertexAttribArray(vertexNormalAttLoc);
 
-        mVBONormals.unbind();
-        mVBOVertices.unbind();
-        mVAO.unbind();
+        mVBONormals.at(mesh.mShape).unbind();
+        mVBOVertices.at(mesh.mShape).unbind();
+        mVAO.at(mesh.mShape).unbind();
         mPhongShader.unbind();
     }
 

@@ -3,19 +3,18 @@
 namespace lazyECS {
 
 // Constructor
-Mesh::Mesh() : mColor{openglframework::Color(1,1,1,1)}, mSleepingColor{openglframework::Color(1,0,0,1)} {}
-
-// This causes problem due to cyclic dependecy
-// // Construct Mesh from the model file
-// Mesh::Mesh(const std::string& meshPath) {
-    
-//     openglframework::MeshReaderWriter::loadMeshFromFile(meshPath, *this);
-    
-//     // If the mesh file don't have normals, calculate them
-//     if(mNormals.empty()) { 
-//         calculateNormals();
-//     }
-// }
+Mesh::Mesh(const Shape& mesh_shape) : mColor{openglframework::Color(1,1,1,1)}, mSleepingColor{openglframework::Color(1,0,0,1)}
+                                    {
+    mShape = mesh_shape;
+    if(mesh_shape == Shape::Box) {
+        meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/cube.obj";
+    } else if(mesh_shape ==  Shape::Sphere) {
+        meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/sphere.obj";
+    }
+    else {
+        std::runtime_error("Shape is not assigned to mesh, or no such shape is found!");
+    }
+}
 
 // Destructor
 Mesh::~Mesh() {}

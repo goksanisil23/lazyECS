@@ -11,6 +11,8 @@
 // #include <nanogui/opengl.h>
 #include <nanogui/nanogui.h>
 #include <GLFW/glfw3.h>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace lazyECS {
 
@@ -47,12 +49,20 @@ protected:
     openglframework::Camera mShadowMapLightCameras[NUM_SHADOW_MAPS]; // Cameras at lights position for the shadow maps
 
     // Shared variables among all renderable entities
-    openglframework::VertexBufferObject mVBOVertices; // vertex buffer object for the vertices data
-    openglframework::VertexBufferObject mVBONormals; // vertex buffer object for the normals data
-    openglframework::VertexBufferObject mVBOTextureCoords; // vertex buffer object for texture coordinates
-    openglframework::VertexBufferObject mVBOIndices; //
-    openglframework::VertexArrayObject mVAO; // vertex array object for vertex data above
-    
+    // openglframework::VertexBufferObject mVBOVertices; // vertex buffer object for the vertices data
+    // openglframework::VertexBufferObject mVBONormals; // vertex buffer object for the normals data
+    // openglframework::VertexBufferObject mVBOTextureCoords; // vertex buffer object for texture coordinates
+    // openglframework::VertexBufferObject mVBOIndices; //
+    // openglframework::VertexArrayObject mVAO; // vertex array object for vertex data above
+
+    // NEW: we need a separate set of variables per each unique mesh (not instance)
+    std::unordered_map<Shape, openglframework::VertexBufferObject> mVBOVertices;
+    std::unordered_map<Shape, openglframework::VertexBufferObject> mVBONormals;
+    std::unordered_map<Shape, openglframework::VertexBufferObject> mVBOTextureCoords;
+    std::unordered_map<Shape, openglframework::VertexBufferObject> mVBOIndices;
+    std::unordered_map<Shape, openglframework::VertexArrayObject> mVAO;
+
+    std::unordered_set<Shape> bufferedShapes;
     int numRenderables; // total number of renderables created
 
     std::chrono::_V2::system_clock::time_point prevFrameTime;

@@ -41,9 +41,15 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
         gOrchestrator.AddComponent<lazyECS::Transform3D>(entity,spawn_trans);
 
         // Mesh componenet (for rendering)
-        lazyECS::Mesh mesh;
-        mesh.meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/cube.obj";
-        gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
+        if(i < 5) {
+            lazyECS::Mesh mesh(lazyECS::Shape::Box);
+            gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
+
+        }
+        else {
+            lazyECS::Mesh mesh(lazyECS::Shape::Sphere);
+            gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
+        }   
 
         // Rigid Body component for physical motion
         lazyECS::RigidBody3D rigid_body; // will be initialized in PhysicsSystem
@@ -68,8 +74,7 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
         gOrchestrator.AddComponent<lazyECS::Transform3D>(floor_entity,floor_trans);
 
         // Mesh componenet (for rendering)
-        lazyECS::Mesh floor_mesh;
-        floor_mesh.meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/cube.obj"; 
+        lazyECS::Mesh floor_mesh(lazyECS::Shape::Box);
         gOrchestrator.AddComponent<lazyECS::Mesh>(floor_entity, floor_mesh);
 
         // Rigid Body component for physical motion

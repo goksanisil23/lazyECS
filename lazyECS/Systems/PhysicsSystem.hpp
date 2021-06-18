@@ -3,6 +3,7 @@
 #include "ECSCore/Types.hpp"
 #include "Components/RigidBody3D.hpp"
 #include "Components/Transform3D.hpp"
+#include "Components/Mesh.hpp"
 
 #include <reactphysics3d/reactphysics3d.h>
 

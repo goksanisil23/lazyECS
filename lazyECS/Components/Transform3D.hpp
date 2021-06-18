@@ -12,6 +12,7 @@ namespace lazyECS {
 // body motion in reactphysics3d::Transform rather than openglframework TransformMatrix
 // When the body is moved by react physics, rp3d_transform in lazyECS::Transform3D will be updated by lazyECS::RigidBody3D's transform component
 // When the body is moved kinematically, no need to update rp3d_prev_transform
+
 class Transform3D  {
 
 public:

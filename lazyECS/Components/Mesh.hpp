@@ -13,6 +13,8 @@
 
 namespace lazyECS {
 
+enum Shape{Box, Sphere};
+
 class Mesh {
 
 protected:
@@ -31,11 +33,12 @@ public:
     openglframework::Color mColor;
     openglframework::Color mSleepingColor;
     std::string meshPath; // path of the obj file where the mesh description is loaded
+    Shape mShape;
 
     // ----------------- Member functions ----------------- //
 
         // Constructor
-        Mesh();
+        Mesh(const Shape& mesh_shape);
 
         // Construct mesh from model file
         // Mesh(const std::string& meshPath);
