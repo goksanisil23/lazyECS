@@ -41,6 +41,10 @@ protected:
     openglframework::Shader mPhongShader; // phong Shader
     openglframework::Shader mColorShader; // constant color shader
     openglframework::Shader mQuadShader;
+    openglframework::Shader mDepthShader; // depth shader to render the shadow map
+
+    openglframework::Texture2D mShadowMapTexture[NUM_SHADOW_MAPS]; // shadow map is the depth texture rendered from the light's perspective
+    openglframework::FrameBufferObject mFBOShadowMap[NUM_SHADOW_MAPS]; // FBOs for rendering the depth maps per light source
 
     bool mIsShadowMappingEnabled; // true if shadow mapping is enabled
     bool mIsShadowMappingInitialized; // true if shadow's FBO and textures have been created
@@ -74,8 +78,6 @@ public:
     virtual bool keyboard_event(int key, int scancode, int action, int modifiers) override;
     std::map<GLFWwindow*, nanogui::Screen*>& GetNanoguiScreen();
 
-    void SetupSignature(); // sets the signature of the system based on components its using
-
     void ResetCameraToViewAll(); // Set the camera so that we can view the whole scene
     // Map mouse coordinates to the coordinates on the scene sphere
     bool MapMouseCoordinatesToSphere(double xMouse, double yMouse, openglframework::Vector3& spherePoint) const;
@@ -94,13 +96,12 @@ public:
     bool ScrollingEvent(float xAxis, float yAxis, float scrollSensitivy); // called when scrolling event occurs
 
     void Init(); // Used to generate the mesh for entities
-
     void Render(); // Render the scene (possibly in multiple passes due to shadow mapping)
-
-    // render the scene in a single pass
-    void RenderSinglePass(const openglframework::Matrix4& worldToCamereMatrix);
+    void RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix); // render the scene in a single pass
+    void SetupSignature(); // sets the signature of the system based on components its using
 
     void CreateVBOVAO(Mesh& mesh); // Create VBOs and VAO to render with OpenGL
+    void CreateShadowMapFBOAndTexture(); // create shadow map frame buffer object and texture 
 
 };
 

@@ -11,11 +11,13 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
                 nanogui::Screen{nanogui::Vector2i(windowWidth, windowHeight), appName, true, isFullscreen, true, true, false, 4, 1},
                 mLastMouseX{0}, mLastMouseY{0}, mViewportX{0}, mViewportY{0},
                 mViewportWidth{0}, mViewportHeight{0}, 
-                mIsShadowMappingEnabled{false}, mIsShadowMappingInitialized{false},
+                mIsShadowMappingEnabled{true}, mIsShadowMappingInitialized{false},
                 mPhongShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.vert",
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.frag"},
                 mColorShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.vert",
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag"},
+                mDepthShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/depth.vert",
+                            "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/depth.frag"},
                 prevFrameTime{std::chrono::high_resolution_clock::now()}
 {
     // Allocate 1 buffer object per available shapes in LazyECS
@@ -26,11 +28,9 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
         mVBOIndices.emplace(std::make_pair(_shape, GL_ELEMENT_ARRAY_BUFFER));
         mVAO.emplace(std::make_pair(_shape, openglframework::VertexArrayObject()));         
     }
-}
 
-void RenderingSystem::Init() {
+    // ----------------- Scene Lighting and View Setup ----------------- // 
 
-    // ------------- Scene setup (TODO: move to a new class/function) ------------------ //
     float lightsRadius = 30.0f;
     float lightsHeight = 20.0f;
     mLight0.translateWorld(openglframework::Vector3(0*lightsRadius, lightsHeight, 1*lightsRadius));
@@ -52,12 +52,33 @@ void RenderingSystem::Init() {
 
 	mShadowMapLightCameras[2].translateWorld(mLight2.getOrigin());
 	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(0, 1, 0), 5 * PI/4.0f);
-	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(1, 0 , 0), -PI/4.0f);    
+	mShadowMapLightCameras[2].rotateLocal(openglframework::Vector3(1, 0 , 0), -PI/4.0f);
 
-    openglframework::Vector3 center(0, 50, 20);
-    const float SCENE_RADIUS = 20.0f;
+    for(int i = 0; i < NUM_SHADOW_MAPS; i++) {
+        mShadowMapLightCameras[i].setDimensions(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
+        mShadowMapLightCameras[i].setFieldOfView(100.0f);
+        mShadowMapLightCameras[i].setSceneRadius(100);
+    }
+
+    mShadowMapBiasMatrix.setAllValues(0.5, 0.0, 0.0, 0.5,
+                                      0.0, 0.5, 0.0, 0.5,
+                                      0.0, 0.0, 0.5, 0.5,
+                                      0.0, 0.0, 0.0, 1.0);  
+
+    if(mIsShadowMappingEnabled)
+        CreateShadowMapFBOAndTexture();
+
+    //////////////////// Setup where camera looks at 
+    openglframework::Vector3 center(0, 20, 20); // original
+    const float SCENE_RADIUS = 5.0f;
+    // openglframework::Vector3 center(0, 50, 20);
+    // const float SCENE_RADIUS = 120.0f;    
     SetScenePosition(center, SCENE_RADIUS);
-    mCamera.rotateLocal(openglframework::Vector3(1, 0, 0), -50.0 * PI/180.0f);
+    mCamera.rotateLocal(openglframework::Vector3(1, 0, 0), -40.0 * PI/180.0f);
+
+}
+
+void RenderingSystem::Init() {
 
     // Populate the mesh for the entities that have a Mesh component, from a model file
     for(auto& entity : m_entities) {
@@ -87,6 +108,15 @@ void RenderingSystem::Init() {
     this->SetWindowDimension(windowWidth, windowHeight); 
 
     this->set_visible(true); // nanogui set visibility   
+}
+
+void RenderingSystem::SetupSignature() {
+    // Set the system signature based on the utilized Components below
+    Signature signature;
+    // signature.set(gOrchestrator.GetComponentTypeId<RigidBody3D>(), true);
+    signature.set(gOrchestrator.GetComponentTypeId<Transform3D>(), true);
+    signature.set(gOrchestrator.GetComponentTypeId<Mesh>(), true);
+    gOrchestrator.SetSystemSignature<RenderingSystem>(signature);     
 }
 
 // ----------------- nanogui::Screen overrides --------------- //
@@ -165,16 +195,6 @@ bool RenderingSystem::keyboard_event(int key, int scancode, int action, int modi
 }
  // ----------------- end of Nanogui overrides --------------- //
 
-
-void RenderingSystem::SetupSignature() {
-    // Set the system signature based on the utilized Components below
-    Signature signature;
-    // signature.set(gOrchestrator.GetComponentTypeId<RigidBody3D>(), true);
-    signature.set(gOrchestrator.GetComponentTypeId<Transform3D>(), true);
-    signature.set(gOrchestrator.GetComponentTypeId<Mesh>(), true);
-    gOrchestrator.SetSystemSignature<RenderingSystem>(signature);     
-}
-
 void RenderingSystem::CreateVBOVAO(Mesh& mesh) {
     // VBO for the vertices data
     mVBOVertices.at(mesh.mShape).create();
@@ -216,6 +236,32 @@ void RenderingSystem::CreateVBOVAO(Mesh& mesh) {
     mVBOIndices.at(mesh.mShape).bind();
 
     mVAO.at(mesh.mShape).unbind();
+}
+
+void RenderingSystem::CreateShadowMapFBOAndTexture() {
+    for (int i = 0; i < NUM_SHADOW_MAPS; i++) {
+        // Create texture for depth values (depth value per pixel coordinate)
+        mShadowMapTexture[i].create(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, GL_LINEAR,
+                                        GL_LINEAR, GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, NULL);
+        mShadowMapTexture[i].setUnit(i);
+        // Ignore the texture lookups outside texture coordinates during shadow mapping
+        glBindTexture(GL_TEXTURE_2D, mShadowMapTexture[i].getID());
+        GLfloat border[] = {1.0f, 0.0f, 0.0f, 0.0f};
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+        // Create the FBO for shadow map
+        mFBOShadowMap[i].create(0, 0, false);
+        mFBOShadowMap[i].bind();
+        // Dont need a color for depth FBO
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+
+        mFBOShadowMap[i].attachTexture(GL_DEPTH_ATTACHMENT, mShadowMapTexture[i].getID());
+        mFBOShadowMap[i].unbind();
+    }
+    mIsShadowMappingInitialized = true;
+
 }
 
 // set where main scene camera looks at
@@ -341,25 +387,46 @@ void RenderingSystem::Render() {
     glEnable(GL_CULL_FACE);
 
     // Render the scene to generate the shadow map (1st pass)
-    //  TODO: CUrrently just setting dummy values to shadow related data to make shaders happy
     openglframework::Matrix4 shadowMapProjMatrix[NUM_SHADOW_MAPS];
     openglframework::Matrix4 worldToLightCameraMatrix[NUM_SHADOW_MAPS];
-    GLint textureUnits[NUM_SHADOW_MAPS];
+    for(int i = 0; i< NUM_SHADOW_MAPS; i++) {
+        shadowMapProjMatrix[i] = mShadowMapLightCameras[i].getProjectionMatrix();
+        worldToLightCameraMatrix[i] = mShadowMapLightCameras[i].getTransformMatrix().getInverse();
+    }
 
-    // Render the scene for final rendering (2nd pass)
+    // --------- 1st pass: Rendering the scene for shadow mapping --------- // 
+    if(mIsShadowMappingEnabled) {
+        glCullFace(GL_BACK); // To avoid peterpanning. we cull front faces
+        for (int i = 0; i < NUM_SHADOW_MAPS; i++) {
+            mFBOShadowMap[i].bind();
+            mDepthShader.bind();
+            mDepthShader.setMatrix4x4Uniform("projectionMatrix", shadowMapProjMatrix[i]);
+            glViewport(0, 0, SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
+            glClear(GL_DEPTH_BUFFER_BIT); // clear previous depth values
+            glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+            RenderSinglePass(mDepthShader, worldToLightCameraMatrix[i]);
+            mDepthShader.unbind();
+            mFBOShadowMap[i].unbind();
+        }
+        glDisable(GL_POLYGON_OFFSET_FILL);
+    }
+
+    // --------- 2nd pass: Rendering the scene for final rendering --------- // 
     glCullFace(GL_BACK);
 
     // Get the world-space to camera-space matrix
     const openglframework::Matrix4 worldToCameraMatrix = mCamera.getTransformMatrix().getInverse();
 
-    mPhongShader.bind();
+    // Attach the shadow mapping results to the relevant textures
+    GLint textureUnits[NUM_SHADOW_MAPS];
+    if(mIsShadowMappingEnabled) {
+        for(int i = 0; i < NUM_SHADOW_MAPS; i++) {
+            mShadowMapTexture[i].bind();
+            textureUnits[i] = mShadowMapTexture[i].getUnit();
+        }
+    }
 
-    // TEMP
-    mShadowMapBiasMatrix.setAllValues(0.5, 0.0, 0.0, 0.5,
-                                      0.0, 0.5, 0.0, 0.5,
-                                      0.0, 0.0, 0.5, 0.5,
-                                      0.0, 0.0, 0.0, 1.0);
-    // END OF TEMP
+    mPhongShader.bind();
 
     // Set the variables of the phong shader
     mPhongShader.setMatrix4x4Uniform("projectionMatrix", mCamera.getProjectionMatrix());
@@ -376,9 +443,9 @@ void RenderingSystem::Render() {
     mPhongShader.setVector3Uniform("light0DiffuseColor", openglframework::Vector3(mLight0.getDiffuseColor().r, mLight0.getDiffuseColor().g, mLight0.getDiffuseColor().b));
     mPhongShader.setVector3Uniform("light1DiffuseColor", openglframework::Vector3(mLight1.getDiffuseColor().r, mLight1.getDiffuseColor().g, mLight1.getDiffuseColor().b));
     mPhongShader.setVector3Uniform("light2DiffuseColor", openglframework::Vector3(mLight2.getDiffuseColor().r, mLight2.getDiffuseColor().g, mLight2.getDiffuseColor().b));
-    // mPhongShader.setIntUniform("shadowMapSampler0", textureUnits[0]);
-    // mPhongShader.setIntUniform("shadowMapSampler1", textureUnits[1]);
-    // mPhongShader.setIntUniform("shadowMapSampler2", textureUnits[2]);
+    mPhongShader.setIntUniform("shadowMapSampler0", textureUnits[0]);
+    mPhongShader.setIntUniform("shadowMapSampler1", textureUnits[1]);
+    mPhongShader.setIntUniform("shadowMapSampler2", textureUnits[2]);
     mPhongShader.setIntUniform("isShadowEnabled", mIsShadowMappingEnabled);
     mPhongShader.setVector2Uniform("shadowMapDimension", openglframework::Vector2(SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT));
 
@@ -393,7 +460,7 @@ void RenderingSystem::Render() {
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // enable writing of frame buffer color components (disabled in z-buffer rendering)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear previous frame values
 
-    RenderSinglePass(worldToCameraMatrix);
+    RenderSinglePass(mPhongShader, worldToCameraMatrix);
 
     mPhongShader.unbind();
 
@@ -401,9 +468,9 @@ void RenderingSystem::Render() {
     std::cout << "camera: " << mCamera.getOrigin().x << " " << mCamera.getOrigin().y << " " << mCamera.getOrigin().z << std::endl;
 }
 
-void RenderingSystem::RenderSinglePass(const openglframework::Matrix4& worldToCamereMatrix) {
+void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix) {
     
-    mPhongShader.bind();
+    shader.bind();
 
     // For all objects, render
     for (auto const& entity : m_entities) {
@@ -411,30 +478,30 @@ void RenderingSystem::RenderSinglePass(const openglframework::Matrix4& worldToCa
         auto& mesh = gOrchestrator.GetComponent<Mesh>(entity);
         auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity);
 
-        mPhongShader.bind();
+        shader.bind();
         // Set the model to camera matrix
         auto& transform = gOrchestrator.GetComponent<Transform3D>(entity);
-        mPhongShader.setMatrix4x4Uniform("localToWorldMatrix", transform.opengl_transform.getTransformMatrix());
-        mPhongShader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCamereMatrix);
+        shader.setMatrix4x4Uniform("localToWorldMatrix", transform.opengl_transform.getTransformMatrix());
+        shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCamereMatrix);
 
         // Set the normal matrix (Inverse Transpose of the 3x3 upper-left part of the model-view matrix)
         const openglframework::Matrix4 localToCameraMatrix = worldToCamereMatrix * transform.opengl_transform.getTransformMatrix();
         const openglframework::Matrix3 normalMatrix = localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
-        mPhongShader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
+        shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
         // Set the vertex color
         // openglframework::Color currentColor = rigidBody.rp3d_rigidBody->isSleeping() ? mesh.mSleepingColor : mesh.mColor;
-        // openglframework::Vector4 color(currentColor.r, currentColor.g, currentColor.b, currentColor.a);
-        openglframework::Vector4 color = rigidBody.isStatic ? openglframework::Vector4(1,1,1,1) : openglframework::Vector4(1,0,0,1);
-        mPhongShader.setVector4Uniform("globalVertexColor", color, false);
+        openglframework::Vector4 color(mesh.mColor.r, mesh.mColor.g, mesh.mColor.b, mesh.mColor.a);
+        // openglframework::Vector4 color = rigidBody.isStatic ? openglframework::Vector4(1,1,1,1) : openglframework::Vector4(1,0,0,1);
+        shader.setVector4Uniform("globalVertexColor", color, false);
 
         // Bind VAO
         mVAO.at(mesh.mShape).bind();
         mVBOVertices.at(mesh.mShape).bind();
 
         // Get the location of shader attribute variables
-        GLint vertexPositionAttLoc = mPhongShader.getAttribLocation("vertexPosition");
-        GLint vertexNormalAttLoc = mPhongShader.getAttribLocation("vertexNormal", false);
+        GLint vertexPositionAttLoc = shader.getAttribLocation("vertexPosition");
+        GLint vertexNormalAttLoc = shader.getAttribLocation("vertexNormal", false);
         glEnableVertexAttribArray(vertexPositionAttLoc);
         glVertexAttribPointer(vertexPositionAttLoc, 3, GL_FLOAT, GL_FALSE, 0, (char*)nullptr);
 
@@ -453,10 +520,10 @@ void RenderingSystem::RenderSinglePass(const openglframework::Matrix4& worldToCa
         mVBONormals.at(mesh.mShape).unbind();
         mVBOVertices.at(mesh.mShape).unbind();
         mVAO.at(mesh.mShape).unbind();
-        mPhongShader.unbind();
+        shader.unbind();
     }
 
-    mPhongShader.unbind();
+    shader.unbind();
 }
 
 

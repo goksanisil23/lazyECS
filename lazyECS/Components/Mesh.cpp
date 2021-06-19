@@ -4,7 +4,7 @@ namespace lazyECS {
 
 // Constructor
 Mesh::Mesh(const Shape& mesh_shape) : mColor{openglframework::Color(1,1,1,1)}, mSleepingColor{openglframework::Color(1,0,0,1)}
-                                    {
+{
     mShape = mesh_shape;
     if(mesh_shape == Shape::Box) {
         meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/cube.obj";
@@ -12,7 +12,7 @@ Mesh::Mesh(const Shape& mesh_shape) : mColor{openglframework::Color(1,1,1,1)}, m
         meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/sphere.obj";
     }
     else if(mesh_shape == Shape::ConcaveMesh) {
-        meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/concavemesh.obj";
+        meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/walls.obj";
     }
     else {
         std::runtime_error("Shape is not assigned to mesh, or no such shape is found!");

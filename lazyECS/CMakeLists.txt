@@ -34,8 +34,8 @@ set(OPENGLFRAMEWORK_SOURCES
     Systems/Rendering/opengl-framework/src/Camera.cpp
     Systems/Rendering/opengl-framework/src/Camera.h
     Systems/Rendering/opengl-framework/src/definitions.h
-    # Systems/Rendering/opengl-framework/src/FrameBufferObject.cpp
-    # Systems/Rendering/opengl-framework/src/FrameBufferObject.h
+    Systems/Rendering/opengl-framework/src/FrameBufferObject.cpp
+    Systems/Rendering/opengl-framework/src/FrameBufferObject.h
     Systems/Rendering/opengl-framework/src/Light.h
     Systems/Rendering/opengl-framework/src/Light.cpp
     # Systems/Rendering/opengl-framework/src/Mesh.h

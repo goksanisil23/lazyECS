@@ -2,7 +2,8 @@
 
 namespace lazyECS {
 
-Transform3D::Transform3D(const rp3d::Vector3& init_pos, const rp3d::Quaternion& init_rot) {
+Transform3D::Transform3D(const rp3d::Vector3& init_pos, const rp3d::Quaternion& init_rot) :
+    mScalingMatrix{openglframework::Matrix4::identity()} {
     rp3d_transform = reactphysics3d::Transform(init_pos, init_rot);
     rp3d_prev_transform = rp3d_transform;
 }
@@ -42,14 +43,17 @@ void Transform3D::SetScale(const float& xScale, const float& yScale, const float
     this->halfExtent[0] = xScale*0.5f;
     this->halfExtent[1] = yScale*0.5f;
     this->halfExtent[2] = zScale*0.5f;
+    
 
     // Set the scaling matrix for the openglframework
     this->mScalingMatrix = openglframework::Matrix4(this->halfExtent[0], 0, 0, 0,
                                                     0, this->halfExtent[1], 0, 0,
                                                     0, 0, this->halfExtent[2], 0,
                                                     0, 0, 0, 1);
+
     // let the scaling take effect
     this->ConvertRP3DToOpenglTransform();
 }
+
 
 }

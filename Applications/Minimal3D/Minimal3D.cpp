@@ -22,12 +22,11 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
 
     // Entity properties
     // x = lateral(right=+), y = height (up=+), z = depth(towards cam = +)
-    float boxSize[3] = {2.0, 2.0, 2.0};                  
+    float boxSize[3] = {0.4, 0.4, 0.4};                  
     const int box_x_pos = 0.0;
     const int box_y_pos = 15.0;
     const int box_z_pos = 0.0;
-    float floorSize[3] = {2.0, 2.0, 2.0};
-    // float floorSize[3] = {1.0, 1.0, 1.0};
+    float floorSize[3] = {1.0, 1.0, 1.0}; // TODO: Keep concave mesh floor unit length due to scaling bug!!!
     const int floor_x_pos = 0.0;
     const int floor_y_pos = 0.0;
     const int floor_z_pos = 0.0;    
@@ -49,11 +48,13 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
         // Mesh componenet (for rendering)
         if(i < 5) {
             lazyECS::Mesh mesh(lazyECS::Shape::Sphere);
+            mesh.mColor = openglframework::Color(0.0, 0.0, 1.0, 1.0);
             gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
 
         }
         else {
             lazyECS::Mesh mesh(lazyECS::Shape::Box);
+            mesh.mColor = openglframework::Color(1.0, 0.0, 0.0, 1.0);
             gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
         }   
 
@@ -75,6 +76,7 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
 
         // Mesh componenet (for rendering)
         lazyECS::Mesh floor_mesh(lazyECS::Shape::ConcaveMesh);
+        floor_mesh.mColor = openglframework::Color(0.47f, 0.48f, 0.49f, 1.0f);
         gOrchestrator.AddComponent<lazyECS::Mesh>(floor_entity, floor_mesh);
 
         // Rigid Body component for physical motion
