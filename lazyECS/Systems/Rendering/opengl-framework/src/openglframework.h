@@ -11,7 +11,7 @@
 // #include "Mesh.h"
 #include "Shader.h"
 #include "Texture2D.h"
-// #include "FrameBufferObject.h"
+#include "FrameBufferObject.h"
 #include "VertexBufferObject.h"
 #include "VertexArrayObject.h"
 #include "Shader.h"

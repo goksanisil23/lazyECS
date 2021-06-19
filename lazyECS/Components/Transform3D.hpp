@@ -39,7 +39,7 @@ public:
     void ConvertRP3DToOpenglTransformInterp(const float& interpolationFactor);
 
     // scales the 3d shape in 3 directions : TODO: handle multiple shapes
-    void SetScale(const float& xScale, const float& yScale, const float& zScale);  
+    void SetScale(const float& xScale, const float& yScale, const float& zScale); 
     
 };
 
