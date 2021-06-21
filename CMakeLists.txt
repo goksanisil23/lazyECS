@@ -24,8 +24,10 @@ set(LAZY_ECS_INCLUDE_DIRS
         ${LAZY_ECS_PARENT_DIR}/lazyECS/Systems/Rendering
         ${LAZY_ECS_PARENT_DIR}/lazyECS/ECSCore
         ${LAZY_ECS_PARENT_DIR}/lazyECS/Components
+        ${LAZY_ECS_PARENT_DIR}/lazyECS/Components/utils
         ${LAZY_ECS_PARENT_DIR}/lazyECS/Systems/Rendering/opengl-framework/src
         ${LAZY_ECS_PARENT_DIR}/lazyECS/External/nanogui/include
+        ${LAZY_ECS_PARENT_DIR}/lazyECS/External/json
         ${ReactPhysics3D_INCLUDE_DIR}    
     )
 

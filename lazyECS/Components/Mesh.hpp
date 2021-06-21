@@ -10,10 +10,12 @@
 #include "maths/Vector3.h"
 #include "maths/Color.h"
 #include "Texture2D.h"
+#include "HeightField.h"
+#include "Types.hpp"
 
 namespace lazyECS {
 
-enum Shape{Box, Sphere, ConcaveMesh, Last};
+enum Shape{Box, Sphere, ConcaveMesh, Hfield, Last};
 
 class Mesh {
 
@@ -34,6 +36,7 @@ public:
     openglframework::Color mSleepingColor;
     std::string meshPath; // path of the obj file where the mesh description is loaded
     Shape mShape;
+    std::shared_ptr<HeightField> mHeightField; // only populated if the Shape is Heightfield
 
     // ----------------- Member functions ----------------- //
 

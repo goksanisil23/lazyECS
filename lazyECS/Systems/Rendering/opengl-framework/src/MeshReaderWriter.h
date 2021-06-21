@@ -63,6 +63,9 @@ class MeshReaderWriter {
 
         // Write a mesh to a file
         static void writeMeshToFile(const std::string& filename, const lazyECS::Mesh& meshToWrite);
+
+        // Create a mesh from heightfield data
+        static void generateHeightFieldMesh(const lazyECS::HeightField& heightField, lazyECS::Mesh& meshToCreate);
 };
 
 // Class VertexMergingData

@@ -73,8 +73,10 @@ set(LAZY_ECS_SOURCES
     Components/Transform3D.cpp
     Components/Mesh.hpp
     Components/Mesh.cpp
-    # Components/RigidBody2D.hpp
-    # Components/Transform2D.hpp
+    Components/utils/PerlinNoise.h
+    Components/utils/PerlinNoise.cpp
+    Components/utils/HeightField.h
+    Components/utils/HeightField.cpp
 
     ${OPENGLFRAMEWORK_SOURCES}
     
@@ -84,8 +86,6 @@ set(LAZY_ECS_SOURCES
     Systems/Rendering/RenderingSystem.cpp
     # Systems/Rendering/Gui.h
     # Systems/Rendering/Gui.cpp
-    # Systems/RenderingSystemRaylib.cpp
-    # Systems/RenderingSystemRaylib.hpp
 
     # SceneFramework/Scene.h
     # SceneFramework/Scene.cpp

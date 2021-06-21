@@ -25,7 +25,7 @@ public:
     // Transform from previous physics step
     reactphysics3d::Transform rp3d_prev_transform;    
 
-    // Transform for graphics (rendering) --> local-space to World-space transformation matrix
+    // Transform for graphics (rendering) --> local-space (model-space) to World-space transformation matrix
     openglframework::Object3D opengl_transform; // mTransformMatrix
 
     // Scaling (data above has no scaling info)
