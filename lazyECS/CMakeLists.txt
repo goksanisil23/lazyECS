@@ -6,15 +6,6 @@ cmake_minimum_required(VERSION 3.12)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-###################### NANOGUI ##############################
-# Disable building extras of nanogui we won't need (pure C++ project)
-# set(NANOGUI_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
-# set(NANOGUI_BUILD_PYTHON  OFF CACHE BOOL " " FORCE)
-# set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
-# set(NANOGUI_BACKEND       OpenGL CACHE BOOL " " FORCE)
-# # Ask Nanogui not to build shared libraries
-# SET(NANOGUI_BUILD_SHARED OFF CACHE BOOL "Build Nanogui with static libraries" FORCE)
-# add_subdirectory(External/nanogui)
 ######################## ReachPhysics3D #####################
 
 find_package(ReactPhysics3D REQUIRED)
@@ -94,15 +85,6 @@ set(LAZY_ECS_SOURCES
 # #Generate the static library from the sources
 # add_library(lazyECS SHARED ${LAZY_ECS_SOURCES})
 add_library(lazyECS STATIC ${LAZY_ECS_SOURCES})
-
-# set(LAZY_ECS_INCLUDE_DIRS
-#         ${LAZY_ECS_PARENT_DIR}/lazyECS
-#         ${LAZY_ECS_PARENT_DIR}/lazyECS/ECSCore
-#         ${LAZY_ECS_PARENT_DIR}/lazyECS/Components
-#         ${LAZY_ECS_PARENT_DIR}/lazyECS/Systems/Rendering/opengl-framework/src
-#         ${LAZY_ECS_PARENT_DIR}/lazyECS/External/nanogui/include
-#         ${ReactPhysics3D_INCLUDE_DIR}    
-#     )
 
 target_include_directories(lazyECS PUBLIC ${LAZY_ECS_INCLUDE_DIRS})
 
