@@ -455,3 +455,42 @@ void MeshReaderWriter::writeOBJFile(const std::string& filename, const lazyECS::
         exit(1);
     }
 }
+
+// Create a mesh from heightfield data
+void MeshReaderWriter::generateHeightFieldMesh(const lazyECS::HeightField& heightField, lazyECS::Mesh& meshToCreate) {
+    std::vector<std::vector<unsigned int>> indices;
+    indices.push_back(std::vector<unsigned int>());
+    int vertexId = 0;
+    float originHeight = -(heightField.mMaxHeight - heightField.mMinHeight) * 0.5f - heightField.mMinHeight;
+    std::vector<openglframework::Vector3> vertices;
+
+    for(int i = 0; i < heightField.mNumPtsWidth; i++) {
+        for(int j = 0; j < heightField.mNumPtsLength; j++) {
+            
+            float height = originHeight + heightField.mHeightFieldData[j*heightField.mNumPtsWidth + i];
+            openglframework::Vector3 vertex(-(heightField.mNumPtsWidth-1)*0.5f+i, height, -(heightField.mNumPtsLength-1)*0.5f+j);
+            vertices.push_back(vertex);
+            // Triangle indices
+            if((i < heightField.mNumPtsWidth-1) && (j < heightField.mNumPtsLength-1)) {
+                unsigned int v1 = vertexId;
+                unsigned int v2 = vertexId + 1;
+                unsigned int v3 = vertexId + heightField.mNumPtsLength;
+                unsigned int v4 = vertexId + heightField.mNumPtsLength + 1;
+                // 1st triangle
+                indices[0].push_back(v1);
+                indices[0].push_back(v2);
+                indices[0].push_back(v3);
+                // 2nd triangle
+                indices[0].push_back(v2);
+                indices[0].push_back(v4);
+                indices[0].push_back(v3);                
+            }
+            vertexId++;
+        }
+    }
+    meshToCreate.setVertices(vertices);
+    meshToCreate.setIndices(indices);
+
+    meshToCreate.calculateNormals();
+    
+}

@@ -3,6 +3,7 @@
 #include "ECSCore/Orchestrator.hpp"
 
 extern lazyECS::Orchestrator gOrchestrator; // expected to be defined globally in main
+extern json launch_obj;
 
 namespace lazyECS {
 
@@ -68,13 +69,12 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
     if(mIsShadowMappingEnabled)
         CreateShadowMapFBOAndTexture();
 
-    //////////////////// Setup where camera looks at 
-    openglframework::Vector3 center(0, 20, 20); // original
-    const float SCENE_RADIUS = 5.0f;
-    // openglframework::Vector3 center(0, 50, 20);
-    // const float SCENE_RADIUS = 120.0f;    
+    // Setup where camera looks at 
+    json camera_json =  launch_obj.at("scene").at("camera");
+    openglframework::Vector3 center(camera_json.at("center").at("x"),camera_json.at("center").at("y"),camera_json.at("center").at("z"));
+    const float SCENE_RADIUS = camera_json.at("scene_radius");    
     SetScenePosition(center, SCENE_RADIUS);
-    mCamera.rotateLocal(openglframework::Vector3(1, 0, 0), -40.0 * PI/180.0f);
+    mCamera.rotateLocal(openglframework::Vector3(1, 0, 0), static_cast<float>(camera_json.at("camera_pitch")) * PI/180.0f);
 
 }
 
@@ -84,19 +84,23 @@ void RenderingSystem::Init() {
     for(auto& entity : m_entities) {
         auto& transform = gOrchestrator.GetComponent<Transform3D>(entity); // initialized outsize
         auto& mesh = gOrchestrator.GetComponent<Mesh>(entity); // uninitialized here, only contains the mesh path given by the user
-        openglframework::MeshReaderWriter::loadMeshFromFile(mesh.meshPath, mesh); // mesh is initialized here
+        if(mesh.mShape != Shape::Hfield)
+            openglframework::MeshReaderWriter::loadMeshFromFile(mesh.meshPath, mesh); // mesh is initialized here
+        else
+            openglframework::MeshReaderWriter::generateHeightFieldMesh(*(mesh.mHeightField), mesh);
+            
         if(mesh.getNormals().empty()) { // if the mesh file don't have the normals, calculate them
             mesh.calculateNormals();
         }
-        
-        // Set the scaling
-        transform.opengl_transform.setTransformMatrix(transform.opengl_transform.getTransformMatrix() * transform.mScalingMatrix);
         
         // Create Vertex Buffer object if it hasn't been created yet (we do it here since we need vertex info from the Mesh)
         if(bufferedShapes.find(mesh.mShape) == bufferedShapes.end()) { // if this shape hasn't been buffered yet
             CreateVBOVAO(mesh);
             bufferedShapes.insert(mesh.mShape);
         }
+
+        // Set the scaling
+        transform.opengl_transform.setTransformMatrix(transform.opengl_transform.getTransformMatrix() * transform.mScalingMatrix);        
     }
 
     // Set window and camera size
@@ -192,6 +196,23 @@ bool RenderingSystem::keyboard_event(int key, int scancode, int action, int modi
         glfwSetWindowShouldClose(m_glfw_window, GL_TRUE);
         return true;
     }
+
+    if(key == GLFW_KEY_W && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+        mCamera.setZoom(-0.1);
+        return true;
+    }
+    if(key == GLFW_KEY_S && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+        mCamera.setZoom(0.1);
+        return true;
+    }
+    if(key == GLFW_KEY_A && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+        mCamera.translateCamera(-0.01, 0, mSceneCenter);
+        return true;
+    }   
+    if(key == GLFW_KEY_D && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
+        mCamera.translateCamera(0.01, 0, mSceneCenter);
+        return true;
+    }       
 }
  // ----------------- end of Nanogui overrides --------------- //
 

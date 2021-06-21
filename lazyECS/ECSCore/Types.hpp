@@ -2,10 +2,13 @@
 
 #include <bitset>
 #include <unordered_set>
+#include <json.hpp>
 
 #include "ECSConstants.hpp"
 
-//////////// ECS types /////////////
+using json = nlohmann::json;
+
+// ---------- ECS types ---------- //
 
 namespace lazyECS {
 
@@ -25,3 +28,4 @@ public:
 };
 
 }
+

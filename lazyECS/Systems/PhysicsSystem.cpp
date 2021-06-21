@@ -25,7 +25,8 @@ void PhysicsSystem::SetupSignature() {
 void PhysicsSystem::Init(){
 
     // Setup the React 3D Physics World
-    this->physicsWorld = physicsCommon.createPhysicsWorld();
+    rp3d::PhysicsWorld::WorldSettings settings; // default settings    
+    this->physicsWorld = physicsCommon.createPhysicsWorld(settings);
 
     // Create rp3d rigid body for the entities that have rigid body components
     // Shape of the collider is obtained from the size of the Transform
@@ -56,19 +57,31 @@ void PhysicsSystem::Init(){
                     mPhysicsTriangleMesh->addSubpart(vertexArray); 
                 }
                 // Create a collider from the triangle mesh
+                auto collShape = physicsCommon.createConcaveMeshShape(mPhysicsTriangleMesh);
                 rigidBody.rp3d_collision_shape = physicsCommon.createConcaveMeshShape(mPhysicsTriangleMesh, rp3d::Vector3(transform.halfExtent[0],
                                                                                                                           transform.halfExtent[1],
                                                                                                                           transform.halfExtent[2]));
-                
+
+                break;
+            }
+            case Shape::Hfield: {
+                float heightData[mesh.mHeightField->mNumPtsWidth*mesh.mHeightField->mNumPtsLength];
+                std::copy(mesh.mHeightField->mHeightFieldData.begin(),mesh.mHeightField->mHeightFieldData.end(), heightData);
+                rigidBody.rp3d_collision_shape = physicsCommon.createHeightFieldShape(mesh.mHeightField->mNumPtsWidth, 
+                                                                                      mesh.mHeightField->mNumPtsLength,
+                                                                                      mesh.mHeightField->mMinHeight,
+                                                                                      mesh.mHeightField->mMaxHeight,
+                                                                                      heightData,
+                                                                                      rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);                 
                 break;
             }
             default:
                 assert(! "Invalid Shape enum in PhysicsSystem");
                 break;
         }
-        
+
         rigidBody.rp3d_collider = std::shared_ptr<rp3d::Collider>(rigidBody.rp3d_rigidBody->addCollider(rigidBody.rp3d_collision_shape, rp3d::Transform::identity()));
-        rigidBody.rp3d_rigidBody->updateMassPropertiesFromColliders();
+        rigidBody.rp3d_rigidBody->updateMassPropertiesFromColliders();            
         if(rigidBody.isStatic) // o/w dynamic by default
             rigidBody.rp3d_rigidBody->setType(rp3d::BodyType::STATIC);
     }

@@ -1,0 +1,31 @@
+{
+"scene": {
+    "camera": {
+        "scene_radius": 10.0,
+        "center": {
+            "x": 0.0,
+            "y": 30.0,
+            "z": 20.0
+        },
+        "camera_pitch": -50.0
+    }
+},
+"floor": {
+    "type": "concavemesh",
+    "file": "/home/goksan/Work/lazyECS/Applications/meshes/walls.obj",
+    "scale": {
+        "x": 1,
+        "y": 1.0,
+        "z": 1
+    },
+    "heightfield" : {
+        "size": 200
+    }    
+},
+"entities": {
+    "size": 0.4,
+    "amount": 40,
+    "initial_height": 1.5
+}
+}
+    

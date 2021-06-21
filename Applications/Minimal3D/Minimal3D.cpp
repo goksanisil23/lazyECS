@@ -1,9 +1,10 @@
 #include "Minimal3D.h"
 
 bool Minimal3D::lazyECS_mainloop_active{false};
+extern json launch_obj;
 
 Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
-    
+
     // --------------- lAZYECS -------------- //
 
     gOrchestrator.Init(); // initializes the ECS managers
@@ -20,33 +21,38 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
     renderSys->SetupSignature(); // entities below will be matched with systems so signature of the system is set
     physicsSys->SetupSignature();
 
+    // Create the entities and assign components
+    // Dynamic entities
+    json entities_json = launch_obj.at("entities");
+    std::vector<lazyECS::Entity> entities(static_cast<unsigned int>(entities_json.at("amount")));
+
     // Entity properties
     // x = lateral(right=+), y = height (up=+), z = depth(towards cam = +)
-    float boxSize[3] = {0.4, 0.4, 0.4};                  
-    const int box_x_pos = 0.0;
-    const int box_y_pos = 15.0;
-    const int box_z_pos = 0.0;
-    float floorSize[3] = {1.0, 1.0, 1.0}; // TODO: Keep concave mesh floor unit length due to scaling bug!!!
-    const int floor_x_pos = 0.0;
-    const int floor_y_pos = 0.0;
-    const int floor_z_pos = 0.0;    
+    float boxSize[3] = {static_cast<float>(entities_json.at("size")), static_cast<float>(entities_json.at("size")), static_cast<float>(entities_json.at("size"))};                  
+    const float box_x_pos = static_cast<float>(entities_json.at("amount")) / 2.0 * -1.0;
+    const float box_y_pos = static_cast<float>(entities_json.at("initial_height"));
+    const float box_z_pos = 0.0;
 
-    // Create the entities and assign components
-    // Dynamic entities, 5 spheres, 5 cubes
-    std::vector<lazyECS::Entity> entities(10);
+    json floor_scale = launch_obj.at("floor").at("scale");
+    float floorSize[3] = {floor_scale.at("x"), floor_scale.at("y"), floor_scale.at("z")}; // TODO: Keep concave mesh scaling below 2. above 2 there is some scaling bug !
+    const float floor_x_pos = 0.0;
+    const float floor_y_pos = 0.0;
+    const float floor_z_pos = 0.0;
+
     for (int i = 0; i < entities.size(); i++) {
         auto entity = entities.at(i);
         entity = gOrchestrator.CreateEntity();
 
         // Transform component (Initial position)
-        reactphysics3d::Vector3 spawn_pos(box_x_pos + i*1.0, box_y_pos , box_z_pos);
+        // reactphysics3d::Vector3 spawn_pos(box_x_pos + i*1.0, box_y_pos , box_z_pos);
+        reactphysics3d::Vector3 spawn_pos(0, 5+i*1.0 , box_z_pos);
         reactphysics3d::Quaternion spawn_rot(reactphysics3d::Quaternion::identity());
         lazyECS::Transform3D spawn_trans(spawn_pos, spawn_rot);
         spawn_trans.SetScale(boxSize[0], boxSize[1], boxSize[2]);
         gOrchestrator.AddComponent<lazyECS::Transform3D>(entity,spawn_trans);
 
         // Mesh componenet (for rendering)
-        if(i < 5) {
+        if(i < static_cast<int>(entities_json.at("amount"))/2) {
             lazyECS::Mesh mesh(lazyECS::Shape::Sphere);
             mesh.mColor = openglframework::Color(0.0, 0.0, 1.0, 1.0);
             gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
@@ -67,17 +73,28 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
     {
     // Create entity as solid platform
         lazyECS::Entity floor_entity(gOrchestrator.CreateEntity());
+        
+        // Mesh component (for rendering)
+        std::shared_ptr<lazyECS::Mesh> floor_mesh;
+        std::string floor_type = launch_obj.at("floor").at("type");
+        if(floor_type == "heightfield")
+            floor_mesh = std::make_shared<lazyECS::Mesh>(lazyECS::Shape::Hfield);
+        else if (floor_type == "concavemesh")
+            floor_mesh = std::make_shared<lazyECS::Mesh>(lazyECS::Shape::ConcaveMesh);
+        else if (floor_type == "flat")
+            floor_mesh = std::make_shared<lazyECS::Mesh>(lazyECS::Shape::Box);
+        else
+            std::runtime_error("No such floor type!");
+        floor_mesh->mColor = openglframework::Color(0.47f, 0.48f, 0.49f, 1.0f);
+        gOrchestrator.AddComponent<lazyECS::Mesh>(floor_entity, *floor_mesh);
+
         // Transform component (Initial position)
         reactphysics3d::Vector3 floor_pos(floor_x_pos , floor_y_pos , floor_z_pos);
         reactphysics3d::Quaternion floor_rot(reactphysics3d::Quaternion::identity());
         lazyECS::Transform3D floor_trans(floor_pos, floor_rot);
-        floor_trans.SetScale(floorSize[0], floorSize[1], floorSize[2]);
-        gOrchestrator.AddComponent<lazyECS::Transform3D>(floor_entity,floor_trans);
-
-        // Mesh componenet (for rendering)
-        lazyECS::Mesh floor_mesh(lazyECS::Shape::ConcaveMesh);
-        floor_mesh.mColor = openglframework::Color(0.47f, 0.48f, 0.49f, 1.0f);
-        gOrchestrator.AddComponent<lazyECS::Mesh>(floor_entity, floor_mesh);
+        if(floor_mesh->mShape != lazyECS::Shape::Hfield)
+            floor_trans.SetScale(floorSize[0], floorSize[1], floorSize[2]);
+        gOrchestrator.AddComponent<lazyECS::Transform3D>(floor_entity,floor_trans);        
 
         // Rigid Body component for physical motion
         lazyECS::RigidBody3D rigid_body; // will be initialized in PhysicsSystem

@@ -1,5 +1,7 @@
 #include "Mesh.hpp"
 
+extern json launch_obj;
+
 namespace lazyECS {
 
 // Constructor
@@ -12,7 +14,11 @@ Mesh::Mesh(const Shape& mesh_shape) : mColor{openglframework::Color(1,1,1,1)}, m
         meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/sphere.obj";
     }
     else if(mesh_shape == Shape::ConcaveMesh) {
-        meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/walls.obj";
+        meshPath = launch_obj.at("floor").at("file");
+    }
+    else if (mesh_shape == Shape::Hfield) {
+        json hf_json =  launch_obj.at("floor").at("heightfield");
+        mHeightField = std::make_shared<HeightField>(static_cast<int>(hf_json.at("size")) , static_cast<int>(hf_json.at("size")));
     }
     else {
         std::runtime_error("Shape is not assigned to mesh, or no such shape is found!");
