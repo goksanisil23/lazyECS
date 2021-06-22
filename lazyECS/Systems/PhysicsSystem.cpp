@@ -44,6 +44,9 @@ void PhysicsSystem::Init(){
             case Shape::Sphere:
                 rigidBody.rp3d_collision_shape = physicsCommon.createSphereShape(transform.halfExtent[0]);
                 break;
+            case Shape::Capsule:
+                rigidBody.rp3d_collision_shape = physicsCommon.createCapsuleShape(transform.halfExtent[0],transform.halfExtent[1]);
+                break;                
             case Shape::ConcaveMesh: {
                 auto mPhysicsTriangleMesh = physicsCommon.createTriangleMesh();
                 for(unsigned int i = 0; i < mesh.getNbParts(); i++) {
@@ -82,8 +85,7 @@ void PhysicsSystem::Init(){
 
         rigidBody.rp3d_collider = std::shared_ptr<rp3d::Collider>(rigidBody.rp3d_rigidBody->addCollider(rigidBody.rp3d_collision_shape, rp3d::Transform::identity()));
         rigidBody.rp3d_rigidBody->updateMassPropertiesFromColliders();            
-        if(rigidBody.isStatic) // o/w dynamic by default
-            rigidBody.rp3d_rigidBody->setType(rp3d::BodyType::STATIC);
+        rigidBody.rp3d_rigidBody->setType(rigidBody.rp3d_bodyType);
     }
 }
 
@@ -131,7 +133,11 @@ void PhysicsSystem::Update() {
 
             // Debug print
             // const reactphysics3d::Vector3& position = transform.rp3d_transform.getPosition();
-            // std::cout << "entity: " << ent_ctr << " position: " << position.x << " " << position.y << " " << position.z << std::endl; 
+            // float rot_angle;
+            // rp3d::Vector3 rot_axis;
+            // transform.rp3d_transform.getOrientation().getRotationAngleAxis(rot_angle, rot_axis);
+            // std::cout << "entity: " << ent_ctr << " position: " << position.x << " " << position.y << " " << position.z << std::endl;
+            // std::cout << "entity: " << ent_ctr << " rot angle: " << rot_angle << "axis: " << rot_axis.x << " " << rot_axis.y << " " << rot_axis.z << std::endl;
             ent_ctr++;
         }
     }

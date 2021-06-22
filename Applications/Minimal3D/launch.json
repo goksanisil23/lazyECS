@@ -19,12 +19,12 @@
         "z": 1
     },
     "heightfield" : {
-        "size": 200
+        "size": 100
     }    
 },
 "entities": {
+    "amount": 5,    
     "size": 0.4,
-    "amount": 40,
     "initial_height": 1.5
 }
 }

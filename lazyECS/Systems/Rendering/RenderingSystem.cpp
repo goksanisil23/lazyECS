@@ -117,7 +117,6 @@ void RenderingSystem::Init() {
 void RenderingSystem::SetupSignature() {
     // Set the system signature based on the utilized Components below
     Signature signature;
-    // signature.set(gOrchestrator.GetComponentTypeId<RigidBody3D>(), true);
     signature.set(gOrchestrator.GetComponentTypeId<Transform3D>(), true);
     signature.set(gOrchestrator.GetComponentTypeId<Mesh>(), true);
     gOrchestrator.SetSystemSignature<RenderingSystem>(signature);     
@@ -495,9 +494,7 @@ void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const op
 
     // For all objects, render
     for (auto const& entity : m_entities) {
-        // auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity);
         auto& mesh = gOrchestrator.GetComponent<Mesh>(entity);
-        auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity);
 
         shader.bind();
         // Set the model to camera matrix
@@ -511,9 +508,7 @@ void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const op
         shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
         // Set the vertex color
-        // openglframework::Color currentColor = rigidBody.rp3d_rigidBody->isSleeping() ? mesh.mSleepingColor : mesh.mColor;
         openglframework::Vector4 color(mesh.mColor.r, mesh.mColor.g, mesh.mColor.b, mesh.mColor.a);
-        // openglframework::Vector4 color = rigidBody.isStatic ? openglframework::Vector4(1,1,1,1) : openglframework::Vector4(1,0,0,1);
         shader.setVector4Uniform("globalVertexColor", color, false);
 
         // Bind VAO

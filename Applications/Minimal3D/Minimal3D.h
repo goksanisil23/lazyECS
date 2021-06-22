@@ -16,7 +16,7 @@ public:
     // Minimal3D(bool isFullscreen, int windowWidth, int windowHeight, std::shared_ptr<lazyECS::RenderingSystem> renderSys_ptr);
     Minimal3D(bool isFullscreen, int windowWidth, int windowHeight);
 
-    void main_loop(const float& update_rate);
+    void main_loop();
 
     // ----------------- Member variables ----------------- //
     std::shared_ptr<lazyECS::RenderingSystem> renderSys; // pointer to the rendering system to be accessed from draw_contents

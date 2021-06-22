@@ -6,6 +6,7 @@ Transform3D::Transform3D(const rp3d::Vector3& init_pos, const rp3d::Quaternion& 
     mScalingMatrix{openglframework::Matrix4::identity()} {
     rp3d_transform = reactphysics3d::Transform(init_pos, init_rot);
     rp3d_prev_transform = rp3d_transform;
+    this->ConvertRP3DToOpenglTransform();
 }
 
 void Transform3D::ConvertRP3DToOpenglTransformInterp(const float& interpolationFactor) {

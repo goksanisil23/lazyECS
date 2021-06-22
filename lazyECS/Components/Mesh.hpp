@@ -15,7 +15,7 @@
 
 namespace lazyECS {
 
-enum Shape{Box, Sphere, ConcaveMesh, Hfield, Last};
+enum Shape{Box, Sphere, ConcaveMesh, Capsule, Hfield, Last};
 
 class Mesh {
 
