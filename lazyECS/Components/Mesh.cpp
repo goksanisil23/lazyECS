@@ -16,7 +16,7 @@ Mesh::Mesh(const Shape& mesh_shape) : mColor{openglframework::Color(1,1,1,1)}, m
         meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/capsule.obj";
     }
     else if(mesh_shape == Shape::ConcaveMesh) {
-        meshPath = launch_obj.at("floor").at("file");
+        meshPath = launch_obj.at("entities").at("TerrainEntity").at("file");
     }
     else if (mesh_shape == Shape::Hfield) {
         json hf_json =  launch_obj.at("floor").at("heightfield");

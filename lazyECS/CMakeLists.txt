@@ -29,8 +29,6 @@ set(OPENGLFRAMEWORK_SOURCES
     Systems/Rendering/opengl-framework/src/FrameBufferObject.h
     Systems/Rendering/opengl-framework/src/Light.h
     Systems/Rendering/opengl-framework/src/Light.cpp
-    # Systems/Rendering/opengl-framework/src/Mesh.h
-    # Systems/Rendering/opengl-framework/src/Mesh.cpp
     Systems/Rendering/opengl-framework/src/MeshReaderWriter.h
     Systems/Rendering/opengl-framework/src/MeshReaderWriter.cpp
     Systems/Rendering/opengl-framework/src/Object3D.h
@@ -78,7 +76,7 @@ set(LAZY_ECS_SOURCES
     # Systems/Rendering/Gui.h
     # Systems/Rendering/Gui.cpp
 
-    # SceneFramework/Scene.h
+    Utilities/Spawner.hpp
     # SceneFramework/Scene.cpp
 )
 

@@ -2,6 +2,7 @@
 
 #include <queue>
 #include <array>
+#include <unordered_map>
 #include <assert.h>
 
 
@@ -53,6 +54,10 @@ public:
         return m_entitySignatures[entity];
     }
 
+    void SetEntityTag(const std::string& Tag, const Entity& entity) {
+        m_entityTags.insert(std::make_pair(Tag, entity));
+    }
+
 private:
 
     std::queue<Entity> m_availableEntities {}; // unoccupied Entity id's. Initially, queue is nicely ordered [0,1,..., (MAX_ENTITIES-1)]
@@ -62,6 +67,8 @@ private:
     std::array<Signature, MAX_ENTITIES> m_entitySignatures{}; // each Entity contains a set of Components, whose id's are encoded in the Signature bitset
 
     uint32_t m_spawnedEntityCount{}; // number of entities alive in the current scene
+
+    std::unordered_map<std::string, Entity> m_entityTags; // used to group entities in logical groups for easier movement control
 
 };
 

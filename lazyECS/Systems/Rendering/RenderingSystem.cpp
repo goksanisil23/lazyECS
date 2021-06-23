@@ -19,7 +19,8 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag"},
                 mDepthShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/depth.vert",
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/depth.frag"},
-                prevFrameTime{std::chrono::high_resolution_clock::now()}
+                prevFrameTime{std::chrono::high_resolution_clock::now()},
+                mDebugVBOTrianglesVertices{GL_ARRAY_BUFFER}
 {
     // Allocate 1 buffer object per available shapes in LazyECS
     for(int _shape = Shape::Box; _shape < Shape::Last; _shape++) {
@@ -98,10 +99,12 @@ void RenderingSystem::Init() {
             CreateVBOVAO(mesh);
             bufferedShapes.insert(mesh.mShape);
         }
-
+        
         // Set the scaling
         transform.opengl_transform.setTransformMatrix(transform.opengl_transform.getTransformMatrix() * transform.mScalingMatrix);        
     }
+
+    CreateDebugVBOVAO();
 
     // Set window and camera size
     int bufferWidth, bufferHeight;
@@ -258,6 +261,26 @@ void RenderingSystem::CreateVBOVAO(Mesh& mesh) {
     mVAO.at(mesh.mShape).unbind();
 }
 
+void RenderingSystem::CreateDebugVBOVAO() {
+    mDebugVBOTrianglesVertices.create();
+    mDebugTrianglesVAO.create();
+
+    mDebugTrianglesVAO.bind();
+    mDebugVBOTrianglesVertices.bind();
+
+    mDebugTrianglesVAO.unbind();
+    mDebugVBOTrianglesVertices.unbind();
+}
+
+void RenderingSystem::UpdateDebugVBOVAO() {
+    if(mDebugTriangles.size() > 0) {
+        mDebugVBOTrianglesVertices.bind();
+        GLsizei sizeVertices = static_cast<GLsizei>(mDebugTriangles.size() * sizeof(DebugTriangle));
+        mDebugVBOTrianglesVertices.copyDataIntoVBO(sizeVertices, &(mDebugTriangles[0]), GL_STREAM_DRAW); // stream since we plan to both modify and draw 
+        mDebugVBOTrianglesVertices.unbind();
+    }
+}
+
 void RenderingSystem::CreateShadowMapFBOAndTexture() {
     for (int i = 0; i < NUM_SHADOW_MAPS; i++) {
         // Create texture for depth values (depth value per pixel coordinate)
@@ -403,6 +426,13 @@ void RenderingSystem::Rotate(int xMouse, int yMouse) {
 
 void RenderingSystem::Render() {
 
+    // Update debug buffers
+    mDebugTriangles.clear(); // clear previous debug shapes
+    for (int i=0; i < 10; i++) {
+        DrawDebugBox(rp3d::Transform(rp3d::Vector3(-20 + i, 1, 5), rp3d::Quaternion::identity()), rp3d::Vector3(0.5,0.5,0.5), 0x00ff00);
+    }
+    UpdateDebugVBOVAO();
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
@@ -482,10 +512,15 @@ void RenderingSystem::Render() {
 
     RenderSinglePass(mPhongShader, worldToCameraMatrix);
 
-    mPhongShader.unbind();
+    RenderDebugObjects(mColorShader, worldToCameraMatrix);
 
-    // show where camera is
-    std::cout << "camera: " << mCamera.getOrigin().x << " " << mCamera.getOrigin().y << " " << mCamera.getOrigin().z << std::endl;
+    if(mIsShadowMappingEnabled) {
+        for(auto& shadowTexture : mShadowMapTexture) {
+            shadowTexture.unbind();
+        }
+    }
+
+    mPhongShader.unbind();
 }
 
 void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix) {
@@ -540,6 +575,74 @@ void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const op
     }
 
     shader.unbind();
+}
+
+void RenderingSystem::RenderDebugObjects(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
+    // Render in wideframe mode
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    shader.bind();
+
+    // Set the normal matrix
+    const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix;
+    const openglframework::Matrix3 normalMatrix = localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
+    shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
+
+    // Set the model to camere matrix
+    shader.setMatrix4x4Uniform("localToWorldMatrix", openglframework::Matrix4::identity());
+    shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCameraMatrix);
+    shader.setIntUniform("isGlobalVertexColorEnabled", 0, false);
+    // Get the location of shader attribute variables
+    GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
+    GLint vertexColorLoc = shader.getAttribLocation("vertexColor");    
+
+    if(mDebugTriangles.size() > 0) {
+        mDebugTrianglesVAO.bind();
+        mDebugVBOTrianglesVertices.bind();
+        glEnableVertexAttribArray(vertexPositionLoc);
+        glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(rp3d::Vector3) + sizeof(rp3d::uint32), (char*)nullptr);
+        glEnableVertexAttribArray(vertexColorLoc);
+        glVertexAttribIPointer(vertexColorLoc, 3, GL_UNSIGNED_INT, sizeof(rp3d::Vector3) + sizeof(rp3d::uint32), (void*)sizeof(rp3d::Vector3));
+        
+        glDrawArrays(GL_TRIANGLES, 0, mDebugTriangles.size()*3); // draw the triangles geometry
+
+        glDisableVertexAttribArray(vertexPositionLoc);
+        glDisableVertexAttribArray(vertexColorLoc);
+        mDebugVBOTrianglesVertices.unbind();
+        mDebugTrianglesVAO.unbind();
+    }
+
+    shader.unbind();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // disable wideframe mode
+
+}
+
+void RenderingSystem::DrawDebugBox(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color) {
+    rp3d::Vector3 debug_vertices[8];
+
+    // vertices
+	debug_vertices[0] = transform * rp3d::Vector3(-halfExtents.x, -halfExtents.y, halfExtents.z);
+	debug_vertices[1] = transform * rp3d::Vector3(halfExtents.x, -halfExtents.y, halfExtents.z);
+	debug_vertices[2] = transform * rp3d::Vector3(halfExtents.x, -halfExtents.y, -halfExtents.z);
+	debug_vertices[3] = transform * rp3d::Vector3(-halfExtents.x, -halfExtents.y, -halfExtents.z);
+	debug_vertices[4] = transform * rp3d::Vector3(-halfExtents.x, halfExtents.y, halfExtents.z);
+	debug_vertices[5] = transform * rp3d::Vector3(halfExtents.x, halfExtents.y, halfExtents.z);
+	debug_vertices[6] = transform * rp3d::Vector3(halfExtents.x, halfExtents.y, -halfExtents.z);
+	debug_vertices[7] = transform * rp3d::Vector3(-halfExtents.x, halfExtents.y, -halfExtents.z);
+
+    // triangle faces
+	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[0], debug_vertices[1], debug_vertices[5], color));
+	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[0], debug_vertices[5], debug_vertices[4], color));
+	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[1], debug_vertices[2], debug_vertices[6], color));
+	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[1], debug_vertices[6], debug_vertices[5], color));
+	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[2], debug_vertices[3], debug_vertices[6], color));
+	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[3], debug_vertices[7], debug_vertices[6], color));
+	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[0], debug_vertices[7], debug_vertices[3], color));
+	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[0], debug_vertices[4], debug_vertices[7], color));
+	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[0], debug_vertices[2], debug_vertices[1], color));
+	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[0], debug_vertices[3], debug_vertices[2], color));
+	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[5], debug_vertices[6], debug_vertices[4], color));
+	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[4], debug_vertices[6], debug_vertices[7], color));
+
 }
 
 

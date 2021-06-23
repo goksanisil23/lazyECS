@@ -30,6 +30,10 @@ public:
         m_entityManager->DestroyEntity(entity);
     }
 
+    void SetEntityTag(const std::string& Tag, const Entity& entity) {
+        m_entityManager->SetEntityTag(Tag, entity);
+    }
+
     /////////////////////////// COMPONENT METHODS //////////////////////////////// 
     template<typename TComponentType>
     void RegisterComponentType() {
@@ -53,6 +57,11 @@ public:
     TComponentType& GetComponent(const Entity& entity){
         return m_componentManager->GetComponent<TComponentType>(entity);
     }
+
+    template<typename TComponentType>
+    bool CheckComponentExistsInEntity(const Entity& entity){
+        return m_componentManager->CheckComponentExistsInEntity<TComponentType>(entity);
+    }    
 
     template<typename TComponentType>
     ComponentTypeId GetComponentTypeId(){

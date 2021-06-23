@@ -58,6 +58,11 @@ public:
         return GetComponentArrayHandler<TComponentType>()->GetComponentData(entity);
     }
 
+    template<typename TComponentType>
+    bool CheckComponentExistsInEntity(const Entity& entity) {
+        return GetComponentArrayHandler<TComponentType>()->CheckComponentExistsInEntity(entity);
+    }
+
     // Removes the entity from all the component arrays for all types of components
     void RemoveEntity(const Entity& entity) {
         for (auto const& pair : this->m_componentArrayHandlers) {

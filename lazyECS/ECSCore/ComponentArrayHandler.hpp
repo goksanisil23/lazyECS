@@ -82,6 +82,14 @@ public:
         }
     }
 
+    bool CheckComponentExistsInEntity(const Entity& entity) {
+        if(this->m_entityComponentLookup.find(entity) != this->m_entityComponentLookup.end()) // component exists on this entity
+            return true;
+        else
+            return false;
+        
+    }
+
     TComponentType& GetComponentData(const Entity& entity) {
         assert(this->m_entityComponentLookup.find(entity) != this->m_entityComponentLookup.end() && "This component has no such owner(entity)");
 

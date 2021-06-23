@@ -14,9 +14,25 @@
 #include <unordered_map>
 #include <unordered_set>
 
+
 namespace lazyECS {
 
 class RenderingSystem : public System, public nanogui::Screen { // NanoGUI will initialize and manage the openGL context via Screen
+
+public:
+
+    // Triangle structure used for debug rendering of primitives
+    struct DebugTriangle {
+        DebugTriangle(const rp3d::Vector3& pt1, const rp3d::Vector3& pt2, const rp3d::Vector3& pt3, std::uint32_t color)
+            : point1(pt1), color1(color), point2(pt2), color2(color), point3(pt3), color3(color) {}
+
+        rp3d::Vector3 point1; // first point on the triangle
+        std::uint32_t color1; // color of 1st point
+        rp3d::Vector3 point2;
+        std::uint32_t color2;
+        rp3d::Vector3 point3;
+        std::uint32_t color3;
+    };
 
 protected:
     // ----------------- Member variables ----------------- //
@@ -59,6 +75,12 @@ protected:
     std::unordered_map<int, openglframework::VertexBufferObject> mVBOIndices;
     std::unordered_map<int, openglframework::VertexArrayObject> mVAO;
 
+    // VBO and VAO for debug meshes
+    openglframework::VertexBufferObject mDebugVBOTrianglesVertices; // triangle vertex data for debug objects
+    openglframework::VertexArrayObject mDebugTrianglesVAO; // vertex array object for debug triangle vertices
+    std::vector<DebugTriangle> mDebugTriangles;
+    // rp3d::List<DebugTriangle> mDebugTriangles;
+
     std::unordered_set<Shape> bufferedShapes; // storing shapes for which VBO and VAO are already created
 
     std::chrono::_V2::system_clock::time_point prevFrameTime;
@@ -98,10 +120,14 @@ public:
     void Init(); // Used to generate the mesh for entities
     void Render(); // Render the scene (possibly in multiple passes due to shadow mapping)
     void RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix); // render the scene in a single pass
+    void RenderDebugObjects(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix); // renders debug objects
     void SetupSignature(); // sets the signature of the system based on components its using
 
     void CreateVBOVAO(Mesh& mesh); // Create VBOs and VAO to render with OpenGL
-    void CreateShadowMapFBOAndTexture(); // create shadow map frame buffer object and texture 
+    void CreateShadowMapFBOAndTexture(); // create shadow map frame buffer object and texture
+    void CreateDebugVBOVAO(); // create VBO for debug only objects
+    void UpdateDebugVBOVAO(); // update vertices and indices for debug objects
+    void DrawDebugBox(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
 
 };
 
