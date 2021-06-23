@@ -31,6 +31,8 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
         mVAO.emplace(std::make_pair(_shape, openglframework::VertexArrayObject()));         
     }
 
+    quantum = std::chrono::microseconds((int64_t)(RENDER_TIME_STEP*1'000'000));  // sleep time for the render timer thread
+
     // ----------------- Scene Lighting and View Setup ----------------- // 
 
     float lightsRadius = 30.0f;
@@ -643,6 +645,43 @@ void RenderingSystem::DrawDebugBox(const rp3d::Transform& transform, const rp3d:
 	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[5], debug_vertices[6], debug_vertices[4], color));
 	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[4], debug_vertices[6], debug_vertices[7], color));
 
+}
+
+void RenderingSystem::TimerThreadFunc() {
+    while(true) {         
+        std::this_thread::sleep_for(this->quantum); // since no other operation happens in this thread, enough to just sleep for FPS rate
+        // This is the main event interrupt which allows steady render rate (irrespective of mouse/keyboard callbacks)
+        // after sleeping for RENDER_TIME_STEP
+        // redraw() calls glfwPostEmptyEvent() which allows the iteration to proceed from the blocked glfwWaitEvents() state
+        // and also sets m_redraw=True, for allowing draw_all to do rendering
+        for(auto screen : this->GetNanoguiScreen())
+            screen.second->redraw();                
+    }       
+}
+
+void RenderingSystem::Update() {
+        for(auto& entity : this->m_entities) {
+            auto& transform = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
+            transform.ConvertRP3DToOpenglTransform(); // convert the physics transform to graphics transform
+        }
+
+        for(auto& screen_pair : GetNanoguiScreen()) {
+            nanogui::Screen* screen = screen_pair.second;
+            if(!screen->visible()) {
+                continue;
+            }
+            else if(glfwWindowShouldClose(screen->glfw_window())) {
+                screen->set_visible(false);
+                continue;
+            }
+            else{
+                screen->draw_all(); // only draws if m_redraw==True, sets m_redraw=False after iteration
+            }
+            // Blocks next iteration until:
+            // a) A keyboard/mouse event is made
+            // b) render_timer_thread below periodically interrupts it by a glfwPostEmptyEvent call for steady render rate
+            glfwWaitEvents();
+        }    
 }
 
 

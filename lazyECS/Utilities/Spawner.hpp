@@ -31,7 +31,7 @@ public:
 
             // --------------- Transform component (Initial position) --------------- //
             rp3d::Vector3 spawn_pos(phy_obj.at("initial_position")[0], 
-                                    5 + ent_ctr * 1.0,
+                                    phy_obj.at("initial_position")[1],
                                     phy_obj.at("initial_position")[2]);
             rp3d::Quaternion spawn_rot = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(phy_obj.at("initial_rotation")[0],
                                                                                          phy_obj.at("initial_rotation")[1],
@@ -44,7 +44,8 @@ public:
 
             // --------------- Mesh component (For rendering) --------------- //
             lazyECS::Mesh mesh(stringToShape.at(phy_obj.at("shape")));
-            mesh.mColor = openglframework::Color(0.0,0.0,1.0,1.0);
+            json color_obj = phy_obj.at("color");
+            mesh.mColor = openglframework::Color(color_obj[0],color_obj[1],color_obj[2],color_obj[3]);
             gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
 
             // --------------- Rigid Body component (For physical motion) --------------- //
@@ -107,7 +108,8 @@ public:
 
             // --------------- Mesh component (For rendering) --------------- //
             lazyECS::Mesh mesh(stringToShape.at(render_obj.at("shape")));
-            mesh.mColor = openglframework::Color(0.0,1.0,0.0,1.0);
+            json color_obj = render_obj.at("color");
+            mesh.mColor = openglframework::Color(color_obj[0],color_obj[1],color_obj[2],color_obj[3]);            
             gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);               
         }
     }

@@ -13,6 +13,7 @@
 #include <GLFW/glfw3.h>
 #include <unordered_map>
 #include <unordered_set>
+#include <thread>
 
 
 namespace lazyECS {
@@ -36,6 +37,8 @@ public:
 
 protected:
     // ----------------- Member variables ----------------- //
+
+    std::chrono::microseconds quantum; // sleep time in render timer thread
 
     static constexpr int NUM_SHADOW_MAPS = 3;
     static constexpr int SHADOWMAP_WIDTH = 2048;
@@ -122,12 +125,15 @@ public:
     void RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix); // render the scene in a single pass
     void RenderDebugObjects(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix); // renders debug objects
     void SetupSignature(); // sets the signature of the system based on components its using
+    void Update(); // highest level of function called from the main loop of the application, that calls the rest of the rendering pipeline
 
     void CreateVBOVAO(Mesh& mesh); // Create VBOs and VAO to render with OpenGL
     void CreateShadowMapFBOAndTexture(); // create shadow map frame buffer object and texture
     void CreateDebugVBOVAO(); // create VBO for debug only objects
     void UpdateDebugVBOVAO(); // update vertices and indices for debug objects
     void DrawDebugBox(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
+
+    void TimerThreadFunc(); // function used in a thread to make periodic draw calls
 
 };
 
