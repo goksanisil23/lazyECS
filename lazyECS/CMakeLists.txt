@@ -62,6 +62,7 @@ set(LAZY_ECS_SOURCES
     Components/Transform3D.cpp
     Components/Mesh.hpp
     Components/Mesh.cpp
+    Components/Tag.cpp
     Components/utils/PerlinNoise.h
     Components/utils/PerlinNoise.cpp
     Components/utils/HeightField.h
@@ -73,6 +74,7 @@ set(LAZY_ECS_SOURCES
     Systems/PhysicsSystem.cpp
     Systems/Rendering/RenderingSystem.hpp
     Systems/Rendering/RenderingSystem.cpp
+    Systems/TagSystem.cpp
     # Systems/Rendering/Gui.h
     # Systems/Rendering/Gui.cpp
 

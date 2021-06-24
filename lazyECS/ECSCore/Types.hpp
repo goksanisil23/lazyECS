@@ -21,7 +21,7 @@ using Signature = std::bitset<MAX_COMPONENT_TYPES>;  // a signature contains inf
                                                      // "n"th bit of the Signature is set to 1.
 
 // System is just a functionality that iterates along a set of entities that fit into a certain Signature (of component)
-// Which entities are stored for this System, is handled by the SystemManager, based on if (entity signature == system signature)
+// Which entities are stored for this System, is handled by the SystemManager, based on if system signature is a subset of entity signature
 class System {             
 public:
     std::unordered_set<Entity> m_entities;

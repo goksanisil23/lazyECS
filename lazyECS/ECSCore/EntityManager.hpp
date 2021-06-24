@@ -68,7 +68,7 @@ private:
 
     uint32_t m_spawnedEntityCount{}; // number of entities alive in the current scene
 
-    std::unordered_map<std::string, Entity> m_entityTags; // used to group entities in logical groups for easier movement control
+    std::unordered_map<std::string, Entity> m_entityTags; // used to group entities in logical groups for easier scenario design & control
 
 };
 

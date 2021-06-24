@@ -28,7 +28,7 @@ Mesh::Mesh(const Shape& mesh_shape) : mColor{openglframework::Color(1,1,1,1)}, m
 }
 
 // Destructor
-Mesh::~Mesh() {}
+Mesh::~Mesh() = default;
 
 // Destroy the mesh
 void Mesh::destroy() {

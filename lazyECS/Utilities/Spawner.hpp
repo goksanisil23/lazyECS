@@ -4,6 +4,7 @@
 #include "Components/RigidBody3D.hpp"
 #include "Components/Transform3D.hpp"
 #include "Components/Mesh.hpp"
+#include "Components/Tag.h"
 
 #include <reactphysics3d/reactphysics3d.h>
 #include <unordered_map>
@@ -25,7 +26,7 @@ public:
     // or environmental actors that act/move based on physics
     static void CreatePhysicsEntities(const json& entities_json) {
         int ent_ctr = 0;
-        for(auto& phy_obj : entities_json.at("PhysicsEntities")) {
+        for(const auto& phy_obj : entities_json.at("PhysicsEntities")) {
             lazyECS::Entity entity = gOrchestrator.CreateEntity();
             ent_ctr++;
 
@@ -52,6 +53,16 @@ public:
             lazyECS::RigidBody3D rigid_body; // will be initialize in Physics System
             rigid_body.rp3d_bodyType = stringToBodyType.at(phy_obj.at("body_type"));
             gOrchestrator.AddComponent<lazyECS::RigidBody3D>(entity, rigid_body);
+
+            // --------------- Tag component (For logical grouping/filtering) --------------- //
+            if(phy_obj.contains("tag")) {
+                lazyECS::Tag entity_tag(phy_obj.at("tag"));
+                gOrchestrator.AddComponent(entity, entity_tag);
+            }
+            else {
+                lazyECS::Tag entity_tag;
+                gOrchestrator.AddComponent(entity, entity_tag);
+            }
         }
     }
 
@@ -63,7 +74,7 @@ public:
 
         // --------------- Mesh component (For rendering) --------------- //
         lazyECS::Mesh mesh(stringToShape.at(terrain_obj.at("shape"))); // can be heightfield, concavemesh or Box
-        mesh.mColor = openglframework::Color(0.47f, 0.48f, 0.49f, 1.0f);
+        mesh.mColor = openglframework::Color(0.47F, 0.48F, 0.49F, 1.0F);
         gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
 
         // --------------- Transform component (Initial position) --------------- //
@@ -84,12 +95,22 @@ public:
         lazyECS::RigidBody3D rigid_body; // will be initialize in Physics System
         rigid_body.rp3d_bodyType = stringToBodyType.at(terrain_obj.at("body_type"));
         gOrchestrator.AddComponent<lazyECS::RigidBody3D>(entity, rigid_body);
+
+        // --------------- Tag component (For logical grouping/filtering) --------------- //
+        if(terrain_obj.contains("tag")) {
+            lazyECS::Tag entity_tag(terrain_obj.at("tag"));
+            gOrchestrator.AddComponent(entity, entity_tag);
+        }
+        else {
+            lazyECS::Tag entity_tag;
+            gOrchestrator.AddComponent(entity, entity_tag);
+        }        
     }    
 
     // Creates a render only entities, meant to be used for objects that does not require physical movement/interaction
     static void CreateRenderOnlyEntities(const json& entities_json) {
-        int ent_ctr = 0;
-        for(auto& render_obj : entities_json.at("RenderOnlyEntities")) {
+        float ent_ctr = 0;
+        for(const auto& render_obj : entities_json.at("RenderOnlyEntities")) {
             lazyECS::Entity entity = gOrchestrator.CreateEntity();
             ent_ctr++;
 
@@ -110,7 +131,17 @@ public:
             lazyECS::Mesh mesh(stringToShape.at(render_obj.at("shape")));
             json color_obj = render_obj.at("color");
             mesh.mColor = openglframework::Color(color_obj[0],color_obj[1],color_obj[2],color_obj[3]);            
-            gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);               
+            gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
+
+            // --------------- Tag component (For logical grouping/filtering) --------------- //
+            if(render_obj.contains("tag")) {
+                lazyECS::Tag entity_tag(render_obj.at("tag"));
+                gOrchestrator.AddComponent(entity, entity_tag);
+            }
+            else {
+                lazyECS::Tag entity_tag;
+                gOrchestrator.AddComponent(entity, entity_tag);
+            }              
         }
     }
 };

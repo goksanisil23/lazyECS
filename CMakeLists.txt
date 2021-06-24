@@ -35,4 +35,4 @@ set(LAZY_ECS_INCLUDE_DIRS
 
 add_subdirectory(lazyECS)
 add_subdirectory(Applications/Minimal3D)
-# add_subdirectory(Applications/PotentialField)
+add_subdirectory(Applications/PotentialField)

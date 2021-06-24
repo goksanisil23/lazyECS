@@ -1,0 +1,89 @@
+{
+    "scene": {
+        "camera": {
+            "scene_radius": 10.0,
+            "center": {
+                "x": 0.0,
+                "y": 30.0,
+                "z": 20.0
+            },
+            "camera_pitch": -50.0
+        }
+    },
+    "entities": {
+        "PhysicsEntities" : [
+            {
+                "scale": [0.4,0.4,0.4],
+                "initial_position": [-2.0, 0.2, -2.0],
+                "initial_rotation": [0,0,0],
+                "body_type": "Dynamic",
+                "shape": "Sphere",
+                "color": [0,0,1,1],
+                "tag": "ego"
+            },
+            {
+                "scale": [0.2,0.5,0.8],
+                "initial_position": [0, 0.2, 0],
+                "initial_rotation": [0,0,0],
+                "body_type": "Kinematic",
+                "shape": "Box",
+                "color": [1,0,0,1],
+                "tag": "obstacle"
+            },
+            {
+                "scale": [0.7,1.0,0.2],
+                "initial_position": [0, 0.2, 3.0],
+                "initial_rotation": [0,0,0],
+                "body_type": "Kinematic",
+                "shape": "Box",
+                "color": [1,0,0,1],
+                "tag": "obstacle"
+            },
+            {
+                "scale": [0.3,0.4,0.3],
+                "initial_position": [-12.0, 0.2,-12.0],
+                "initial_rotation": [0,0,0],
+                "body_type": "Kinematic",
+                "shape": "Capsule",
+                "color": [0.2,0.4,0.8,1],
+                "tag": "goal"   
+            }        
+        ],
+        "TerrainEntity" :
+        {
+            "scale": [1.0,1.0,1.0],
+            "initial_position": [0,0,0],
+            "initial_rotation": [0,0,0],        
+            "body_type": "Static",
+            "shape": "ConcaveMesh",
+            "file": "/home/goksan/Work/lazyECS/Applications/meshes/walls.obj",
+            "heightfield" : {
+                "size": 100
+            }          
+        },
+        "RenderOnlyEntities" : [
+            {
+                "scale": [0.5,0.5,0.5],
+                "initial_position": [0,0,0],
+                "initial_rotation": [0,0,0],            
+                "shape": "Sphere",
+                "color": [0.0,1.0,0.0,1]            
+            },
+            {
+                "scale": [0.75,0.75,0.75],
+                "initial_position": [0,0,0],
+                "initial_rotation": [0,0,0],            
+                "shape": "Sphere",
+                "color": [0.0,1.0,0.0,1]              
+            },
+            {
+                "scale": [1.0,1.0,1.0],
+                "initial_position": [0,0,0],
+                "initial_rotation": [0,0,0],            
+                "shape": "Sphere",
+                "color": [0.0,1.0,0.0,1]      
+            }                
+        ]
+    }
+    }
+        

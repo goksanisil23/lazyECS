@@ -4,9 +4,17 @@ project(potential_field)
 
 # add_compile_options(-Wall -Wextra -Werror) #-pedantic -> causes error during c code compilation
 
-add_executable(potential_field main.cpp)
+add_executable(potential_field main.cpp PotentialField.cpp GoalAndObstacle.hpp Ego.cpp)
 
-target_link_libraries(potential_field
-                        lazyECS)
+target_include_directories(potential_field PUBLIC
+                                            ${LAZY_ECS_PARENT_DIR}
+                                            ${LAZY_ECS_INCLUDE_DIRS}
+                                            ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_include_directories(lazyECS PUBLIC ../..)
+foreach(p ${NANOGUI_EXTRA_INCS})
+    target_include_directories(potential_field PUBLIC ${p})
+endforeach()
+
+target_compile_definitions(potential_field PUBLIC ${NANOGUI_EXTRA_DEFS})
+
+target_link_libraries(potential_field lazyECS)

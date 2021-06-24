@@ -30,7 +30,7 @@ void PhysicsSystem::Init(){
 
     // Create rp3d rigid body for the entities that have rigid body components
     // Shape of the collider is obtained from the size of the Transform
-    for(auto& entity : m_entities) {
+    for(const auto& entity : m_entities) {
         auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity); // uninitialized here
         auto& transform = gOrchestrator.GetComponent<Transform3D>(entity); // Initial Transform of entities given outside Physics system 
         auto& mesh = gOrchestrator.GetComponent<Mesh>(entity); // we get shape of the mesh to create a matching collider

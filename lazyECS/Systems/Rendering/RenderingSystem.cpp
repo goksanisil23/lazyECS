@@ -20,7 +20,8 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
                 mDepthShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/depth.vert",
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/depth.frag"},
                 prevFrameTime{std::chrono::high_resolution_clock::now()},
-                mDebugVBOTrianglesVertices{GL_ARRAY_BUFFER}
+                mDebugVBOTrianglesVertices{GL_ARRAY_BUFFER},
+                mIsDebugRenderingEnabled{true}
 {
     // Allocate 1 buffer object per available shapes in LazyECS
     for(int _shape = Shape::Box; _shape < Shape::Last; _shape++) {
@@ -106,7 +107,8 @@ void RenderingSystem::Init() {
         transform.opengl_transform.setTransformMatrix(transform.opengl_transform.getTransformMatrix() * transform.mScalingMatrix);        
     }
 
-    CreateDebugVBOVAO();
+    if(mIsDebugRenderingEnabled)
+        CreateDebugVBOVAO();
 
     // Set window and camera size
     int bufferWidth, bufferHeight;
@@ -141,7 +143,7 @@ void RenderingSystem::draw_contents(){
     auto currentFrameTime = std::chrono::high_resolution_clock::now();
     auto deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentFrameTime-prevFrameTime).count();
     this->prevFrameTime = currentFrameTime; // update previous time
-    std::cout << "dt: " << deltaTime << std::endl;   
+    // std::cout << "dt: " << deltaTime << std::endl;   
 }
 
 std::map<GLFWwindow*, nanogui::Screen*>& RenderingSystem::GetNanoguiScreen() {
@@ -210,11 +212,11 @@ bool RenderingSystem::keyboard_event(int key, int scancode, int action, int modi
         return true;
     }
     if(key == GLFW_KEY_A && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-        mCamera.translateCamera(-0.01, 0, mSceneCenter);
+        mCamera.translateCamera(0.01, 0, mSceneCenter);
         return true;
     }   
     if(key == GLFW_KEY_D && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-        mCamera.translateCamera(0.01, 0, mSceneCenter);
+        mCamera.translateCamera(-0.01, 0, mSceneCenter);
         return true;
     }       
 }
@@ -429,11 +431,16 @@ void RenderingSystem::Rotate(int xMouse, int yMouse) {
 void RenderingSystem::Render() {
 
     // Update debug buffers
-    mDebugTriangles.clear(); // clear previous debug shapes
-    for (int i=0; i < 10; i++) {
-        DrawDebugBox(rp3d::Transform(rp3d::Vector3(-20 + i, 1, 5), rp3d::Quaternion::identity()), rp3d::Vector3(0.5,0.5,0.5), 0x00ff00);
+    if(mIsDebugRenderingEnabled) {
+        mDebugTriangles.clear(); // clear previous debug shapes
+        for (int i=0; i < 10; i++) {
+            if(i < 6)
+                DrawDebugBox(rp3d::Transform(rp3d::Vector3(-5 + i, 1, 10), rp3d::Quaternion::identity()), rp3d::Vector3(0.5,0.5,0.5), 0x00ff00);
+            else
+                DrawDebugBox(rp3d::Transform(rp3d::Vector3(-5 + i, 1, 10), rp3d::Quaternion::identity()), rp3d::Vector3(0.5,0.5,0.5), 0x00ffff);
+        }
+        UpdateDebugVBOVAO();
     }
-    UpdateDebugVBOVAO();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -514,7 +521,8 @@ void RenderingSystem::Render() {
 
     RenderSinglePass(mPhongShader, worldToCameraMatrix);
 
-    RenderDebugObjects(mColorShader, worldToCameraMatrix);
+    if(mIsDebugRenderingEnabled)
+        RenderDebugObjects(mColorShader, worldToCameraMatrix);
 
     if(mIsShadowMappingEnabled) {
         for(auto& shadowTexture : mShadowMapTexture) {

@@ -14,16 +14,16 @@ void HeightField::Ramp() {
 
     for(int i = 0; i < mNumPtsWidth; i++) {
         for(int j = 0; j < mNumPtsLength; j++) {
-            int arrayIndex = j * mNumPtsWidth + i;
+            int array_index = j * mNumPtsWidth + i;
             if((i==0) && (j==0)) {
                 this->mMinHeight = static_cast<float>((i+j)*10);
                 this->mMaxHeight = static_cast<float>((i+j)*10);                
             }
-            mHeightFieldData[arrayIndex] = static_cast<float>((i+j)*10);
-            if(mHeightFieldData[arrayIndex] > mMaxHeight)
-                mMaxHeight = mHeightFieldData[arrayIndex];
-            if(mHeightFieldData[arrayIndex] < mMinHeight)
-                mMinHeight = mHeightFieldData[arrayIndex];                
+            mHeightFieldData[array_index] = static_cast<float>((i+j)*10);
+            if(mHeightFieldData[array_index] > mMaxHeight)
+                mMaxHeight = mHeightFieldData[array_index];
+            if(mHeightFieldData[array_index] < mMinHeight)
+                mMinHeight = mHeightFieldData[array_index];                
         }
     }      
 
@@ -38,23 +38,23 @@ void HeightField::ApplyPerlinNoise() {
     double amplitude = 12;
     int octaves = 1;
     int randomseed = 23;
-    PerlinNoise perlinNoise(persistence, frequency, amplitude, octaves, randomseed);
+    PerlinNoise perlin_noise(persistence, frequency, amplitude, octaves, randomseed);
 
-    float width = mNumPtsWidth -1;
-    float length = mNumPtsLength -1;
+    int width = mNumPtsWidth - 1;
+    int length = mNumPtsLength - 1;
 
     // Will be updated below
-    this->mMinHeight = static_cast<float>(perlinNoise.GetHeight(-width, -length));
-    this->mMaxHeight = static_cast<float>(perlinNoise.GetHeight(-width, -length));
+    this->mMinHeight = static_cast<float>(perlin_noise.GetHeight(-width, -length));
+    this->mMaxHeight = static_cast<float>(perlin_noise.GetHeight(-width, -length));
 
     for(int i = 0; i < mNumPtsWidth; i++) {
         for(int j = 0; j < mNumPtsLength; j++) {
-            int arrayIndex = j * mNumPtsWidth + i;
-            mHeightFieldData[arrayIndex] = static_cast<float>(perlinNoise.GetHeight(-width*0.5+i, -length*0.5+j));
-            if(mHeightFieldData[arrayIndex] > mMaxHeight)
-                mMaxHeight = mHeightFieldData[arrayIndex];
-            if(mHeightFieldData[arrayIndex] < mMinHeight)
-                mMinHeight = mHeightFieldData[arrayIndex];                
+            int array_index = j * mNumPtsWidth + i;
+            mHeightFieldData[array_index] = static_cast<float>(perlin_noise.GetHeight(-width*0.5+i, -length*0.5+j));
+            if(mHeightFieldData[array_index] > mMaxHeight)
+                mMaxHeight = mHeightFieldData[array_index];
+            if(mHeightFieldData[array_index] < mMinHeight)
+                mMinHeight = mHeightFieldData[array_index];                
         }
     }    
 }

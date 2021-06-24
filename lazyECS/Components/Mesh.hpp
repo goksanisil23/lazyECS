@@ -41,7 +41,7 @@ public:
     // ----------------- Member functions ----------------- //
 
         // Constructor
-        Mesh(const Shape& mesh_shape);
+        explicit Mesh(const Shape& mesh_shape);
 
         // Construct mesh from model file
         // Mesh(const std::string& meshPath);

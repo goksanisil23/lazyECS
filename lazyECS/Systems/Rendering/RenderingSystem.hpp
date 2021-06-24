@@ -82,7 +82,7 @@ protected:
     openglframework::VertexBufferObject mDebugVBOTrianglesVertices; // triangle vertex data for debug objects
     openglframework::VertexArrayObject mDebugTrianglesVAO; // vertex array object for debug triangle vertices
     std::vector<DebugTriangle> mDebugTriangles;
-    // rp3d::List<DebugTriangle> mDebugTriangles;
+    bool mIsDebugRenderingEnabled;
 
     std::unordered_set<Shape> bufferedShapes; // storing shapes for which VBO and VAO are already created
 

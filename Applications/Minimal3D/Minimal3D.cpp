@@ -65,6 +65,7 @@ void Minimal3D::main_loop() {
 
     };
 
+    // start the render timer thread to trigger render pipeline periodically
     std::thread render_timer_thread(&lazyECS::RenderingSystem::TimerThreadFunc, this->renderSys);
 
     try {

@@ -1,65 +1,30 @@
-#include "lazyECS/Components/Transform.hpp"
-#include "lazyECS/Components/RigidBody.hpp"
-
-#include "lazyECS/ECSCore/Orchestrator.hpp"
-
-#include "lazyECS/Systems/PhysicsSystem.hpp"
-#include "lazyECS/Systems/RenderingSystem2D.hpp"
-
 #include <chrono>
 #include <iostream>
+#include <fstream>
 
-lazyECS::Orchestrator gOrchestrator;
+#include "Orchestrator.hpp"
+#include "PotentialField.h"
+
+
+lazyECS::Orchestrator gOrchestrator; // Orchestrator is a global variable that can be accessed by all systems
+                                     // and will exist throughout the lifetime of the program
+
+
+json launch_obj; // launch_obj is a global json object that will be populated in the app after parsing the launch file
+                 // and will be accessed by systems and Orchestrator to setup entity and system parameters
 
 int main() {
 
-    gOrchestrator.Init(); // initializes the ECS managers
+    // ---- Parse the launch file for scene & entity setup ---- //
+    std::ifstream ifs("/home/goksan/Work/lazyECS/Applications/PotentialField/launch.json");
+    launch_obj = json::parse(ifs);
 
-    // Register the components
-    gOrchestrator.RegisterComponentType<lazyECS::Transform>();
-    gOrchestrator.RegisterComponentType<lazyECS::RigidBody>();
-
-    // Register the systems
-    auto physicsSys = gOrchestrator.RegisterSystem<lazyECS::PhysicsSystem>();
-    auto renderSys = gOrchestrator.RegisterSystem<lazyECS::RenderingSystem2D>();
-
-    // Initialize the systems
-    physicsSys->Init();
-    renderSys->Init();
-
-    // Create the entities and assign components
-    std::vector<lazyECS::Entity> entities(10);                       
-    const int box_x_pos = 0.0;
-    for (int i = 0; i < entities.size(); i++) {
-        auto entity = entities.at(i);
-        entity = gOrchestrator.CreateEntity();
-
-        gOrchestrator.AddComponent<lazyECS::Transform>(entity, lazyECS::Transform{raylib::Vector3(box_x_pos + i*5.0, 0.0, 0.0), // location
-                                                                raylib::Vector3(0.0, 0.0, 0.0),       // rotation
-                                                                raylib::Vector3(1.0, 1.0, 1.0)        // scale
-                                                                });
-
-        gOrchestrator.AddComponent<lazyECS::RigidBody>(entity, lazyECS::RigidBody{raylib::Vector3(0.0, 0.0, 0.0), // velocity
-                                                                raylib::Vector3(0.0, 0.0, -8.0) // acceleration
-                                                                });      
+    // ---------- NANOGUI -------------- //
+    nanogui::init();
+    {
+        nanogui::ref<PotentialField> potential_field_app = new PotentialField(false, 1200, 1200); // PotentialField(isFullscreen, windowWidth, windowHeight)
+        potential_field_app->main_loop(); // render update interval in sec.
     }
-
-    float dt = 0.f;
-
-    // while(ctr < 1000) {
-    while(!renderSys->window->ShouldClose()) {
-
-        auto startTime = std::chrono::high_resolution_clock::now();
-
-        physicsSys->Update(dt);
-        renderSys->Update(dt);
-
-
-        auto stopTime = std::chrono::high_resolution_clock::now();
-
-        dt = std::chrono::duration<float, std::chrono::seconds::period>(stopTime-startTime).count();
-
-    }
-
+    nanogui::shutdown();
     return 0;
 }
