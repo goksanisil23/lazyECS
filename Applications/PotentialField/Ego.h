@@ -18,8 +18,11 @@ public:
     p_field::Position ComputeBestMove(const std::unordered_map<lazyECS::Entity, Obstacle>& obstacleActors, 
                                        const  std::unordered_map<lazyECS::Entity,Goal>& goalActors);
 
+    void UpdateGoalReached(const std::unordered_map<lazyECS::Entity,Goal>& goalActors);
+
     // lazyECS::Tag mTag; // which Tag group is this Actor a part of
     p_field::Position position_; // simple 2D position of the robot
+    bool goalReached_; // if one of the goals have been reached
 
 private:
     float scanRadius_; // radius of the search space (circle) where robot calculates possible costs

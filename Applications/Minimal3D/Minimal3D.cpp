@@ -13,10 +13,11 @@ Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
     gOrchestrator.RegisterComponentType<lazyECS::Transform3D>();
     gOrchestrator.RegisterComponentType<lazyECS::RigidBody3D>();
     gOrchestrator.RegisterComponentType<lazyECS::Mesh>();
+    gOrchestrator.RegisterComponentType<lazyECS::Tag>();
 
     // Register the systems (calls Constructors during registration)
     physicsSys = gOrchestrator.RegisterSystem<lazyECS::PhysicsSystem>();
-    renderSys = gOrchestrator.RegisterSystem<lazyECS::RenderingSystem>(isFullscreen, windowWidth, windowHeight, "Minimal 3D"); 
+    renderSys = gOrchestrator.RegisterSystem<lazyECS::RenderingSystem>(isFullscreen, windowWidth, windowHeight, "Minimal 3D");
 
     // entities below will be matched with systems so signature of the system is set
     renderSys->SetupSignature(); 

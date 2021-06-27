@@ -1,6 +1,9 @@
 #include "RenderingSystem.hpp"
 
 #include "ECSCore/Orchestrator.hpp"
+#include <GL/gl.h>
+#include <cstdint>
+#include <reactphysics3d/mathematics/Vector3.h>
 
 extern lazyECS::Orchestrator gOrchestrator; // expected to be defined globally in main
 extern json launch_obj;
@@ -21,6 +24,7 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/depth.frag"},
                 prevFrameTime{std::chrono::high_resolution_clock::now()},
                 mDebugVBOTrianglesVertices{GL_ARRAY_BUFFER},
+                mDebugVBOLinesVertices{GL_ARRAY_BUFFER},
                 mIsDebugRenderingEnabled{true}
 {
     // Allocate 1 buffer object per available shapes in LazyECS
@@ -143,7 +147,7 @@ void RenderingSystem::draw_contents(){
     auto currentFrameTime = std::chrono::high_resolution_clock::now();
     auto deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentFrameTime-prevFrameTime).count();
     this->prevFrameTime = currentFrameTime; // update previous time
-    // std::cout << "dt: " << deltaTime << std::endl;   
+    // std::cout << "fps: " << 1.0f/deltaTime << std::endl;   
 }
 
 std::map<GLFWwindow*, nanogui::Screen*>& RenderingSystem::GetNanoguiScreen() {
@@ -266,6 +270,7 @@ void RenderingSystem::CreateVBOVAO(Mesh& mesh) {
 }
 
 void RenderingSystem::CreateDebugVBOVAO() {
+    // Triangles
     mDebugVBOTrianglesVertices.create();
     mDebugTrianglesVAO.create();
 
@@ -274,6 +279,17 @@ void RenderingSystem::CreateDebugVBOVAO() {
 
     mDebugTrianglesVAO.unbind();
     mDebugVBOTrianglesVertices.unbind();
+
+    // Lines
+    mDebugVBOLinesVertices.create();
+    mDebugLinesVAO.create();
+
+    mDebugLinesVAO.bind();
+    mDebugVBOLinesVertices.bind();
+
+    mDebugLinesVAO.unbind();
+    mDebugVBOLinesVertices.unbind();
+
 }
 
 void RenderingSystem::UpdateDebugVBOVAO() {
@@ -282,6 +298,13 @@ void RenderingSystem::UpdateDebugVBOVAO() {
         GLsizei sizeVertices = static_cast<GLsizei>(mDebugTriangles.size() * sizeof(DebugTriangle));
         mDebugVBOTrianglesVertices.copyDataIntoVBO(sizeVertices, &(mDebugTriangles[0]), GL_STREAM_DRAW); // stream since we plan to both modify and draw 
         mDebugVBOTrianglesVertices.unbind();
+    }
+
+    if(mDebugLines.size() > 0) {
+        mDebugVBOLinesVertices.bind();
+        GLsizei sizeVertices = static_cast<GLsizei>(mDebugLines.size() * sizeof(DebugLine));
+        mDebugVBOLinesVertices.copyDataIntoVBO(sizeVertices, &(mDebugLines[0]), GL_STREAM_DRAW); // stream since we plan to both modify and draw 
+        mDebugVBOLinesVertices.unbind();        
     }
 }
 
@@ -433,12 +456,18 @@ void RenderingSystem::Render() {
     // Update debug buffers
     if(mIsDebugRenderingEnabled) {
         mDebugTriangles.clear(); // clear previous debug shapes
-        for (int i=0; i < 10; i++) {
-            if(i < 6)
-                DrawDebugBox(rp3d::Transform(rp3d::Vector3(-5 + i, 1, 10), rp3d::Quaternion::identity()), rp3d::Vector3(0.5,0.5,0.5), 0x00ff00);
-            else
-                DrawDebugBox(rp3d::Transform(rp3d::Vector3(-5 + i, 1, 10), rp3d::Quaternion::identity()), rp3d::Vector3(0.5,0.5,0.5), 0x00ffff);
+        for (const auto& debug_box : mDebugBoxes) {
+            DrawDebugBox(debug_box.transform, debug_box.halfExtents, static_cast<uint32_t>(debug_box.color));
         }
+        for(const auto& debug_sphere : mDebugSpheres) {
+            DrawDebugSphere(debug_sphere.position, debug_sphere.radius, static_cast<uint32_t>(debug_sphere.color));
+        }
+
+        mDebugLines.clear();
+        for (const auto& debug_aabb : mDebugAABBs) {
+            DrawDebugAABB(debug_aabb.transform, debug_aabb.min, debug_aabb.max, static_cast<uint32_t>(debug_aabb.color));
+        }
+
         UpdateDebugVBOVAO();
     }
 
@@ -533,7 +562,7 @@ void RenderingSystem::Render() {
     mPhongShader.unbind();
 }
 
-void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix) {
+void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
     
     shader.bind();
 
@@ -545,10 +574,10 @@ void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const op
         // Set the model to camera matrix
         auto& transform = gOrchestrator.GetComponent<Transform3D>(entity);
         shader.setMatrix4x4Uniform("localToWorldMatrix", transform.opengl_transform.getTransformMatrix());
-        shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCamereMatrix);
+        shader.setMatrix4x4Uniform("worldToCameraMatrix", worldToCameraMatrix);
 
         // Set the normal matrix (Inverse Transpose of the 3x3 upper-left part of the model-view matrix)
-        const openglframework::Matrix4 localToCameraMatrix = worldToCamereMatrix * transform.opengl_transform.getTransformMatrix();
+        const openglframework::Matrix4 localToCameraMatrix = worldToCameraMatrix * transform.opengl_transform.getTransformMatrix();
         const openglframework::Matrix3 normalMatrix = localToCameraMatrix.getUpperLeft3x3Matrix().getInverse().getTranspose();
         shader.setMatrix3x3Uniform("normalMatrix", normalMatrix, false);
 
@@ -589,7 +618,7 @@ void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const op
 
 void RenderingSystem::RenderDebugObjects(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
     // Render in wideframe mode
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  
     shader.bind();
 
     // Set the normal matrix
@@ -605,7 +634,7 @@ void RenderingSystem::RenderDebugObjects(openglframework::Shader& shader, const 
     GLint vertexPositionLoc = shader.getAttribLocation("vertexPosition");
     GLint vertexColorLoc = shader.getAttribLocation("vertexColor");    
 
-    if(mDebugTriangles.size() > 0) {
+    if(!mDebugTriangles.empty()) {
         mDebugTrianglesVAO.bind();
         mDebugVBOTrianglesVertices.bind();
         glEnableVertexAttribArray(vertexPositionLoc);
@@ -621,10 +650,27 @@ void RenderingSystem::RenderDebugObjects(openglframework::Shader& shader, const 
         mDebugTrianglesVAO.unbind();
     }
 
+    if(!mDebugLines.empty()) {
+        mDebugLinesVAO.bind();
+        mDebugVBOLinesVertices.bind();
+        glEnableVertexAttribArray(vertexPositionLoc);
+        glVertexAttribPointer(vertexPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(rp3d::Vector3) + sizeof(rp3d::uint32), (char*)nullptr);
+        glEnableVertexAttribArray(vertexColorLoc);
+        glVertexAttribIPointer(vertexColorLoc, 3, GL_UNSIGNED_INT, sizeof(rp3d::Vector3) + sizeof(rp3d::uint32), (void*)sizeof(rp3d::Vector3));
+        
+        glDrawArrays(GL_TRIANGLES, 0, mDebugLines.size()*2); // draw the lines geometry
+
+        glDisableVertexAttribArray(vertexPositionLoc);
+        glDisableVertexAttribArray(vertexColorLoc);
+        mDebugVBOLinesVertices.unbind();
+        mDebugLinesVAO.unbind();
+    }    
+
     shader.unbind();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // disable wideframe mode
-
 }
+
+
 
 void RenderingSystem::DrawDebugBox(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color) {
     rp3d::Vector3 debug_vertices[8];
@@ -653,6 +699,69 @@ void RenderingSystem::DrawDebugBox(const rp3d::Transform& transform, const rp3d:
 	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[5], debug_vertices[6], debug_vertices[4], color));
 	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[4], debug_vertices[6], debug_vertices[7], color));
 
+}
+
+void RenderingSystem::DrawDebugSphere(const rp3d::Vector3& position, const float& radius, uint32_t color) {
+    rp3d::Vector3 vertices[(NB_SECTORS_SPHERE + 1) * (NB_STACKS_SPHERE + 1) + (NB_SECTORS_SPHERE + 1)];
+	
+	// Vertices
+	const float sectorStep = 2 * rp3d::PI / NB_SECTORS_SPHERE;
+	const float stackStep = rp3d::PI / NB_STACKS_SPHERE;
+	
+	for (uint i = 0; i <= NB_STACKS_SPHERE; i++) {
+
+		const float stackAngle = rp3d::PI / 2 - i * stackStep;
+		const float radiusCosStackAngle = radius * std::cos(stackAngle);
+		const float z = radius * std::sin(stackAngle);
+
+        for (uint j = 0; j <= NB_SECTORS_SPHERE; j++) {
+		
+			const float sectorAngle = j * sectorStep;
+			const float x = radiusCosStackAngle * std::cos(sectorAngle);
+			const float y = radiusCosStackAngle * std::sin(sectorAngle);
+
+            vertices[i * (NB_SECTORS_SPHERE + 1) + j] = position + rp3d::Vector3(x, y, z);
+		}
+	}
+
+	// Faces
+	for (uint i = 0; i < NB_STACKS_SPHERE; i++) {
+		uint a1 = i * (NB_SECTORS_SPHERE + 1);
+		uint a2 = a1 + NB_SECTORS_SPHERE + 1;
+		for (uint j = 0; j < NB_SECTORS_SPHERE; j++, a1++, a2++) {
+			// 2 triangles per sector except for the first and last stacks
+			if (i != 0) {
+				mDebugTriangles.emplace_back(DebugTriangle(vertices[a1], vertices[a2], vertices[a1 + 1], color));
+			}
+			if (i != (NB_STACKS_SPHERE - 1)) {	
+				mDebugTriangles.emplace_back(DebugTriangle(vertices[a1 + 1], vertices[a2], vertices[a2 + 1], color));
+			}
+		}
+	}
+}
+
+void RenderingSystem::DrawDebugAABB(const rp3d::Transform& transform, const rp3d::Vector3& min_local, const rp3d::Vector3& max_local, uint32_t color) {
+	// Local to world
+    const rp3d::Vector3 min = transform * min_local;
+    const rp3d::Vector3 max = transform * max_local;
+    
+    // Bottom edges
+	mDebugLines.emplace_back(DebugLine(rp3d::Vector3(min.x, min.y, max.z), rp3d::Vector3(max.x, min.y, max.z), color));
+	mDebugLines.emplace_back(DebugLine(rp3d::Vector3(max.x, min.y, max.z),  rp3d::Vector3(max.x, min.y, min.z), color));
+	mDebugLines.emplace_back(DebugLine(rp3d::Vector3(max.x, min.y, min.z), rp3d::Vector3(min.x, min.y, min.z), color));
+	mDebugLines.emplace_back(DebugLine(rp3d::Vector3(min.x, min.y, min.z), rp3d::Vector3(min.x, min.y, max.z), color));
+
+	// Top edges
+	mDebugLines.emplace_back(DebugLine(rp3d::Vector3(min.x, max.y, max.z), rp3d::Vector3(max.x, max.y, max.z), color));
+	mDebugLines.emplace_back(DebugLine(rp3d::Vector3(max.x, max.y, max.z), rp3d::Vector3(max.x, max.y, min.z), color));
+	mDebugLines.emplace_back(DebugLine(rp3d::Vector3(max.x, max.y, min.z), rp3d::Vector3(min.x, max.y, min.z), color));
+	mDebugLines.emplace_back(DebugLine(rp3d::Vector3(min.x, max.y, min.z), rp3d::Vector3(min.x, max.y, max.z), color));
+
+	// Side edges
+	mDebugLines.emplace_back(DebugLine(rp3d::Vector3(min.x, min.y, max.z), rp3d::Vector3(min.x, max.y, max.z), color));
+	mDebugLines.emplace_back(DebugLine(rp3d::Vector3(max.x, min.y, max.z), rp3d::Vector3(max.x, max.y, max.z), color));
+	mDebugLines.emplace_back(DebugLine(rp3d::Vector3(max.x, min.y, min.z), rp3d::Vector3(max.x, max.y, min.z), color));
+	mDebugLines.emplace_back(DebugLine(rp3d::Vector3(min.x, min.y, min.z), rp3d::Vector3(min.x, max.y, min.z), color));    
 }
 
 void RenderingSystem::TimerThreadFunc() {

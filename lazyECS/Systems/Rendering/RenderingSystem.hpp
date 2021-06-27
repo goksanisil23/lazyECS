@@ -5,15 +5,21 @@
 #include "Components/RigidBody3D.hpp"
 #include "Components/Transform3D.hpp"
 
+#include <cstdint>
+#include <reactphysics3d/collision/shapes/AABB.h>
+#include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/reactphysics3d.h>
+#include "VertexBufferObject.h"
 #include "openglframework.h"
 
 // #include <nanogui/opengl.h>
 #include <nanogui/nanogui.h>
 #include <GLFW/glfw3.h>
+#include <reactphysics3d/utils/DebugRenderer.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <thread>
+#include <vector>
 
 
 namespace lazyECS {
@@ -33,6 +39,17 @@ public:
         std::uint32_t color2;
         rp3d::Vector3 point3;
         std::uint32_t color3;
+    };
+
+    // Line structure used for debug rendering of lines
+    struct DebugLine {
+        DebugLine(const rp3d::Vector3& pt1, const rp3d::Vector3& pt2, std::uint32_t color):
+            point1(pt1), color1(color), point2(pt2), color2(color) {}
+
+        rp3d::Vector3 point1;
+        std::uint32_t color1;
+        rp3d::Vector3 point2;
+        std::uint32_t color2;        
     };
 
 protected:
@@ -81,12 +98,18 @@ protected:
     // VBO and VAO for debug meshes
     openglframework::VertexBufferObject mDebugVBOTrianglesVertices; // triangle vertex data for debug objects
     openglframework::VertexArrayObject mDebugTrianglesVAO; // vertex array object for debug triangle vertices
+    openglframework::VertexBufferObject mDebugVBOLinesVertices; // line vertex data for debug objects
+    openglframework::VertexArrayObject mDebugLinesVAO; // vertex array object for debug line vertices
     std::vector<DebugTriangle> mDebugTriangles;
+    std::vector<DebugLine> mDebugLines;
     bool mIsDebugRenderingEnabled;
 
     std::unordered_set<Shape> bufferedShapes; // storing shapes for which VBO and VAO are already created
 
     std::chrono::_V2::system_clock::time_point prevFrameTime;
+
+    static constexpr int NB_SECTORS_SPHERE = 10; // Number of sectors used to draw a sphere or a capsule
+    static constexpr int NB_STACKS_SPHERE = 4;  // Number of stacks used to draw a sphere or a capsule
 
     // ----------------- Member functions ----------------- //
 
@@ -122,8 +145,8 @@ public:
 
     void Init(); // Used to generate the mesh for entities
     void Render(); // Render the scene (possibly in multiple passes due to shadow mapping)
-    void RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix); // render the scene in a single pass
-    void RenderDebugObjects(openglframework::Shader& shader, const openglframework::Matrix4& worldToCamereMatrix); // renders debug objects
+    void RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix); // render the scene in a single pass
+    void RenderDebugObjects(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix); // renders debug objects
     void SetupSignature(); // sets the signature of the system based on components its using
     void Update(); // highest level of function called from the main loop of the application, that calls the rest of the rendering pipeline
 
@@ -132,8 +155,41 @@ public:
     void CreateDebugVBOVAO(); // create VBO for debug only objects
     void UpdateDebugVBOVAO(); // update vertices and indices for debug objects
     void DrawDebugBox(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
+    void DrawDebugAABB(const rp3d::Transform& transform, const rp3d::Vector3& min_local, const rp3d::Vector3& max_local, uint32_t color);
+    void DrawDebugSphere(const rp3d::Vector3& position, const float& radius, uint32_t color);
 
     void TimerThreadFunc(); // function used in a thread to make periodic draw calls
+
+    struct DebugBox {
+        rp3d::Transform transform;
+        rp3d::Vector3 halfExtents;
+        rp3d::DebugRenderer::DebugColor color;
+
+        DebugBox(const rp3d::Transform& trans, const rp3d::Vector3& halfExt, const rp3d::DebugRenderer::DebugColor& col)
+            : transform(trans), halfExtents(halfExt), color(col) {}
+    };
+
+    struct DebugAABB {
+        rp3d::Transform transform;
+        rp3d::Vector3 min, max;
+        rp3d::DebugRenderer::DebugColor color;
+
+        DebugAABB(const rp3d::Transform& trans, const rp3d::Vector3& min, const rp3d::Vector3& max, const rp3d::DebugRenderer::DebugColor& col)
+            : transform(trans), min(min), max(max), color(col) {}        
+    };
+
+    struct DebugSphere {
+        rp3d::Vector3 position;
+        float radius;
+        rp3d::DebugRenderer::DebugColor color;
+
+        DebugSphere(const rp3d::Vector3& pos, const float& rad, const rp3d::DebugRenderer::DebugColor& col)
+            : position(pos), radius(rad), color(col) {}  
+    };
+
+    std::vector<DebugBox> mDebugBoxes; // debug boxes to be populated by the user
+    std::vector<DebugSphere> mDebugSpheres; // debug spheres to be populated by the user
+    std::vector<DebugAABB> mDebugAABBs; // debug AABBs to be populated by the user
 
 };
 

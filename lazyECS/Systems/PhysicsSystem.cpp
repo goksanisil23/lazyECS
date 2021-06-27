@@ -95,10 +95,10 @@ const float& PhysicsSystem::GetInterpFactor() {
 
 void PhysicsSystem::Update() {
 
-    auto currentFrameTime = std::chrono::high_resolution_clock::now();
-    auto deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentFrameTime-prevFrameTime).count();
-    this->prevFrameTime = currentFrameTime; // update previous time
-    this->timeAccumulator += deltaTime;
+    auto current_frame_time = std::chrono::high_resolution_clock::now();
+    auto delta_time = std::chrono::duration<float, std::chrono::seconds::period>(current_frame_time-prevFrameTime).count();
+    this->prevFrameTime = current_frame_time; // update previous time
+    this->timeAccumulator += delta_time;
 
     while(this->timeAccumulator >= this->timeStep) {
 
@@ -115,21 +115,21 @@ void PhysicsSystem::Update() {
     for (auto const& entity : m_entities) {
 
         int ent_ctr = 0;
-        for(auto& entity : m_entities) {
-            auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity); // updated in the physicsWorld update above
+        for(const auto& entity : m_entities) {
+            auto& rigid_body = gOrchestrator.GetComponent<RigidBody3D>(entity); // updated in the physicsWorld update above
             auto& transform = gOrchestrator.GetComponent<Transform3D>(entity);
 
             // get the updated transform of the body
-            rp3d::Transform currentTrans = rigidBody.rp3d_rigidBody->getTransform(); 
+            rp3d::Transform current_trans = rigid_body.rp3d_rigidBody->getTransform(); 
 
             // compute the interpolated transform of the rigid body based on the leftover time
-            rp3d::Transform interpTrans = rp3d::Transform::interpolateTransforms(transform.rp3d_prev_transform, currentTrans, interpFactor);
+            rp3d::Transform interp_trans = rp3d::Transform::interpolateTransforms(transform.rp3d_prev_transform, current_trans, interpFactor);
 
             // use the interpolated transform as the final transform value for the entity (for rendering, AI, etc)
-            transform.rp3d_transform = interpTrans;
+            transform.rp3d_transform = interp_trans;
 
             // Update the previous transform
-            transform.rp3d_prev_transform = currentTrans;
+            transform.rp3d_prev_transform = current_trans;
 
             // Debug print
             // const reactphysics3d::Vector3& position = transform.rp3d_transform.getPosition();

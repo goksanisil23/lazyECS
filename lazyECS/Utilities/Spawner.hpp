@@ -34,9 +34,10 @@ public:
             rp3d::Vector3 spawn_pos(phy_obj.at("initial_position")[0], 
                                     phy_obj.at("initial_position")[1],
                                     phy_obj.at("initial_position")[2]);
-            rp3d::Quaternion spawn_rot = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(phy_obj.at("initial_rotation")[0],
-                                                                                         phy_obj.at("initial_rotation")[1],
-                                                                                         phy_obj.at("initial_rotation")[2]));
+            rp3d::Quaternion spawn_rot = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(static_cast<float>(phy_obj.at("initial_rotation")[0])*rp3d::PI/180.0F,
+                                                                                         static_cast<float>(phy_obj.at("initial_rotation")[1])*rp3d::PI/180.0F,
+                                                                                         static_cast<float>(phy_obj.at("initial_rotation")[2])*rp3d::PI/180.0F
+                                                                                         ));
             lazyECS::Transform3D spawn_trans(spawn_pos, spawn_rot);
             spawn_trans.SetScale(phy_obj.at("scale")[0],
                                  phy_obj.at("scale")[1],
@@ -81,9 +82,10 @@ public:
         rp3d::Vector3 spawn_pos(terrain_obj.at("initial_position")[0], 
                                 terrain_obj.at("initial_position")[1], 
                                 terrain_obj.at("initial_position")[2]);
-        rp3d::Quaternion spawn_rot = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(terrain_obj.at("initial_rotation")[0],
-                                                                                     terrain_obj.at("initial_rotation")[1],
-                                                                                     terrain_obj.at("initial_rotation")[2]));
+            rp3d::Quaternion spawn_rot = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(static_cast<float>(terrain_obj.at("initial_rotation")[0])*rp3d::PI/180.0F,
+                                                                                         static_cast<float>(terrain_obj.at("initial_rotation")[1])*rp3d::PI/180.0F,
+                                                                                         static_cast<float>(terrain_obj.at("initial_rotation")[2])*rp3d::PI/180.0F
+                                                                                         ));
         lazyECS::Transform3D spawn_trans(spawn_pos, spawn_rot);
         if(mesh.mShape != lazyECS::Shape::Hfield) // scaling problem with height fields currently
             spawn_trans.SetScale(terrain_obj.at("scale")[0],
@@ -115,12 +117,13 @@ public:
             ent_ctr++;
 
             // --------------- Transform component (Initial position) --------------- //
-            rp3d::Vector3 spawn_pos(ent_ctr, 
+            rp3d::Vector3 spawn_pos(render_obj.at("initial_position")[0], 
                                     render_obj.at("initial_position")[1],
-                                    ent_ctr);
-            rp3d::Quaternion spawn_rot = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(render_obj.at("initial_rotation")[0],
-                                                                                         render_obj.at("initial_rotation")[1],
-                                                                                         render_obj.at("initial_rotation")[2]));
+                                    render_obj.at("initial_position")[2]);
+            rp3d::Quaternion spawn_rot = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(static_cast<float>(render_obj.at("initial_rotation")[0])*rp3d::PI/180.0F,
+                                                                                         static_cast<float>(render_obj.at("initial_rotation")[1])*rp3d::PI/180.0F,
+                                                                                         static_cast<float>(render_obj.at("initial_rotation")[2])*rp3d::PI/180.0F
+                                                                                         ));
             lazyECS::Transform3D spawn_trans(spawn_pos, spawn_rot);
             spawn_trans.SetScale(render_obj.at("scale")[0],
                                  render_obj.at("scale")[1],
@@ -148,7 +151,8 @@ public:
 
 // Static variable initialization
 std::unordered_map<std::string, lazyECS::Shape> Spawner::stringToShape = {
-        {"Box",lazyECS::Shape::Box},{"Sphere",lazyECS::Shape::Sphere}, {"ConcaveMesh",lazyECS::Shape::ConcaveMesh}, {"Capsule",lazyECS::Shape::Capsule}, {"Hfield",lazyECS::Shape::Hfield}
+        {"Box",lazyECS::Shape::Box},{"Sphere",lazyECS::Shape::Sphere}, {"ConcaveMesh",lazyECS::Shape::ConcaveMesh}, 
+        {"Capsule",lazyECS::Shape::Capsule}, {"Hfield",lazyECS::Shape::Hfield}, {"Custom",lazyECS::Shape::Custom}
 };
 
 std::unordered_map<std::string, rp3d::BodyType> Spawner::stringToBodyType = {

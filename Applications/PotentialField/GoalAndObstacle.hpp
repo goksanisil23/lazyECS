@@ -35,7 +35,7 @@ public:
         : sigma_(sigma), position_(position) {}
 
     // Calculate the attraction force caused by this Goal, at the given targetPos
-    // Attraction Force is calculated based on Normal Distribution, where the mean of the distribution is the position of the obstacle
+    // Attraction Force is calculated based on Normal Distribution, where the mean of the distribution is the position of the Goal
     float GetAttractionForce(const p_field::Position& targetPos) const {
         float attraction_force = -(1.0F / (sigma_ * std::sqrt(2*rp3d::PI))) 
                                         * std::exp(-0.5 * position_.CalculateDistanceSquared(targetPos) / (sigma_*sigma_)); // just opposite of repulsion
@@ -43,9 +43,10 @@ public:
         return attraction_force;
     }
 
+    p_field::Position position_; // simple 2D position of the Obstacle -> also mean (mu) of the Normal distribution
+    
 private:
 
     float sigma_; // standard deviation of Normal distribution
-    p_field::Position position_; // simple 2D position of the Obstacle -> also mean (mu) of the Normal distribution
 
 };
