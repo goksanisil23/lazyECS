@@ -1,12 +1,14 @@
 # pragma once
 
 #include <bitset>
+#include <cstdint>
 #include <unordered_set>
 #include <json.hpp>
 
-#include "ECSConstants.hpp"
-
 using json = nlohmann::json;
+
+constexpr uint32_t MAX_ENTITIES = 5000;
+constexpr uint32_t MAX_COMPONENT_TYPES = 32;
 
 // ---------- ECS types ---------- //
 

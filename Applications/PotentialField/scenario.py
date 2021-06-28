@@ -2,13 +2,13 @@ import json
 import random
 ################# SCENE PARAMETERS #################
 SCENE_RADIUS = 10.0
-SCENE_CENTER = [0.0, 24.0, 12.0]
-CAMERA_PITCH = -50.0 # degrees
+SCENE_CENTER = [0.0, 35.0, 3.0] # [0.0, 24.0, 12.0]
+CAMERA_PITCH = -70.0 # degrees # -50
 
 GRID_SIZE_X = 18.0
 GRID_SIZE_Z = 18.0
 
-NUM_OBSTACLES = 20
+NUM_OBSTACLES = 35 # stuck at 20
 
 ################# Actor templates #################
 def create_obstacle(position):

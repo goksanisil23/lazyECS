@@ -49,6 +49,10 @@ public:
 
 class PhysicsSystem : public System {
 
+private:
+
+    static constexpr float PHYSICS_TIME_STEP =  0.005;
+
 public:
     PhysicsSystem();
 

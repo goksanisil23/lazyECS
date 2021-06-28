@@ -1,9 +1,16 @@
 #include "RenderingSystem.hpp"
 
 #include "ECSCore/Orchestrator.hpp"
+#include "nanogui/label.h"
+#include "nanogui/screen.h"
+#include "nanogui/widget.h"
 #include <GL/gl.h>
+#include <chrono>
 #include <cstdint>
+#include <memory>
 #include <reactphysics3d/mathematics/Vector3.h>
+#include <string>
+#include <thread>
 
 extern lazyECS::Orchestrator gOrchestrator; // expected to be defined globally in main
 extern json launch_obj;
@@ -25,7 +32,8 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
                 prevFrameTime{std::chrono::high_resolution_clock::now()},
                 mDebugVBOTrianglesVertices{GL_ARRAY_BUFFER},
                 mDebugVBOLinesVertices{GL_ARRAY_BUFFER},
-                mIsDebugRenderingEnabled{true}
+                mIsDebugRenderingEnabled{true},
+                fpsLabel_(nullptr)
 {
     // Allocate 1 buffer object per available shapes in LazyECS
     for(int _shape = Shape::Box; _shape < Shape::Last; _shape++) {
@@ -80,10 +88,9 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
     // Setup where camera looks at 
     json camera_json =  launch_obj.at("scene").at("camera");
     openglframework::Vector3 center(camera_json.at("center").at("x"),camera_json.at("center").at("y"),camera_json.at("center").at("z"));
-    const float SCENE_RADIUS = camera_json.at("scene_radius");    
-    SetScenePosition(center, SCENE_RADIUS);
-    mCamera.rotateLocal(openglframework::Vector3(1, 0, 0), static_cast<float>(camera_json.at("camera_pitch")) * PI/180.0f);
-
+    const float scene_radius = camera_json.at("scene_radius");    
+    SetScenePosition(center, scene_radius);
+    mCamera.rotateLocal(openglframework::Vector3(1, 0, 0), static_cast<float>(camera_json.at("camera_pitch")) * PI/180.0F);
 }
 
 void RenderingSystem::Init() {
@@ -122,7 +129,9 @@ void RenderingSystem::Init() {
     glfwGetWindowSize(m_glfw_window, &windowWidth, &windowHeight);
     this->SetWindowDimension(windowWidth, windowHeight); 
 
-    this->set_visible(true); // nanogui set visibility   
+    this->set_visible(true); // nanogui set visibility
+
+    GuiInit();
 }
 
 void RenderingSystem::SetupSignature() {
@@ -144,10 +153,10 @@ void RenderingSystem::draw_contents(){
     this->Render();
 
     // measure time diff
-    auto currentFrameTime = std::chrono::high_resolution_clock::now();
-    auto deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentFrameTime-prevFrameTime).count();
-    this->prevFrameTime = currentFrameTime; // update previous time
-    // std::cout << "fps: " << 1.0f/deltaTime << std::endl;   
+    auto current_frame_time = std::chrono::high_resolution_clock::now();
+    this->deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(current_frame_time-prevFrameTime).count();
+    this->prevFrameTime = current_frame_time; // update previous time
+    UpdateGui();
 }
 
 std::map<GLFWwindow*, nanogui::Screen*>& RenderingSystem::GetNanoguiScreen() {
@@ -765,8 +774,9 @@ void RenderingSystem::DrawDebugAABB(const rp3d::Transform& transform, const rp3d
 }
 
 void RenderingSystem::TimerThreadFunc() {
-    while(true) {         
-        std::this_thread::sleep_for(this->quantum); // since no other operation happens in this thread, enough to just sleep for FPS rate
+    while(true) {
+        // Not sleeping here since sleeping in the main thread
+        // std::this_thread::sleep_for(this->quantum); // since no other operation happens in this thread, enough to just sleep for FPS rate
         // This is the main event interrupt which allows steady render rate (irrespective of mouse/keyboard callbacks)
         // after sleeping for RENDER_TIME_STEP
         // redraw() calls glfwPostEmptyEvent() which allows the iteration to proceed from the blocked glfwWaitEvents() state
@@ -797,8 +807,30 @@ void RenderingSystem::Update() {
             // Blocks next iteration until:
             // a) A keyboard/mouse event is made
             // b) render_timer_thread below periodically interrupts it by a glfwPostEmptyEvent call for steady render rate
+            // make this blocking call every 50FPS so that fast mouse/keyboard movements (faster than 50FPS) doesnt cause 
+            // main loop acceleration
+            std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long>(RENDER_TIME_STEP*1e3)));
             glfwWaitEvents();
         }    
+}
+
+void RenderingSystem::GuiInit() {
+    // Gui Initialization
+    nanogui::Widget* info_panel = new nanogui::Window(this, "Sim.");
+    info_panel->set_position(nanogui::Vector2i(10,10));
+    info_panel->set_layout(new nanogui::BoxLayout(nanogui::Orientation::Vertical, nanogui::Alignment::Fill, 10, 5));
+    info_panel->set_fixed_width(220);
+    fpsLabel_ = new nanogui::Label(info_panel, std::string("FPS : ") + std::to_string(1.0F/deltaTime), "sans-bold");
+    info_panel->set_visible(true);
+
+
+
+
+    this->perform_layout();
+}
+
+void RenderingSystem::UpdateGui() const {
+    fpsLabel_->set_caption("FPS: " + std::to_string(1.0F/deltaTime));
 }
 
 

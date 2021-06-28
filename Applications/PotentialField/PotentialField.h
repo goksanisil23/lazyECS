@@ -19,7 +19,7 @@ extern lazyECS::Orchestrator gOrchestrator;
 
 // ----------------- Application specific constants ----------------- //
 constexpr float GOAL_STD_DEV_ = 2; // (orig: 2) big sigma since we want to be able to pull the ego wherever it's on the map
-constexpr float OBST_STD_DEV_ = 0.2; // small sigma since we only want to push the ego if it gets really close to the obstacle
+constexpr float OBST_STD_DEV_ = 0.1; // small sigma since we only want to push the ego if it gets really close to the obstacle
 constexpr float EGO_RADIUS_ = 0.1; // 0.1
 
 constexpr float GRID_SIZE_X = 18.0;

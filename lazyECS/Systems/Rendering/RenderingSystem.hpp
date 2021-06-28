@@ -10,6 +10,7 @@
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/reactphysics3d.h>
 #include "VertexBufferObject.h"
+#include "nanogui/label.h"
 #include "openglframework.h"
 
 // #include <nanogui/opengl.h>
@@ -56,6 +57,8 @@ protected:
     // ----------------- Member variables ----------------- //
 
     std::chrono::microseconds quantum; // sleep time in render timer thread
+
+    static constexpr float RENDER_TIME_STEP = 0.02; // (sec. = 1/50 FPS)
 
     static constexpr int NUM_SHADOW_MAPS = 3;
     static constexpr int SHADOWMAP_WIDTH = 2048;
@@ -105,8 +108,6 @@ protected:
     bool mIsDebugRenderingEnabled;
 
     std::unordered_set<Shape> bufferedShapes; // storing shapes for which VBO and VAO are already created
-
-    std::chrono::_V2::system_clock::time_point prevFrameTime;
 
     static constexpr int NB_SECTORS_SPHERE = 10; // Number of sectors used to draw a sphere or a capsule
     static constexpr int NB_STACKS_SPHERE = 4;  // Number of stacks used to draw a sphere or a capsule
@@ -159,6 +160,14 @@ public:
     void DrawDebugSphere(const rp3d::Vector3& position, const float& radius, uint32_t color);
 
     void TimerThreadFunc(); // function used in a thread to make periodic draw calls
+    void GuiInit(); // Initialize Gui panels & widgets
+    void UpdateGui() const; // update Gui information
+
+    // ----------------- Member variables ----------------- //
+    // std::shared_ptr<nanogui::Label> fpsLabel_;
+    nanogui::Label* fpsLabel_;
+    std::chrono::_V2::system_clock::time_point prevFrameTime;
+    float deltaTime;     
 
     struct DebugBox {
         rp3d::Transform transform;
