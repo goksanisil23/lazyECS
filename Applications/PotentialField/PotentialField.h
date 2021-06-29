@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <random>
+#include <chrono>
 
 #include "RenderingSystem.hpp"
 #include "PhysicsSystem.hpp"
@@ -20,11 +21,13 @@ extern lazyECS::Orchestrator gOrchestrator;
 // ----------------- Application specific constants ----------------- //
 constexpr float GOAL_STD_DEV_ = 2; // (orig: 2) big sigma since we want to be able to pull the ego wherever it's on the map
 constexpr float OBST_STD_DEV_ = 0.1; // small sigma since we only want to push the ego if it gets really close to the obstacle
-constexpr float EGO_RADIUS_ = 0.1; // 0.1
+constexpr float EGO_RADIUS_ = 0.05; // 0.1
 
 constexpr float GRID_SIZE_X = 18.0;
 constexpr float GRID_SIZE_Z = 18.0;
 constexpr float GRID_RES = 0.25;
+
+constexpr float APP_STEP_TIME = 0.01; // 100Hz
 
 class PotentialField {
 
@@ -58,4 +61,8 @@ private:
     std::random_device rand_dev_;
     std::default_random_engine rand_eng_;
     std::uniform_int_distribution<int> rand_dist_;
+
+    std::chrono::_V2::system_clock::time_point prevAppTime_;
+    float deltaTime_;
+    float timeAccumulator_;      
 };

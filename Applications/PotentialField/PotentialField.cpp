@@ -15,8 +15,8 @@
 extern json launch_obj;
 
 PotentialField::PotentialField(bool isFullscreen, int windowWidth, int windowHeight) 
-    : rand_eng_(rand_dev_())
-
+    : rand_eng_(rand_dev_()), prevAppTime_{std::chrono::high_resolution_clock::now()}, 
+    deltaTime_(0.0), timeAccumulator_(0.0)
 {
 
     // --------------- lAZYECS -------------- //
@@ -94,36 +94,46 @@ void PotentialField::main_loop() {
     auto main_loop_step = [this]() {
 
         // ------------- 1) Apply ego control, NPC AI, kinematic control, etc. -------------  //
-        for(const auto& entity : this->physicsSys->m_entities) {
-            auto& rigid_body = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(entity);
-            auto& tag = gOrchestrator.GetComponent<lazyECS::Tag>(entity);
-            auto transform = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
-            
-            if(tag.mTag == "ego") {
-                // Debug draw the previous location
-                renderSys->mDebugSpheres.emplace_back(lazyECS::RenderingSystem::DebugSphere(transform.rp3d_transform.getPosition(),
-                                                                            0.05, rp3d::DebugRenderer::DebugColor::BLUE));
+        // Adjust the iteration rate for Control (not the engine)
+        auto current_app_time = std::chrono::high_resolution_clock::now();
+        this->deltaTime_ = std::chrono::duration<float, std::chrono::seconds::period>(current_app_time-prevAppTime_).count();
+        this->prevAppTime_ = current_app_time; // update previous time
+        this->timeAccumulator_ += deltaTime_;
 
-                auto& ego  = egoActors_.at(entity);
-                // update ego position from physics system
-                ego.position_ = p_field::Position(transform.rp3d_transform.getPosition().x, transform.rp3d_transform.getPosition().z);
-                // calculate possible moves with the current position information
-                ego.CalculatePossibleMoves();
-                // calculate the best possible move among possibilities
-                p_field::Position best_move = ego.ComputeBestMove(obstacleActors_, goalActors_); 
-                // Move the ego based on best action
-                rigid_body.rp3d_rigidBody->setTransform(rp3d::Transform(rp3d::Vector3(best_move.x,0,best_move.z),
-                                                                        rigid_body.rp3d_rigidBody->getTransform().getOrientation()));
-                                                
-                if(ego.goalReached_) {
-                    this->goalReached_ = true;
-                    ego.goalReached_ = false;
+        while(this->timeAccumulator_ >= APP_STEP_TIME ) {
+            this->timeAccumulator_ -= APP_STEP_TIME;
+
+            for(const auto& entity : this->physicsSys->m_entities) {
+                auto& rigid_body = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(entity);
+                auto& tag = gOrchestrator.GetComponent<lazyECS::Tag>(entity);
+                auto transform = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
+                
+                if(tag.mTag == "ego") {
+                    // Debug draw the previous location
+                    // renderSys->mDebugSpheres.emplace_back(lazyECS::RenderingSystem::DebugSphere(transform.rp3d_transform.getPosition(),
+                    //                                                             0.05, rp3d::DebugRenderer::DebugColor::BLUE));
+
+                    auto& ego  = egoActors_.at(entity);
+                    // update ego position from physics system
+                    ego.position_ = p_field::Position(transform.rp3d_transform.getPosition().x, transform.rp3d_transform.getPosition().z);
+                    // calculate possible moves with the current position information
+                    ego.CalculatePossibleMoves();
+                    // calculate the best possible move among possibilities
+                    p_field::Position best_move = ego.ComputeBestMove(obstacleActors_, goalActors_); 
+                    // Move the ego based on best action
+                    rigid_body.rp3d_rigidBody->setTransform(rp3d::Transform(rp3d::Vector3(best_move.x,0,best_move.z),
+                                                                            rigid_body.rp3d_rigidBody->getTransform().getOrientation()));
+                                                    
+                    if(ego.goalReached_) {
+                        this->goalReached_ = true;
+                        ego.goalReached_ = false;
+                    }
                 }
-            }
-            else if(goalReached_) {
-                ResetActorPositions();
-                this->goalReached_ = false;
-            }
+                else if(goalReached_) {
+                    ResetActorPositions();
+                    this->goalReached_ = false;
+                }
+            }   
             
 
             // if(rigid_body.rp3d_bodyType == rp3d::BodyType::DYNAMIC) { // set force for the dynamic bodies
@@ -147,10 +157,13 @@ void PotentialField::main_loop() {
             //         auto & trans = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
             //         trans.rp3d_transform.setPosition(trans.rp3d_transform.getPosition() + rp3d::Vector3(0,0,0.02));  
             //     }
-        }
 
-        // ------------- 2) Update physics ------------- //    
-        this->physicsSys->Update();
+
+            // // ------------- 2) Update physics ------------- //
+            // (needs to happen right after Actor applies force/teleports on rigid body)
+            this->physicsSys->Update();
+
+        }
 
         // ------------- 3) Update graphics ------------- //
         // a) Update debugging primities

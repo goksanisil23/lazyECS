@@ -3,7 +3,9 @@
 
 extern json launch_obj;
 
-Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) {
+Minimal3D::Minimal3D(bool isFullscreen, int windowWidth, int windowHeight) :
+    prevAppTime_{std::chrono::high_resolution_clock::now()}, deltaTime_(0.0), timeAccumulator_(0.0) 
+{
 
     // --------------- lAZYECS -------------- //
 
@@ -41,25 +43,36 @@ void Minimal3D::main_loop() {
 
     auto main_loop_step = [this]() {
 
-        // ------------- 1) Apply ego control, NPC AI, kinematic control, etc. -------------  // 
-        for(auto& entity : this->physicsSys->m_entities) {
-            auto& rigidBody = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(entity);
-            if(rigidBody.rp3d_bodyType == rp3d::BodyType::DYNAMIC) // set force for the dynamic bodies
-                rigidBody.rp3d_rigidBody->applyForceToCenterOfMass(rp3d::Vector3(1.0,0,1.0));
-            else if (rigidBody.rp3d_bodyType == rp3d::BodyType::KINEMATIC) // set velocity for the kinematic body
-                rigidBody.rp3d_rigidBody->setLinearVelocity(rp3d::Vector3(0.2,0.0,0.0));
-        }
+        auto current_app_time = std::chrono::high_resolution_clock::now();
+        this->deltaTime_ = std::chrono::duration<float, std::chrono::seconds::period>(current_app_time-prevAppTime_).count();
+        this->prevAppTime_ = current_app_time; // update previous time
+        this->timeAccumulator_ += deltaTime_;
 
-        // Update render only entities
-        for(auto& entity : this->renderSys->m_entities) {
-            if (!gOrchestrator.CheckComponentExistsInEntity<lazyECS::RigidBody3D>(entity)) { // if render only entity
-                auto & trans = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
-                trans.rp3d_transform.setPosition(trans.rp3d_transform.getPosition() + rp3d::Vector3(0,0,0.02));  
+        while(this->timeAccumulator_ >= APP_STEP_TIME ) {
+            this->timeAccumulator_ -= APP_STEP_TIME;                
+
+            // ------------- 1) Apply ego control, NPC AI, kinematic control, etc. -------------  // 
+            for(auto& entity : this->physicsSys->m_entities) {
+                auto& rigidBody = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(entity);
+                if(rigidBody.rp3d_bodyType == rp3d::BodyType::DYNAMIC) // set force for the dynamic bodies
+                    rigidBody.rp3d_rigidBody->applyForceToCenterOfMass(rp3d::Vector3(0.4,0,0.0));
+                else if (rigidBody.rp3d_bodyType == rp3d::BodyType::KINEMATIC) // set velocity for the kinematic body
+                    rigidBody.rp3d_rigidBody->setLinearVelocity(rp3d::Vector3(0.2,0.0,0.0));
             }
+
+            // Update render only entities
+            for(auto& entity : this->renderSys->m_entities) {
+                if (!gOrchestrator.CheckComponentExistsInEntity<lazyECS::RigidBody3D>(entity)) { // if render only entity
+                    auto & trans = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
+                    trans.rp3d_transform.setPosition(trans.rp3d_transform.getPosition() + rp3d::Vector3(0,0,0.02));  
+                }
+            }
+
+            // ------------- 2) Update physics ------------- //
+            // (needs to happen right after Actor applies force/teleports on rigid body)
+            this->physicsSys->Update();            
         }
 
-        // ------------- 2) Update physics ------------- //    
-        this->physicsSys->Update();
 
         // ------------- 3) Update graphics ------------- //
         this->renderSys->Update();

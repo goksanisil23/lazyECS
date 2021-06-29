@@ -776,7 +776,7 @@ void RenderingSystem::DrawDebugAABB(const rp3d::Transform& transform, const rp3d
 void RenderingSystem::TimerThreadFunc() {
     while(true) {
         // Not sleeping here since sleeping in the main thread
-        // std::this_thread::sleep_for(this->quantum); // since no other operation happens in this thread, enough to just sleep for FPS rate
+        std::this_thread::sleep_for(this->quantum); // since no other operation happens in this thread, enough to just sleep for FPS rate
         // This is the main event interrupt which allows steady render rate (irrespective of mouse/keyboard callbacks)
         // after sleeping for RENDER_TIME_STEP
         // redraw() calls glfwPostEmptyEvent() which allows the iteration to proceed from the blocked glfwWaitEvents() state
@@ -809,7 +809,7 @@ void RenderingSystem::Update() {
             // b) render_timer_thread below periodically interrupts it by a glfwPostEmptyEvent call for steady render rate
             // make this blocking call every 50FPS so that fast mouse/keyboard movements (faster than 50FPS) doesnt cause 
             // main loop acceleration
-            std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long>(RENDER_TIME_STEP*1e3)));
+            // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long>(RENDER_TIME_STEP*1e3)));
             glfwWaitEvents();
         }    
 }
