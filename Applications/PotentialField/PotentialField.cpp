@@ -1,7 +1,9 @@
 #include "PotentialField.h"
-#include "PotentialFieldTypes.h"
+
 #include "RigidBody3D.hpp"
 #include "Spawner.hpp"
+#include "Transform3D.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -19,7 +21,8 @@ extern json launch_obj;
 
 PotentialField::PotentialField(bool isFullscreen, int windowWidth, int windowHeight) 
     : rand_eng_(rand_dev_()), prevAppTime_{std::chrono::high_resolution_clock::now()}, 
-    deltaTime_(0.0), timeAccumulator_(0.0)
+    deltaTime_(0.0), timeAccumulator_(0.0),
+    goalReached_(false), rand_dist_{std::uniform_int_distribution<int>(-GRID_SIZE_X/2.0, GRID_SIZE_X/2.0)}
 {
 
     // --------------- lAZYECS -------------- //
@@ -79,14 +82,10 @@ void PotentialField::init() {
         auto ent_trans = gOrchestrator.GetComponent<lazyECS::Transform3D>(obst_ent);
         p_field::Position actor_pos(ent_trans.rp3d_transform.getPosition().x, ent_trans.rp3d_transform.getPosition().z);
         obstacleActors_.insert(std::make_pair(obst_ent, Obstacle(OBST_STD_DEV_, actor_pos)));
-    }
-
-    goalReached_ = false;
-    // rand_eng_ = std::default_random_engine(rand_dev_);
-    rand_dist_ = std::uniform_int_distribution<int>(-GRID_SIZE_X/2.0, GRID_SIZE_X/2.0);
+    }    
     
     // Initialize visual debug elements
-    this->resetDebugElements();
+    this->resetStaticDebugElements();
 
 }
 
@@ -111,10 +110,6 @@ void PotentialField::main_loop() {
                 auto transform = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
                 
                 if(tag.mTag == "ego") {
-                    // Debug draw the previous location
-                    renderSys->mDebugSpheres.emplace_back(lazyECS::RenderingSystem::DebugSphere(transform.rp3d_transform.getPosition(),
-                                                                                0.05, rp3d::DebugRenderer::DebugColor::BLUE));
-
 
                     auto& ego  = egoActors_.at(entity);
                     // update ego position from physics system
@@ -124,13 +119,7 @@ void PotentialField::main_loop() {
                     std::tie(best_move, cur_heading) = ego.ComputeBestMove(obstacleActors_, goalActors_); 
                     // Move the ego based on best action
                     rigid_body.rp3d_rigidBody->setTransform(rp3d::Transform(rp3d::Vector3(best_move.x,0,best_move.z),
-                                                                            rigid_body.rp3d_rigidBody->getTransform().getOrientation()));
-
-                    // Set the direction arrow (debug render)                 
-                    renderSys->mDebugArrows.at(0).transform.setOrientation(
-                        rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(0.0, cur_heading + rp3d::PI, 0.0 ))
-                    );
-                    renderSys->mDebugArrows.at(0).transform.setPosition(rp3d::Vector3(best_move.x,0,best_move.z));
+                                                                            rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(0.0, cur_heading + rp3d::PI, 0.0))));
 
                                                     
                     if(ego.goalReached_) {
@@ -141,7 +130,7 @@ void PotentialField::main_loop() {
                 else if(goalReached_) {
                     ResetActorPositions();
                     this->goalReached_ = false;
-                    this->resetDebugElements();
+                    this->resetStaticDebugElements();
                 }
             }
 
@@ -152,7 +141,7 @@ void PotentialField::main_loop() {
 
         // ------------- 3) Update graphics ------------- //
         // a) Update debugging primities
-        
+        // this->UpdateDynamicDebugElements();
         // b) Main entity graphics update
         this->renderSys->Update();
 
@@ -173,7 +162,7 @@ void PotentialField::main_loop() {
     render_timer_thread.join();
 }
 
-void PotentialField::resetDebugElements() {
+void PotentialField::resetStaticDebugElements() {
 
     // Reset the trajectory and grid
     renderSys->mDebugSpheres.clear();
@@ -208,7 +197,6 @@ void PotentialField::resetDebugElements() {
             forces_at_points.pop();
         
             float normalization_factor = (force_at_point - min_force)/(max_force-min_force);
-            std::cout << normalization_factor << std::endl;
             auto normalized_color = static_cast<uint32_t>(normalization_factor* static_cast<float>(0xFFFFFF));
 
             renderSys->mDebugRectangles.emplace_back(lazyECS::RenderingSystem::DebugRectangle(
@@ -263,4 +251,21 @@ void PotentialField::ResetActorPositions() {
                 
             }
         }
+}
+
+void PotentialField::UpdateDynamicDebugElements() {
+        auto ego_entities = tagSys->GetEntitiesWithTag("ego");
+        for(const auto& entity : ego_entities) {
+            const auto& transform = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
+             // Debug draw the previous location
+            renderSys->mDebugSpheres.emplace_back(lazyECS::RenderingSystem::DebugSphere(transform.rp3d_transform.getPosition(),
+                                                                        0.05, rp3d::DebugRenderer::DebugColor::BLUE));
+            // Set the direction arrow (debug render)
+            const auto cur_rotation = transform.rp3d_transform.getOrientation();
+            renderSys->mDebugArrows.at(0).transform.setOrientation(cur_rotation);
+            renderSys->mDebugArrows.at(0).transform.setPosition(rp3d::Vector3(transform.rp3d_transform.getPosition().x,
+                                                                              0,
+                                                                              transform.rp3d_transform.getPosition().z));           
+        
+        }                                                                 
 }

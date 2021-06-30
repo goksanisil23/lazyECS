@@ -33,7 +33,7 @@ void PhysicsSystem::Init(){
     for(const auto& entity : m_entities) {
         auto& rigidBody = gOrchestrator.GetComponent<RigidBody3D>(entity); // uninitialized here
         auto& transform = gOrchestrator.GetComponent<Transform3D>(entity); // Initial Transform of entities given outside Physics system 
-        auto& mesh = gOrchestrator.GetComponent<Mesh>(entity); // we get shape of the mesh to create a matching collider
+        auto& mesh = gOrchestrator.GetComponent<Mesh>(entity); // we get the shape of the mesh to create a matching collider
         // we assign the actual rigidBody here, whose initial position is determined by what was assigned to lazyECS::Transform component outside
         rigidBody.rp3d_rigidBody = std::shared_ptr<rp3d::RigidBody>(this->physicsWorld->createRigidBody(transform.rp3d_transform));
         // Assign collider based on the shape
@@ -68,13 +68,13 @@ void PhysicsSystem::Init(){
                 break;
             }
             case Shape::Hfield: {
-                float heightData[mesh.mHeightField->mNumPtsWidth*mesh.mHeightField->mNumPtsLength];
-                std::copy(mesh.mHeightField->mHeightFieldData.begin(),mesh.mHeightField->mHeightFieldData.end(), heightData);
+                float height_data[mesh.mHeightField->mNumPtsWidth*mesh.mHeightField->mNumPtsLength];
+                std::copy(mesh.mHeightField->mHeightFieldData.begin(),mesh.mHeightField->mHeightFieldData.end(), height_data);
                 rigidBody.rp3d_collision_shape = physicsCommon.createHeightFieldShape(mesh.mHeightField->mNumPtsWidth, 
                                                                                       mesh.mHeightField->mNumPtsLength,
                                                                                       mesh.mHeightField->mMinHeight,
                                                                                       mesh.mHeightField->mMaxHeight,
-                                                                                      heightData,
+                                                                                      height_data,
                                                                                       rp3d::HeightFieldShape::HeightDataType::HEIGHT_FLOAT_TYPE);                 
                 break;
             }

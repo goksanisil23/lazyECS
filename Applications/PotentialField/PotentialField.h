@@ -40,11 +40,13 @@ public:
 
     void main_loop();
 
-    void resetDebugElements(); // used to draw grid-like debug objects for each episode
+    void resetStaticDebugElements(); // used to draw grid-like debug objects for each episode
 
     float GetResultantForceAtPoint(const p_field::Position&); // calculates the resultant force at this position, based on all goal & obstacles
 
     void ResetActorPositions(); // teleports the Goal and Obstacles to a random position
+
+    void UpdateDynamicDebugElements(); // used to draw debug elements associated to moving objects, refreshed at render rate
 
     // ----------------- Member variables ----------------- //
     std::shared_ptr<lazyECS::RenderingSystem> renderSys; // pointer to the rendering system to be accessed from draw_contents

@@ -4,8 +4,8 @@
             "scene_radius": 10.0,
             "center": {
                 "x": 0.0,
-                "y": 35.0,
-                "z": 3.0
+                "y": 40.0,
+                "z": 5.0
             },
             "camera_pitch": -70.0
         }
@@ -19,16 +19,16 @@
                     0.5
                 ],
                 "initial_position": [
-                    -3,
+                    -5,
                     0.5,
-                    -7
+                    2
                 ],
                 "initial_rotation": [
                     0,
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -36,7 +36,33 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    9,
+                    0.5,
+                    -4
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -47,14 +73,14 @@
                 "initial_position": [
                     -1,
                     0.5,
-                    -7
+                    -9
                 ],
                 "initial_rotation": [
                     0,
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -62,7 +88,7 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -71,7 +97,7 @@
                     0.5
                 ],
                 "initial_position": [
-                    7,
+                    -5,
                     0.5,
                     1
                 ],
@@ -80,7 +106,7 @@
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -88,33 +114,7 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -6,
-                    0.5,
-                    -5
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -125,14 +125,14 @@
                 "initial_position": [
                     2,
                     0.5,
-                    -7
+                    9
                 ],
                 "initial_rotation": [
                     0,
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -140,7 +140,7 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -149,59 +149,7 @@
                     0.5
                 ],
                 "initial_position": [
-                    -8,
-                    0.5,
-                    0
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    3,
-                    0.5,
-                    8
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    3,
+                    9,
                     0.5,
                     -8
                 ],
@@ -210,7 +158,7 @@
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -218,7 +166,7 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -229,14 +177,14 @@
                 "initial_position": [
                     0,
                     0.5,
-                    -6
+                    5
                 ],
                 "initial_rotation": [
                     0,
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -244,7 +192,33 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    4,
+                    0.5,
+                    4
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -255,14 +229,14 @@
                 "initial_position": [
                     7,
                     0.5,
-                    2
+                    -6
                 ],
                 "initial_rotation": [
                     0,
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -270,7 +244,85 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    0,
+                    0.5,
+                    -8
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -7,
+                    0.5,
+                    5
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -2,
+                    0.5,
+                    7
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -281,14 +333,14 @@
                 "initial_position": [
                     -3,
                     0.5,
-                    5
+                    -5
                 ],
                 "initial_rotation": [
                     0,
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -296,7 +348,501 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -8,
+                    0.5,
+                    -4
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    1,
+                    0.5,
+                    7
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -1,
+                    0.5,
+                    4
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    0,
+                    0.5,
+                    -7
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    9,
+                    0.5,
+                    0
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    5,
+                    0.5,
+                    3
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    5,
+                    0.5,
+                    1
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -6,
+                    0.5,
+                    0
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    8,
+                    0.5,
+                    -1
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    7,
+                    0.5,
+                    -9
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    0,
+                    0.5,
+                    0
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -7,
+                    0.5,
+                    5
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -3,
+                    0.5,
+                    4
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    7,
+                    0.5,
+                    -8
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    8,
+                    0.5,
+                    4
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    6,
+                    0.5,
+                    -2
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -8,
+                    0.5,
+                    8
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -6,
+                    0.5,
+                    3
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -6,
+                    0.5,
+                    1
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -314,7 +860,7 @@
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -322,7 +868,7 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -331,111 +877,7 @@
                     0.5
                 ],
                 "initial_position": [
-                    -3,
-                    0.5,
-                    -3
-                ],
-                "initial_rotation": [
                     0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -2,
-                    0.5,
-                    3
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    2,
-                    0.5,
-                    4
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -9,
-                    0.5,
-                    0
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    2,
                     0.5,
                     -8
                 ],
@@ -444,7 +886,7 @@
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -452,657 +894,7 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -3,
-                    0.5,
-                    3
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    7,
-                    0.5,
-                    -6
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    4,
-                    0.5,
-                    -7
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -4,
-                    0.5,
-                    -1
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    9,
-                    0.5,
-                    7
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    1,
-                    0.5,
-                    -5
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -4,
-                    0.5,
-                    7
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -2,
-                    0.5,
-                    4
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -4,
-                    0.5,
-                    -6
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -4,
-                    0.5,
-                    -2
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    9,
-                    0.5,
-                    7
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -5,
-                    0.5,
-                    -3
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -9,
-                    0.5,
-                    7
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    1,
-                    0.5,
-                    1
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    5,
-                    0.5,
-                    4
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -6,
-                    0.5,
-                    -7
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -5,
-                    0.5,
-                    2
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -4,
-                    0.5,
-                    5
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    2,
-                    0.5,
-                    -1
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -4,
-                    0.5,
-                    -9
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -6,
-                    0.5,
-                    -9
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -2,
-                    0.5,
-                    1
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    2,
-                    0.5,
-                    -2
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    9,
-                    0.5,
-                    9
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -4,
-                    0.5,
-                    -9
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -1113,14 +905,14 @@
                 "initial_position": [
                     -8,
                     0.5,
-                    -8
+                    -4
                 ],
                 "initial_rotation": [
                     0,
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -1128,33 +920,7 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    -5,
-                    0.5,
-                    -5
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -1165,14 +931,14 @@
                 "initial_position": [
                     -4,
                     0.5,
-                    -2
+                    -4
                 ],
                 "initial_rotation": [
                     0,
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -1180,7 +946,7 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -1189,16 +955,16 @@
                     0.5
                 ],
                 "initial_position": [
-                    4,
+                    8,
                     0.5,
-                    -2
+                    3
                 ],
                 "initial_rotation": [
                     0,
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -1206,7 +972,7 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -1217,14 +983,14 @@
                 "initial_position": [
                     7,
                     0.5,
-                    -2
+                    -3
                 ],
                 "initial_rotation": [
                     0,
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -1232,7 +998,33 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    6,
+                    0.5,
+                    2
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -1243,32 +1035,6 @@
                 "initial_position": [
                     3,
                     0.5,
-                    -2
-                ],
-                "initial_rotation": [
-                    0,
-                    0,
-                    0
-                ],
-                "shape": "Sphere",
-                "color": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    1
-                ],
-                "tag": "obstacle",
-                "body_type": "Kinematic"
-            },
-            {
-                "scale": [
-                    0.5,
-                    1.0,
-                    0.5
-                ],
-                "initial_position": [
-                    0,
-                    0.5,
                     -4
                 ],
                 "initial_rotation": [
@@ -1276,7 +1042,7 @@
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -1284,7 +1050,7 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -1293,16 +1059,16 @@
                     0.5
                 ],
                 "initial_position": [
-                    0,
+                    5,
                     0.5,
-                    9
+                    -8
                 ],
                 "initial_rotation": [
                     0,
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     1.0,
                     0.0,
@@ -1310,7 +1076,241 @@
                     1
                 ],
                 "tag": "obstacle",
-                "body_type": "Kinematic"
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -7,
+                    0.5,
+                    1
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -9,
+                    0.5,
+                    1
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    2,
+                    0.5,
+                    5
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -6,
+                    0.5,
+                    2
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -5,
+                    0.5,
+                    8
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -2,
+                    0.5,
+                    2
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    -9,
+                    0.5,
+                    6
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    5,
+                    0.5,
+                    -3
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
+            },
+            {
+                "scale": [
+                    0.5,
+                    1.0,
+                    0.5
+                ],
+                "initial_position": [
+                    6,
+                    0.5,
+                    8
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "shape": "Box",
+                "color": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    1
+                ],
+                "tag": "obstacle",
+                "body_type": "Static"
             },
             {
                 "scale": [
@@ -1319,7 +1319,7 @@
                     0.4
                 ],
                 "initial_position": [
-                    8,
+                    4,
                     0.5,
                     0
                 ],
@@ -1328,7 +1328,7 @@
                     30,
                     0
                 ],
-                "body_type": "Kinematic",
+                "body_type": "Static",
                 "shape": "Sphere",
                 "color": [
                     0,
@@ -1345,16 +1345,16 @@
                     0.5
                 ],
                 "initial_position": [
-                    3,
+                    5,
                     0.5,
-                    -3
+                    8
                 ],
                 "initial_rotation": [
                     0,
                     0,
                     0
                 ],
-                "shape": "Sphere",
+                "shape": "Box",
                 "color": [
                     0.0,
                     1.0,
@@ -1362,15 +1362,15 @@
                     1
                 ],
                 "tag": "goal",
-                "body_type": "Kinematic"
+                "body_type": "Static"
             }
         ],
         "RenderOnlyEntities": [],
         "TerrainEntity": {
             "scale": [
+                30.0,
                 1.0,
-                1.0,
-                1.0
+                30.0
             ],
             "initial_position": [
                 0,
@@ -1383,7 +1383,7 @@
                 0
             ],
             "body_type": "Static",
-            "shape": "ConcaveMesh",
+            "shape": "Box",
             "file": "/home/goksan/Work/lazyECS/Applications/meshes/walls.obj",
             "heightfield": {
                 "size": 100
