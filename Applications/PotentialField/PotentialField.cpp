@@ -4,7 +4,10 @@
 #include "Spawner.hpp"
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <limits>
 #include <random>
+#include <reactphysics3d/configuration.h>
 #include <reactphysics3d/mathematics/Quaternion.h>
 #include <reactphysics3d/mathematics/Transform.h>
 #include <reactphysics3d/mathematics/Vector3.h>
@@ -39,10 +42,8 @@ PotentialField::PotentialField(bool isFullscreen, int windowWidth, int windowHei
     physicsSys->SetupSignature();
     tagSys->SetupSignature();
 
-    // Create the entities and assign components
-
-    json entities_json = launch_obj.at("entities");
-
+    // Create the entities and assign components (parsing the json file)
+    json entities_json = launch_obj.at("entities");    
     lazyECS::Spawner::CreatePhysicsEntities(entities_json);
     lazyECS::Spawner::CreateTerrainEntity(entities_json);
     lazyECS::Spawner::CreateRenderOnlyEntities(entities_json);
@@ -85,7 +86,7 @@ void PotentialField::init() {
     rand_dist_ = std::uniform_int_distribution<int>(-GRID_SIZE_X/2.0, GRID_SIZE_X/2.0);
     
     // Initialize visual debug elements
-    // this->initDebugElements();
+    this->resetDebugElements();
 
 }
 
@@ -94,6 +95,7 @@ void PotentialField::main_loop() {
     auto main_loop_step = [this]() {
 
         // ------------- 1) Apply ego control, NPC AI, kinematic control, etc. -------------  //
+
         // Adjust the iteration rate for Control (not the engine)
         auto current_app_time = std::chrono::high_resolution_clock::now();
         this->deltaTime_ = std::chrono::duration<float, std::chrono::seconds::period>(current_app_time-prevAppTime_).count();
@@ -110,19 +112,26 @@ void PotentialField::main_loop() {
                 
                 if(tag.mTag == "ego") {
                     // Debug draw the previous location
-                    // renderSys->mDebugSpheres.emplace_back(lazyECS::RenderingSystem::DebugSphere(transform.rp3d_transform.getPosition(),
-                    //                                                             0.05, rp3d::DebugRenderer::DebugColor::BLUE));
+                    renderSys->mDebugSpheres.emplace_back(lazyECS::RenderingSystem::DebugSphere(transform.rp3d_transform.getPosition(),
+                                                                                0.05, rp3d::DebugRenderer::DebugColor::BLUE));
+
 
                     auto& ego  = egoActors_.at(entity);
                     // update ego position from physics system
                     ego.position_ = p_field::Position(transform.rp3d_transform.getPosition().x, transform.rp3d_transform.getPosition().z);
-                    // calculate possible moves with the current position information
-                    ego.CalculatePossibleMoves();
                     // calculate the best possible move among possibilities
-                    p_field::Position best_move = ego.ComputeBestMove(obstacleActors_, goalActors_); 
+                    p_field::Position best_move; float cur_heading;
+                    std::tie(best_move, cur_heading) = ego.ComputeBestMove(obstacleActors_, goalActors_); 
                     // Move the ego based on best action
                     rigid_body.rp3d_rigidBody->setTransform(rp3d::Transform(rp3d::Vector3(best_move.x,0,best_move.z),
                                                                             rigid_body.rp3d_rigidBody->getTransform().getOrientation()));
+
+                    // Set the direction arrow (debug render)                 
+                    renderSys->mDebugArrows.at(0).transform.setOrientation(
+                        rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(0.0, cur_heading + rp3d::PI, 0.0 ))
+                    );
+                    renderSys->mDebugArrows.at(0).transform.setPosition(rp3d::Vector3(best_move.x,0,best_move.z));
+
                                                     
                     if(ego.goalReached_) {
                         this->goalReached_ = true;
@@ -132,37 +141,13 @@ void PotentialField::main_loop() {
                 else if(goalReached_) {
                     ResetActorPositions();
                     this->goalReached_ = false;
+                    this->resetDebugElements();
                 }
-            }   
-            
-
-            // if(rigid_body.rp3d_bodyType == rp3d::BodyType::DYNAMIC) { // set force for the dynamic bodies
-            //     // rigid_body.rp3d_rigidBody->applyForceToCenterOfMass(rp3d::Vector3(1.0,0,1.0));
-            //     auto new_trans = rigid_body.rp3d_rigidBody->getTransform();
-            //     new_trans.setPosition(new_trans.getPosition() + rp3d::Vector3(0.1,0,0));
-            //     rigid_body.rp3d_rigidBody->setTransform(new_trans);
-            // }
-
-            //     else if (rigid_body.rp3d_bodyType == rp3d::BodyType::KINEMATIC) { // set velocity for the kinematic body
-            //         // rigid_body.rp3d_rigidBody->setLinearVelocity(rp3d::Vector3(0.2,0.0,0.0));
-            //         auto new_trans = rigid_body.rp3d_rigidBody->getTransform();
-            //         new_trans.setPosition(new_trans.getPosition() + rp3d::Vector3(0,0.1,0));
-            //         rigid_body.rp3d_rigidBody->setTransform(new_trans);
-            //     }
-            // }
-
-            // // Update render only entities
-            // for(const auto& entity : this->renderSys->m_entities) {
-            //     if (!gOrchestrator.CheckComponentExistsInEntity<lazyECS::RigidBody3D>(entity)) { // if render only entity
-            //         auto & trans = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
-            //         trans.rp3d_transform.setPosition(trans.rp3d_transform.getPosition() + rp3d::Vector3(0,0,0.02));  
-            //     }
-
+            }
 
             // // ------------- 2) Update physics ------------- //
             // (needs to happen right after Actor applies force/teleports on rigid body)
             this->physicsSys->Update();
-
         }
 
         // ------------- 3) Update graphics ------------- //
@@ -188,23 +173,56 @@ void PotentialField::main_loop() {
     render_timer_thread.join();
 }
 
-void PotentialField::initDebugElements() {
+void PotentialField::resetDebugElements() {
+
+    // Reset the trajectory and grid
+    renderSys->mDebugSpheres.clear();
+    renderSys->mDebugRectangles.clear();
+    renderSys->mDebugArrows.clear();
+
+
     // Draw a grid on the terrain to visualize the potential field
     std::pair<float, float> x_limit = std::make_pair(-GRID_SIZE_X/2.0, GRID_SIZE_X/2.0);
     std::pair<float, float> z_limit = std::make_pair(-GRID_SIZE_Z/2.0, GRID_SIZE_Z/2.0);
     float grid_resolution = GRID_RES;
+    float max_force = -std::numeric_limits<float>::infinity();
+    float min_force = std::numeric_limits<float>::infinity();
+    std::queue<float> forces_at_points; // serialized vector of forces at the 2D grid
+    // 1st pass to find min/max for color scaling
     for(int i = 0; i < (x_limit.second-x_limit.first)/(grid_resolution)+1; i++) { // terrain boundary on x
         for(int j = 0; j < (z_limit.second-z_limit.first)/(grid_resolution)+1; j++) { // terrain boundary on z
             float x_coord = x_limit.first + i*grid_resolution;
             float z_coord = z_limit.first + j*grid_resolution;
-            float cell_height = GetResultantForceAtPoint(p_field::Position(x_coord, z_coord)) * 10.0F; // scaled up for visibility
-            // renderSys->mDebugBoxes.emplace_back(lazyECS::RenderingSystem::DebugBox(
-            //     rp3d::Transform(rp3d::Vector3(x_coord, cell_height + 10.0F, z_coord), rp3d::Quaternion::identity()),
-            //      rp3d::Vector3(1.0, std::abs(cell_height), 1.0), rp3d::DebugRenderer::DebugColor::MAGENTA));  
-            renderSys->mDebugSpheres.emplace_back(lazyECS::RenderingSystem::DebugSphere(rp3d::Vector3(x_coord, 0.5, z_coord),
-                                                                                        0.5, rp3d::DebugRenderer::DebugColor::BLUE));    
+            float force_at_point = GetResultantForceAtPoint(p_field::Position(x_coord, z_coord)) * 10.0F; // scaled up for visibility
+            min_force = (force_at_point < min_force) ? force_at_point : min_force;
+            max_force = (force_at_point > max_force) ? force_at_point : max_force;
+            forces_at_points.push(force_at_point);               
         }
-    }    
+    }
+    // 2nd pass to write actual color values
+    for(int i = 0; i < (x_limit.second-x_limit.first)/(grid_resolution)+1; i++) { // terrain boundary on x
+        for(int j = 0; j < (z_limit.second-z_limit.first)/(grid_resolution)+1; j++) { // terrain boundary on z
+            float x_coord = x_limit.first + i*grid_resolution;
+            float z_coord = z_limit.first + j*grid_resolution;
+            float force_at_point = forces_at_points.front(); // since read & write orders are the same
+            forces_at_points.pop();
+        
+            float normalization_factor = (force_at_point - min_force)/(max_force-min_force);
+            std::cout << normalization_factor << std::endl;
+            auto normalized_color = static_cast<uint32_t>(normalization_factor* static_cast<float>(0xFFFFFF));
+
+            renderSys->mDebugRectangles.emplace_back(lazyECS::RenderingSystem::DebugRectangle(
+                rp3d::Transform(rp3d::Vector3(x_coord, -0.0, z_coord), rp3d::Quaternion::identity()),
+                 rp3d::Vector3(GRID_RES/2.0-0.01, 0, GRID_RES/2.0-0.01), normalized_color)); 
+        }
+    }
+
+    // Debug arrow
+    renderSys->mDebugArrows.emplace_back(lazyECS::RenderingSystem::DebugArrow(
+        rp3d::Transform(rp3d::Vector3(0,0,0),rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(0.0, 0.0, 0.0 ))),
+        rp3d::DebugRenderer::DebugColor::BLACK
+    ));
+
 }
 
 
@@ -245,6 +263,4 @@ void PotentialField::ResetActorPositions() {
                 
             }
         }
-        // Reset the trajectory
-        renderSys->mDebugSpheres.clear();
 }

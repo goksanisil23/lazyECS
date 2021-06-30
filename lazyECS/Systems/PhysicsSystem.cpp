@@ -8,7 +8,7 @@ extern lazyECS::Orchestrator gOrchestrator; // expected to be defined globally i
 
 namespace lazyECS {
 
-PhysicsSystem::PhysicsSystem() : timeStep{PHYSICS_TIME_STEP}, timeAccumulator{0.0f}, 
+PhysicsSystem::PhysicsSystem() : timeStep{PHYSICS_TIME_STEP}, timeAccumulator{0.0F}, 
                                 prevFrameTime{std::chrono::high_resolution_clock::now()} 
                                 {}
 

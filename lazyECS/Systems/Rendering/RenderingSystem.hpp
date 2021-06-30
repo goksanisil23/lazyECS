@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <reactphysics3d/collision/shapes/AABB.h>
+#include <reactphysics3d/mathematics/Transform.h>
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/reactphysics3d.h>
 #include "VertexBufferObject.h"
@@ -158,6 +159,8 @@ public:
     void DrawDebugBox(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
     void DrawDebugAABB(const rp3d::Transform& transform, const rp3d::Vector3& min_local, const rp3d::Vector3& max_local, uint32_t color);
     void DrawDebugSphere(const rp3d::Vector3& position, const float& radius, uint32_t color);
+    void DrawDebugRectangle(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
+    void DrawDebugArrow(const rp3d::Transform& transform, uint32_t color);
 
     void TimerThreadFunc(); // function used in a thread to make periodic draw calls
     void GuiInit(); // Initialize Gui panels & widgets
@@ -196,10 +199,28 @@ public:
             : position(pos), radius(rad), color(col) {}  
     };
 
+    struct DebugRectangle {
+        rp3d::Transform transform;
+        rp3d::Vector3 halfExtents;
+        uint32_t color;
+
+        DebugRectangle(const rp3d::Transform& trans, const rp3d::Vector3& halfExt, uint32_t& col)
+            : transform(trans), halfExtents(halfExt), color(col) {}
+    };
+
+    struct DebugArrow {
+        rp3d::Transform transform;
+        rp3d::DebugRenderer::DebugColor color;
+
+        DebugArrow(const rp3d::Transform& trans, const rp3d::DebugRenderer::DebugColor& col)
+            : transform(trans), color(col) {}
+    };
+
     std::vector<DebugBox> mDebugBoxes; // debug boxes to be populated by the user
     std::vector<DebugSphere> mDebugSpheres; // debug spheres to be populated by the user
     std::vector<DebugAABB> mDebugAABBs; // debug AABBs to be populated by the user
-
+    std::vector<DebugRectangle> mDebugRectangles; // debug rectangles to be populated by the user
+    std::vector<DebugArrow> mDebugArrows; // debug rectangles to be populated by the user
 };
 
 /// Reshape the view

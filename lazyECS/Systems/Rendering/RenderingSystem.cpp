@@ -471,10 +471,15 @@ void RenderingSystem::Render() {
         for(const auto& debug_sphere : mDebugSpheres) {
             DrawDebugSphere(debug_sphere.position, debug_sphere.radius, static_cast<uint32_t>(debug_sphere.color));
         }
-
+        for (const auto& debug_rect : mDebugRectangles) {
+            DrawDebugRectangle(debug_rect.transform, debug_rect.halfExtents, debug_rect.color);
+        }   
         mDebugLines.clear();
         for (const auto& debug_aabb : mDebugAABBs) {
             DrawDebugAABB(debug_aabb.transform, debug_aabb.min, debug_aabb.max, static_cast<uint32_t>(debug_aabb.color));
+        }
+        for(const auto& debug_arrow : mDebugArrows) {
+            DrawDebugArrow(debug_arrow.transform, static_cast<uint32_t>(debug_arrow.color));
         }
 
         UpdateDebugVBOVAO();
@@ -627,7 +632,8 @@ void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const op
 
 void RenderingSystem::RenderDebugObjects(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
     // Render in wideframe mode
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     shader.bind();
 
     // Set the normal matrix
@@ -659,6 +665,9 @@ void RenderingSystem::RenderDebugObjects(openglframework::Shader& shader, const 
         mDebugTrianglesVAO.unbind();
     }
 
+    glDisable(GL_CULL_FACE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_LINE_SMOOTH);
     if(!mDebugLines.empty()) {
         mDebugLinesVAO.bind();
         mDebugVBOLinesVertices.bind();
@@ -673,10 +682,12 @@ void RenderingSystem::RenderDebugObjects(openglframework::Shader& shader, const 
         glDisableVertexAttribArray(vertexColorLoc);
         mDebugVBOLinesVertices.unbind();
         mDebugLinesVAO.unbind();
-    }    
+    } 
 
     shader.unbind();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // disable wideframe mode
+    glDisable(GL_LINE_SMOOTH);
+    glEnable(GL_CULL_FACE);
 }
 
 
@@ -708,6 +719,18 @@ void RenderingSystem::DrawDebugBox(const rp3d::Transform& transform, const rp3d:
 	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[5], debug_vertices[6], debug_vertices[4], color));
 	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[4], debug_vertices[6], debug_vertices[7], color));
 
+}
+
+void RenderingSystem::DrawDebugRectangle(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color) {
+    rp3d::Vector3 debug_vertices[4];
+    // vertices
+    debug_vertices[0] = transform * rp3d::Vector3(-halfExtents.x, 0, -halfExtents.z);
+    debug_vertices[1] = transform * rp3d::Vector3(-halfExtents.x, 0, halfExtents.z);
+    debug_vertices[2] = transform * rp3d::Vector3(halfExtents.x, 0, halfExtents.z);
+    debug_vertices[3] = transform * rp3d::Vector3(halfExtents.x, 0, -halfExtents.z);
+
+    mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[0], debug_vertices[1], debug_vertices[2], color));
+    mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[2], debug_vertices[3], debug_vertices[0], color));
 }
 
 void RenderingSystem::DrawDebugSphere(const rp3d::Vector3& position, const float& radius, uint32_t color) {
@@ -749,6 +772,12 @@ void RenderingSystem::DrawDebugSphere(const rp3d::Vector3& position, const float
 	}
 }
 
+void RenderingSystem::DrawDebugArrow(const rp3d::Transform& transform, uint32_t color) {
+    mDebugLines.emplace_back(DebugLine(transform * rp3d::Vector3(0, 0.1, 0), transform *rp3d::Vector3(0, 0.1, -1.5), color)); // arrow body
+    mDebugLines.emplace_back(DebugLine(transform *rp3d::Vector3(0, 0.1, -1.5), transform *rp3d::Vector3(-0.5, 0.1, -1), color)); // left arrow head edge
+    mDebugLines.emplace_back(DebugLine(transform *rp3d::Vector3(0, 0.1, -1.5), transform *rp3d::Vector3(0.5, 0.1, -1), color)); // right arrow head edge
+}
+
 void RenderingSystem::DrawDebugAABB(const rp3d::Transform& transform, const rp3d::Vector3& min_local, const rp3d::Vector3& max_local, uint32_t color) {
 	// Local to world
     const rp3d::Vector3 min = transform * min_local;
@@ -775,8 +804,8 @@ void RenderingSystem::DrawDebugAABB(const rp3d::Transform& transform, const rp3d
 
 void RenderingSystem::TimerThreadFunc() {
     while(true) {
-        // Not sleeping here since sleeping in the main thread
-        std::this_thread::sleep_for(this->quantum); // since no other operation happens in this thread, enough to just sleep for FPS rate
+        // Not sleeping here, maximizing the FPS
+        // std::this_thread::sleep_for(this->quantum); // since no other operation happens in this thread, enough to just sleep for FPS rate
         // This is the main event interrupt which allows steady render rate (irrespective of mouse/keyboard callbacks)
         // after sleeping for RENDER_TIME_STEP
         // redraw() calls glfwPostEmptyEvent() which allows the iteration to proceed from the blocked glfwWaitEvents() state

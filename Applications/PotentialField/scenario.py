@@ -8,7 +8,7 @@ CAMERA_PITCH = -70.0 # degrees # -50
 GRID_SIZE_X = 18.0
 GRID_SIZE_Z = 18.0
 
-NUM_OBSTACLES = 20 # stuck at 20
+NUM_OBSTACLES = 50 # stuck at 20
 
 ################# Actor templates #################
 def create_obstacle(position):
@@ -28,7 +28,7 @@ def create_obstacle(position):
 def create_goal(position):
     goal_json = {
             "scale": [0.5,3.0,0.5],
-            "initial_position": [8.0, 0.5, 8.0],
+            "initial_position": position,
             "initial_rotation": [0,0,0],            
             "shape": "Sphere",
             "color": [0.0,1.0,0.0,1],

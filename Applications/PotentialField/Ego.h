@@ -15,7 +15,7 @@ public:
                  const p_field::Position& position = p_field::Position());
 
     void CalculatePossibleMoves();
-    p_field::Position ComputeBestMove(const std::unordered_map<lazyECS::Entity, Obstacle>& obstacleActors, 
+    std::pair<p_field::Position, float> ComputeBestMove(const std::unordered_map<lazyECS::Entity, Obstacle>& obstacleActors, 
                                        const  std::unordered_map<lazyECS::Entity,Goal>& goalActors);
 
     void UpdateGoalReached(const std::unordered_map<lazyECS::Entity,Goal>& goalActors);
@@ -28,5 +28,5 @@ private:
     float scanRadius_; // radius of the search space (circle) where robot calculates possible costs
     int numPossibleDirections_; // defines the resolution of the search space (circle)
     std::vector<p_field::Position> possibleMoves_; // possible future points in the search radius
-
+    float headingIncrement_;
 };
