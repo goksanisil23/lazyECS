@@ -141,7 +141,7 @@ void PotentialField::main_loop() {
 
         // ------------- 3) Update graphics ------------- //
         // a) Update debugging primities
-        // this->UpdateDynamicDebugElements();
+        this->UpdateDynamicDebugElements();
         // b) Main entity graphics update
         this->renderSys->Update();
 

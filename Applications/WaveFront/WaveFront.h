@@ -32,6 +32,8 @@ public:
 
     void SetupGridCells();
 
+    void UpdateGridOccupancy();
+
     // ----------------- Member variables ----------------- //
     std::shared_ptr<lazyECS::RenderingSystem> renderSys; // pointer to the rendering system to be accessed from draw_contents
     std::shared_ptr<lazyECS::PhysicsSystem> physicsSys;

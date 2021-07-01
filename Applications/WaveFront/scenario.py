@@ -2,14 +2,14 @@ import json
 import random
 ################# SCENE PARAMETERS #################
 SCENE_RADIUS = 10.0
-SCENE_CENTER = [0.0, 40.0, 5.0] # [0.0, 24.0, 12.0]
+SCENE_CENTER = [0.0, 30.0, 1.0] # [0.0, 24.0, 12.0]
 CAMERA_PITCH = -70.0 # degrees # -50
 
 GRID_SIZE_X = 18.0
 GRID_SIZE_Z = 18.0
-GRID_RESOLUTION = 0.2
+GRID_RESOLUTION = 1.0
 
-NUM_OBSTACLES = 50 # stuck at 20
+NUM_OBSTACLES = 10 # stuck at 20
 
 ################# Actor templates #################
 def create_obstacle(position):
@@ -54,7 +54,7 @@ def create_ego(position):
 
 def create_terrain(position): 
     terrain_json = {
-        "scale": [30.0,1.0,30.0],
+        "scale": [20.0,0.1,20.0],
         "initial_position": position,
         "initial_rotation": [0,0,0],        
         "body_type": "Static",

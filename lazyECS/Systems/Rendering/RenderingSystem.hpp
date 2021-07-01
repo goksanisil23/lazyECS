@@ -204,7 +204,9 @@ public:
         rp3d::Vector3 halfExtents;
         uint32_t color;
 
-        DebugRectangle(const rp3d::Transform& trans, const rp3d::Vector3& halfExt, uint32_t& col)
+        DebugRectangle() = default;
+
+        DebugRectangle(const rp3d::Transform& trans, const rp3d::Vector3& halfExt, const uint32_t& col)
             : transform(trans), halfExtents(halfExt), color(col) {}
     };
 

@@ -81,8 +81,9 @@ void WaveFront::init() {
         obstacleActors_.insert(std::make_pair(obst_ent, Obstacle(actor_pos)));
     }
 
-    // Setup the grid objects
+    // Setup the grid objects (must be done after the actors above are spawned, since checks for occupancy of the cells as well)
     this->SetupGridCells();
+    this->UpdateGridOccupancy();
 }
 
 void WaveFront::main_loop() {
@@ -97,6 +98,7 @@ void WaveFront::main_loop() {
 
 
         // ------------- 3) Update graphics ------------- //
+        // a) 
         
         // b) Main entity graphics update
         this->renderSys->Update();
@@ -128,22 +130,39 @@ void WaveFront::SetupGridCells() {
     std::pair<float, float> x_limit = std::make_pair(-grid_size_x/2.0, grid_size_x/2.0);
     std::pair<float, float> z_limit = std::make_pair(-grid_size_z/2.0, grid_size_z/2.0);
 
-    for(int i = 0; i < (x_limit.second-x_limit.first)/(grid_resolution)+1; i++) { // terrain boundary on x
-        for(int j = 0; j < (z_limit.second-z_limit.first)/(grid_resolution)+1; j++) { // terrain boundary on z
+    for(uint8_t i = 0; i < (x_limit.second-x_limit.first)/(grid_resolution)+1; i++) { // terrain boundary on x
+        for(uint8_t j = 0; j < (z_limit.second-z_limit.first)/(grid_resolution)+1; j++) { // terrain boundary on z
             float x_coord = x_limit.first + i*grid_resolution;
             float z_coord = z_limit.first + j*grid_resolution;
 
-            rp3d::Vector3 grid_min_coord(x_coord - (grid_resolution/2.0-0.01), 0.0, z_coord - (grid_resolution/2.0-0.01));
-            rp3d::Vector3 grid_max_coord(z_coord + (grid_resolution/2.0-0.01), 0.0, z_coord + (grid_resolution/2.0-0.01));
+            rp3d::Vector3 cell_min_coord(x_coord - (grid_resolution/2.0-0.01), 0.11, z_coord - (grid_resolution/2.0-0.01));
+            rp3d::Vector3 cell_max_coord(x_coord + (grid_resolution/2.0-0.01), 0.11, z_coord + (grid_resolution/2.0-0.01));
 
-            gridCells_.emplace_back(GridCell(grid_min_coord, grid_max_coord));
-
-            renderSys->mDebugRectangles.emplace_back(lazyECS::RenderingSystem::DebugRectangle(
-                rp3d::Transform(rp3d::Vector3(x_coord, -0.0, z_coord), rp3d::Quaternion::identity()),
-                 rp3d::Vector3(grid_resolution/2.0-0.01, 0, grid_resolution/2.0-0.01), 0xFFFF00));             
+            auto grid_cell = GridCell(cell_min_coord, cell_max_coord, i, j);
+            grid_cell.rectangle_ = &renderSys->mDebugRectangles.emplace_back(lazyECS::RenderingSystem::DebugRectangle()); // this rectangle will be populated by the GridCell constructor (via pointer)
+            grid_cell.InitRectangle();
+            gridCells_.emplace_back(std::move(grid_cell)); // move due to unique_ptr
         }
-    }    
+    }
+}
 
+void WaveFront::UpdateGridOccupancy() {
+    // for each obstacle, check which grid cell it's occupying and update the status of the cell
+    for(const auto& obstacle : obstacleActors_) { 
+        for(auto& cell : gridCells_) {
+            auto obstacle_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(obstacle.first).rp3d_collider->getWorldAABB();
+            if(cell.UpdateOccupancy(obstacle_aabb, -1)) {
+                cell.rectangle_->color = 0x123456;
+                // Found where obstacle is, no need to search the grid further
+                break;
+            }
+        }
+    }
+
+    for(const auto& debug_rect : renderSys->mDebugRectangles) {
+        if( debug_rect.color != 12235442)
+            std::cout << debug_rect.color << std::endl;
+    }
 
 
 }
