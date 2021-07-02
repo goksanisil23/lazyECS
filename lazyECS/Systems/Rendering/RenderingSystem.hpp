@@ -218,10 +218,8 @@ public:
 
     void CreateVBOVAO(Mesh& mesh); // Create VBOs and VAO to render with OpenGL
     void CreateShadowMapFBOAndTexture(); // create shadow map frame buffer object and texture
-    void CreateTextVBOVAO();
     void CreateDebugVBOVAO(); // create VBO for debug only objects
     void UpdateDebugVBOVAO(); // update vertices and indices for debug objects
-    void UpdateTextVBOVAO();
 
     void DrawDebugBox(const DebugBox& debug_box);
     void DrawDebugAABB(const DebugAABB& debug_aabb);

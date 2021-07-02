@@ -311,26 +311,6 @@ void RenderingSystem::CreateDebugVBOVAO() {
 
 }
 
-// void RenderingSystem::CreateTextVBOVAO() {
-//     mTextVBO.create();
-//     mTextVAO.create();
-
-//     mTextVAO.bind();
-//     mTextVBO.bind();
-
-//     mTextVAO.unbind();
-//     mTextVBO.unbind();
-
-// }
-
-// void RenderingSystem::UpdateTextVBOVAO() {
-//     mTextVBO.bind();
-//     GLsizei sizeVertices = static_cast<GLsizei>(mDebugTriangles.size() * sizeof(DebugTriangle));
-//     mDebugVBOTrianglesVertices.copyDataIntoVBO(sizeVertices, &(mDebugTriangles[0]), GL_DYNAMIC_DRAW); // stream since we plan to both modify and draw 
-//     mDebugVBOTrianglesVertices.unbind();    
-    
-// }
-
 void RenderingSystem::UpdateDebugVBOVAO() {
     if(mDebugTriangles.size() > 0) {
         mDebugVBOTrianglesVertices.bind();
@@ -607,7 +587,7 @@ void RenderingSystem::Render() {
     }
     mPhongShader.unbind();
 
-    RenderText(mTextShader, "aaaaaaa", 25.0F, 25.0F, 1.0F, glm::vec3(0.5F, 0.8F, 0.2F));
+    RenderText(mTextShader, "BBBAASD", 200.0F, 200.0F, 1.0F, glm::vec3(0.5F, 0.8F, 0.2F));
 }
 
 void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
@@ -665,7 +645,7 @@ void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const op
 }
 
 void RenderingSystem::RenderText(openglframework::Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color) {
-    
+
     shader.bind();
     shader.setMatrix4x4Uniform("projection", openglframework::Matrix4::orthoProjectionMatrix(0.01F * mCamera.getSceneRadius(), 10.0F * mCamera.getSceneRadius(), 1200, 1200));
 
@@ -1044,7 +1024,6 @@ void RenderingSystem::FreeTypeInit() {
     mTextShader.unbind();
 
     //////////////////////////////////////////////////////////////////////////////////
-    RenderText(mTextShader, "aaaaaaa", 25.0F, 25.0F, 4.0F, glm::vec3(0.5F, 0.8F, 0.2F));
 
 }
 
