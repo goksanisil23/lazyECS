@@ -54,6 +54,52 @@ public:
         std::uint32_t color2;        
     };
 
+    struct DebugBox {
+        rp3d::Transform transform;
+        rp3d::Vector3 halfExtents;
+        rp3d::DebugRenderer::DebugColor color;
+
+        DebugBox(const rp3d::Transform& trans, const rp3d::Vector3& halfExt, const rp3d::DebugRenderer::DebugColor& col)
+            : transform(trans), halfExtents(halfExt), color(col) {}
+    };
+
+    struct DebugAABB {
+        rp3d::Transform transform;
+        rp3d::Vector3 min, max;
+        rp3d::DebugRenderer::DebugColor color;
+
+        DebugAABB(const rp3d::Transform& trans, const rp3d::Vector3& min, const rp3d::Vector3& max, const rp3d::DebugRenderer::DebugColor& col)
+            : transform(trans), min(min), max(max), color(col) {}        
+    };
+
+    struct DebugSphere {
+        rp3d::Vector3 position;
+        float radius;
+        rp3d::DebugRenderer::DebugColor color;
+
+        DebugSphere(const rp3d::Vector3& pos, const float& rad, const rp3d::DebugRenderer::DebugColor& col)
+            : position(pos), radius(rad), color(col) {}  
+    };
+
+    struct DebugRectangle {
+        rp3d::Transform transform;
+        rp3d::Vector3 halfExtents;
+        uint32_t color;
+
+        DebugRectangle() = default;
+
+        DebugRectangle(const rp3d::Transform& trans, const rp3d::Vector3& halfExt, const uint32_t& col)
+            : transform(trans), halfExtents(halfExt), color(col) {}
+    };
+
+    struct DebugArrow {
+        rp3d::Transform transform;
+        rp3d::DebugRenderer::DebugColor color;
+
+        DebugArrow(const rp3d::Transform& trans, const rp3d::DebugRenderer::DebugColor& col)
+            : transform(trans), color(col) {}
+    };    
+
 protected:
     // ----------------- Member variables ----------------- //
 
@@ -156,11 +202,15 @@ public:
     void CreateShadowMapFBOAndTexture(); // create shadow map frame buffer object and texture
     void CreateDebugVBOVAO(); // create VBO for debug only objects
     void UpdateDebugVBOVAO(); // update vertices and indices for debug objects
-    void DrawDebugBox(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
-    void DrawDebugAABB(const rp3d::Transform& transform, const rp3d::Vector3& min_local, const rp3d::Vector3& max_local, uint32_t color);
-    void DrawDebugSphere(const rp3d::Vector3& position, const float& radius, uint32_t color);
-    void DrawDebugRectangle(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
-    void DrawDebugArrow(const rp3d::Transform& transform, uint32_t color);
+    // void DrawDebugBox(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
+    // void DrawDebugAABB(const rp3d::Transform& transform, const rp3d::Vector3& min_local, const rp3d::Vector3& max_local, uint32_t color);
+    // void DrawDebugSphere(const rp3d::Vector3& position, const float& radius, uint32_t color);
+    // void DrawDebugRectangle(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
+    void DrawDebugBox(const DebugBox& debug_box);
+    void DrawDebugAABB(const DebugAABB& debug_aabb);
+    void DrawDebugSphere(const DebugSphere& debug_sphere);
+    void DrawDebugRectangle(const DebugRectangle& debug_rectangle);    
+    void DrawDebugArrow(const DebugArrow& debug_arrow);
 
     void TimerThreadFunc(); // function used in a thread to make periodic draw calls
     void GuiInit(); // Initialize Gui panels & widgets
@@ -171,52 +221,6 @@ public:
     nanogui::Label* fpsLabel_;
     std::chrono::_V2::system_clock::time_point prevFrameTime;
     float deltaTime;     
-
-    struct DebugBox {
-        rp3d::Transform transform;
-        rp3d::Vector3 halfExtents;
-        rp3d::DebugRenderer::DebugColor color;
-
-        DebugBox(const rp3d::Transform& trans, const rp3d::Vector3& halfExt, const rp3d::DebugRenderer::DebugColor& col)
-            : transform(trans), halfExtents(halfExt), color(col) {}
-    };
-
-    struct DebugAABB {
-        rp3d::Transform transform;
-        rp3d::Vector3 min, max;
-        rp3d::DebugRenderer::DebugColor color;
-
-        DebugAABB(const rp3d::Transform& trans, const rp3d::Vector3& min, const rp3d::Vector3& max, const rp3d::DebugRenderer::DebugColor& col)
-            : transform(trans), min(min), max(max), color(col) {}        
-    };
-
-    struct DebugSphere {
-        rp3d::Vector3 position;
-        float radius;
-        rp3d::DebugRenderer::DebugColor color;
-
-        DebugSphere(const rp3d::Vector3& pos, const float& rad, const rp3d::DebugRenderer::DebugColor& col)
-            : position(pos), radius(rad), color(col) {}  
-    };
-
-    struct DebugRectangle {
-        rp3d::Transform transform;
-        rp3d::Vector3 halfExtents;
-        uint32_t color;
-
-        DebugRectangle() = default;
-
-        DebugRectangle(const rp3d::Transform& trans, const rp3d::Vector3& halfExt, const uint32_t& col)
-            : transform(trans), halfExtents(halfExt), color(col) {}
-    };
-
-    struct DebugArrow {
-        rp3d::Transform transform;
-        rp3d::DebugRenderer::DebugColor color;
-
-        DebugArrow(const rp3d::Transform& trans, const rp3d::DebugRenderer::DebugColor& col)
-            : transform(trans), color(col) {}
-    };
 
     std::vector<DebugBox> mDebugBoxes; // debug boxes to be populated by the user
     std::vector<DebugSphere> mDebugSpheres; // debug spheres to be populated by the user

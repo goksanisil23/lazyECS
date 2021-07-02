@@ -20,9 +20,9 @@
 extern json launch_obj;
 
 PotentialField::PotentialField(bool isFullscreen, int windowWidth, int windowHeight) 
-    : rand_eng_(rand_dev_()), prevAppTime_{std::chrono::high_resolution_clock::now()}, 
-    deltaTime_(0.0), timeAccumulator_(0.0),
-    goalReached_(false), rand_dist_{std::uniform_int_distribution<int>(-GRID_SIZE_X/2.0, GRID_SIZE_X/2.0)}
+    : goalReached_(false), rand_eng_(rand_dev_()), 
+    rand_dist_{std::uniform_int_distribution<int>(-GRID_SIZE_X/2.0, GRID_SIZE_X/2.0)},
+    prevAppTime_{std::chrono::high_resolution_clock::now()},  deltaTime_(0.0),timeAccumulator_(0.0)
 {
 
     // --------------- lAZYECS -------------- //

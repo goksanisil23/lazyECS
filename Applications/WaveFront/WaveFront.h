@@ -47,5 +47,9 @@ private:
 
     std::vector<GridCell> gridCells_;
 
+    float grid_size_x_, grid_size_z_, grid_resolution_;
+    std::pair<float, float> grid_x_limit_, grid_z_limit_;
+    uint32_t num_cells_x_, num_cells_z_;
+
 
 };

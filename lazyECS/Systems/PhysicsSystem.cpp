@@ -8,8 +8,9 @@ extern lazyECS::Orchestrator gOrchestrator; // expected to be defined globally i
 
 namespace lazyECS {
 
-PhysicsSystem::PhysicsSystem() : timeStep{PHYSICS_TIME_STEP}, timeAccumulator{0.0F}, 
-                                prevFrameTime{std::chrono::high_resolution_clock::now()} 
+PhysicsSystem::PhysicsSystem() : timeAccumulator{0.0F}, interpFactor{0.0F}, 
+                                 timeStep{PHYSICS_TIME_STEP}, 
+                                 prevFrameTime{std::chrono::high_resolution_clock::now()} 
                                 {}
 
 
@@ -60,7 +61,7 @@ void PhysicsSystem::Init(){
                     mPhysicsTriangleMesh->addSubpart(vertexArray); 
                 }
                 // Create a collider from the triangle mesh
-                auto collShape = physicsCommon.createConcaveMeshShape(mPhysicsTriangleMesh);
+                // auto collShape = physicsCommon.createConcaveMeshShape(mPhysicsTriangleMesh);
                 rigidBody.rp3d_collision_shape = physicsCommon.createConcaveMeshShape(mPhysicsTriangleMesh, rp3d::Vector3(transform.halfExtent[0],
                                                                                                                           transform.halfExtent[1],
                                                                                                                           transform.halfExtent[2]));
@@ -112,35 +113,33 @@ void PhysicsSystem::Update() {
     // Compute time interpolation factor
     this->interpFactor = this->timeAccumulator / this->timeStep;
 
-    for (auto const& entity : m_entities) {
+    int ent_ctr = 0;
+    for(const auto& entity : m_entities) {
+        auto& rigid_body = gOrchestrator.GetComponent<RigidBody3D>(entity); // updated in the physicsWorld update above
+        auto& transform = gOrchestrator.GetComponent<Transform3D>(entity);
 
-        int ent_ctr = 0;
-        for(const auto& entity : m_entities) {
-            auto& rigid_body = gOrchestrator.GetComponent<RigidBody3D>(entity); // updated in the physicsWorld update above
-            auto& transform = gOrchestrator.GetComponent<Transform3D>(entity);
+        // get the updated transform of the body
+        rp3d::Transform current_trans = rigid_body.rp3d_rigidBody->getTransform(); 
 
-            // get the updated transform of the body
-            rp3d::Transform current_trans = rigid_body.rp3d_rigidBody->getTransform(); 
+        // compute the interpolated transform of the rigid body based on the leftover time
+        rp3d::Transform interp_trans = rp3d::Transform::interpolateTransforms(transform.rp3d_prev_transform, current_trans, interpFactor);
 
-            // compute the interpolated transform of the rigid body based on the leftover time
-            rp3d::Transform interp_trans = rp3d::Transform::interpolateTransforms(transform.rp3d_prev_transform, current_trans, interpFactor);
+        // use the interpolated transform as the final transform value for the entity (for rendering, AI, etc)
+        transform.rp3d_transform = interp_trans;
 
-            // use the interpolated transform as the final transform value for the entity (for rendering, AI, etc)
-            transform.rp3d_transform = interp_trans;
+        // Update the previous transform
+        transform.rp3d_prev_transform = current_trans;
 
-            // Update the previous transform
-            transform.rp3d_prev_transform = current_trans;
-
-            // Debug print
-            // const reactphysics3d::Vector3& position = transform.rp3d_transform.getPosition();
-            // float rot_angle;
-            // rp3d::Vector3 rot_axis;
-            // transform.rp3d_transform.getOrientation().getRotationAngleAxis(rot_angle, rot_axis);
-            // std::cout << "entity: " << ent_ctr << " position: " << position.x << " " << position.y << " " << position.z << std::endl;
-            // std::cout << "entity: " << ent_ctr << " rot angle: " << rot_angle << "axis: " << rot_axis.x << " " << rot_axis.y << " " << rot_axis.z << std::endl;
-            ent_ctr++;
-        }
+        // Debug print
+        // const reactphysics3d::Vector3& position = transform.rp3d_transform.getPosition();
+        // float rot_angle;
+        // rp3d::Vector3 rot_axis;
+        // transform.rp3d_transform.getOrientation().getRotationAngleAxis(rot_angle, rot_axis);
+        // std::cout << "entity: " << ent_ctr << " position: " << position.x << " " << position.y << " " << position.z << std::endl;
+        // std::cout << "entity: " << ent_ctr << " rot angle: " << rot_angle << "axis: " << rot_axis.x << " " << rot_axis.y << " " << rot_axis.z << std::endl;
+        ent_ctr++;
     }
+
 }
 
 }

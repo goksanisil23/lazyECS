@@ -5,6 +5,14 @@ project(lazyECS)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 set(LAZY_ECS_PARENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # we use parent dir since we include lazyECS headers as "lazyECS/..." 
 
 ###################### NANOGUI ##############################

@@ -81,6 +81,17 @@ void WaveFront::init() {
         obstacleActors_.insert(std::make_pair(obst_ent, Obstacle(actor_pos)));
     }
 
+    // Populate Application parameters (GRID parameters)
+    grid_size_x_ = launch_obj.at("application").at("GRID_SIZE_X");
+    grid_size_z_ = launch_obj.at("application").at("GRID_SIZE_Z");
+    grid_resolution_ = launch_obj.at("application").at("GRID_RESOLUTION");
+
+    grid_x_limit_ = std::make_pair(-grid_size_x_/2.0, grid_size_x_/2.0);
+    grid_z_limit_ = std::make_pair(-grid_size_z_/2.0, grid_size_z_/2.0);
+
+    num_cells_x_ = static_cast<uint32_t>((grid_x_limit_.second-grid_x_limit_.first) / (grid_resolution_)) + 1;
+    num_cells_z_ = static_cast<uint32_t>((grid_z_limit_.second-grid_z_limit_.first) / (grid_resolution_)) + 1;
+
     // Setup the grid objects (must be done after the actors above are spawned, since checks for occupancy of the cells as well)
     this->SetupGridCells();
     this->UpdateGridOccupancy();
@@ -98,8 +109,8 @@ void WaveFront::main_loop() {
 
 
         // ------------- 3) Update graphics ------------- //
-        // a) 
-        
+        // a) Update debugging primities
+        // this->UpdateGridOccupancy();
         // b) Main entity graphics update
         this->renderSys->Update();
     };
@@ -123,47 +134,49 @@ void WaveFront::main_loop() {
 
 void WaveFront::SetupGridCells() {
 
-    const float grid_size_x = launch_obj.at("application").at("GRID_SIZE_X");
-    const float grid_size_z = launch_obj.at("application").at("GRID_SIZE_Z");
-    const float grid_resolution = launch_obj.at("application").at("GRID_RESOLUTION");
+    for(uint32_t i = 0; i < num_cells_x_; i++) { // terrain boundary on x
+        for(uint32_t j = 0; j < num_cells_z_; j++) { // terrain boundary on z
+            float x_coord = grid_x_limit_.first + static_cast<float>(i) * grid_resolution_;
+            float z_coord = grid_z_limit_.first + static_cast<float>(j) * grid_resolution_;
 
-    std::pair<float, float> x_limit = std::make_pair(-grid_size_x/2.0, grid_size_x/2.0);
-    std::pair<float, float> z_limit = std::make_pair(-grid_size_z/2.0, grid_size_z/2.0);
-
-    for(uint8_t i = 0; i < (x_limit.second-x_limit.first)/(grid_resolution)+1; i++) { // terrain boundary on x
-        for(uint8_t j = 0; j < (z_limit.second-z_limit.first)/(grid_resolution)+1; j++) { // terrain boundary on z
-            float x_coord = x_limit.first + i*grid_resolution;
-            float z_coord = z_limit.first + j*grid_resolution;
-
-            rp3d::Vector3 cell_min_coord(x_coord - (grid_resolution/2.0-0.01), 0.11, z_coord - (grid_resolution/2.0-0.01));
-            rp3d::Vector3 cell_max_coord(x_coord + (grid_resolution/2.0-0.01), 0.11, z_coord + (grid_resolution/2.0-0.01));
+            rp3d::Vector3 cell_min_coord(x_coord - (grid_resolution_/2.0-0.01), 0.11, z_coord - (grid_resolution_/2.0-0.01));
+            rp3d::Vector3 cell_max_coord(x_coord + (grid_resolution_/2.0-0.01), 0.11, z_coord + (grid_resolution_/2.0-0.01));
 
             auto grid_cell = GridCell(cell_min_coord, cell_max_coord, i, j);
-            grid_cell.rectangle_ = &renderSys->mDebugRectangles.emplace_back(lazyECS::RenderingSystem::DebugRectangle()); // this rectangle will be populated by the GridCell constructor (via pointer)
-            grid_cell.InitRectangle();
-            gridCells_.emplace_back(std::move(grid_cell)); // move due to unique_ptr
+            gridCells_.emplace_back(grid_cell); // move due to unique_ptr
+            renderSys->mDebugRectangles.emplace_back(grid_cell.rectangle_);
         }
-    }
+    }  
 }
 
 void WaveFront::UpdateGridOccupancy() {
-    // for each obstacle, check which grid cell it's occupying and update the status of the cell
+    // for each type of actor, check which grid cell it's occupying and update the status of the cell
     for(const auto& obstacle : obstacleActors_) { 
         for(auto& cell : gridCells_) {
             auto obstacle_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(obstacle.first).rp3d_collider->getWorldAABB();
-            if(cell.UpdateOccupancy(obstacle_aabb, -1)) {
-                cell.rectangle_->color = 0x123456;
-                // Found where obstacle is, no need to search the grid further
+            // find and update the rectangle in Rendering System by using the indices of the cell
+            if(cell.UpdateOccupancy(obstacle_aabb, CellState::OBSTACLE)) {
+                std::cout << "obstacle at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
+                // update the debug renderer for this cell
+                renderSys->mDebugRectangles.at(cell.x_idx_ * num_cells_z_ + cell.z_idx_) = cell.rectangle_;
+                // Found where obstacle is, no need to search the grid further            
                 break;
             }
         }
     }
 
-    for(const auto& debug_rect : renderSys->mDebugRectangles) {
-        if( debug_rect.color != 12235442)
-            std::cout << debug_rect.color << std::endl;
-    }
-
+    for(const auto& goal : goalActors_) { 
+        for(auto& cell : gridCells_) {
+            auto goal_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(goal.first).rp3d_collider->getWorldAABB();
+            // find and update the rectangle in Rendering System by using the indices of the cell
+            if(cell.UpdateOccupancy(goal_aabb, CellState::GOAL)) {
+                std::cout << "goal at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
+                // update the debug renderer for this cell
+                renderSys->mDebugRectangles.at(cell.x_idx_ * num_cells_z_ + cell.z_idx_) = cell.rectangle_;
+                // Found where goal is, no need to search the grid further         
+                break;
+            }
+        }
+    }    
 
 }
-

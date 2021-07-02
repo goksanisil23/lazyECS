@@ -8,7 +8,7 @@
 #include <vector>
 
 Ego::Ego(const float& scan_radius, const int& num_directions, const p_field::Position& position) : 
-         scanRadius_(scan_radius), numPossibleDirections_(num_directions), position_(position), goalReached_(false), headingIncrement_(0.0) {}
+         position_(position), goalReached_(false), scanRadius_(scan_radius), numPossibleDirections_(num_directions), headingIncrement_(0.0) {}
 
 void Ego::CalculatePossibleMoves() {
     this->headingIncrement_ = (2.0F * rp3d::PI) / static_cast<float>(this->numPossibleDirections_);
@@ -50,7 +50,7 @@ std::pair<p_field::Position, float> Ego::ComputeBestMove(const std::unordered_ma
     if(!goalReached_) {
         // Find the position in the search circle with the least resultant force (meaning pulled the most by the Goals)
         // for(const auto& possible_move : possibleMoves_) {
-        for(int i = 0; i < possibleMoves_.size(); i++) {
+        for(size_t i = 0; i < possibleMoves_.size(); i++) {
             float action_value = 0.0F;
             // Add all the forces at this ego position, based on all the surrounding Goals and Obstacles
             for(const auto& goal_actor : goalActors) {

@@ -189,9 +189,6 @@ void MeshReaderWriter::loadOBJFile(const string &filename, lazyECS::Mesh& meshTo
                 else {
                     tmp = line.substr(found1+1);
                     found2 = (int)tmp.find("/");
-					if (found2 > 1000) {
-						int test = 2;
-					}
 
                     // If the face definition is of the form "f vert1//normal1 vert2//normal2 ..."
                     if(found2 == 0) {

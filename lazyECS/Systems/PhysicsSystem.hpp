@@ -76,9 +76,6 @@ private:
     // Physics engine settings
     EngineSettings mEngineSettings;
 
-    // Interpolation factor for the bodies in the current frame
-    float mInterpolationFactor;
-
     float timeStep; // fixed time step for the physics solver iteration
     std::chrono::_V2::system_clock::time_point prevFrameTime;
 

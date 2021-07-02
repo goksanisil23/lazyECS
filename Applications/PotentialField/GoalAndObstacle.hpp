@@ -10,7 +10,7 @@ class Obstacle {
 
 public:
     explicit Obstacle(const float& sigma = 1, const p_field::Position& position = p_field::Position()) 
-        : sigma_(sigma), position_(position) {}
+        : position_(position), sigma_(sigma) {}
 
     // Calculate the repulsion force caused by this Obstacle, at the given targetPos
     // Repulsion Force is calculated based on Normal Distribution, where the mean of the distribution is the position of the obstacle
@@ -32,7 +32,7 @@ class Goal {
 
 public:
     explicit Goal(const float& sigma = 1, const p_field::Position& position = p_field::Position()) 
-        : sigma_(sigma), position_(position) {}
+        : position_(position), sigma_(sigma) {}
 
     // Calculate the attraction force caused by this Goal, at the given targetPos
     // Attraction Force is calculated based on Normal Distribution, where the mean of the distribution is the position of the Goal

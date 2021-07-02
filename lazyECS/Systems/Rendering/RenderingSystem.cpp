@@ -22,18 +22,18 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
                 nanogui::Screen{nanogui::Vector2i(windowWidth, windowHeight), appName, true, isFullscreen, true, true, false, 4, 1},
                 mLastMouseX{0}, mLastMouseY{0}, mViewportX{0}, mViewportY{0},
                 mViewportWidth{0}, mViewportHeight{0}, 
-                mIsShadowMappingEnabled{true}, mIsShadowMappingInitialized{false},
                 mPhongShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.vert",
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/phong.frag"},
                 mColorShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.vert",
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag"},
                 mDepthShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/depth.vert",
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/depth.frag"},
-                prevFrameTime{std::chrono::high_resolution_clock::now()},
+                mIsShadowMappingEnabled{true}, mIsShadowMappingInitialized{false},                            
                 mDebugVBOTrianglesVertices{GL_ARRAY_BUFFER},
                 mDebugVBOLinesVertices{GL_ARRAY_BUFFER},
                 mIsDebugRenderingEnabled{true},
-                fpsLabel_(nullptr)
+                fpsLabel_(nullptr),
+                prevFrameTime{std::chrono::high_resolution_clock::now()}
 {
     // Allocate 1 buffer object per available shapes in LazyECS
     for(int _shape = Shape::Box; _shape < Shape::Last; _shape++) {
@@ -194,6 +194,7 @@ bool RenderingSystem::scroll_event(const nanogui::Vector2i& p, const nanogui::Ve
 }
 
 bool RenderingSystem::resize_event(const nanogui::Vector2i& size) {
+    (void)size;
 
     int width, height;
     glfwGetFramebufferSize(m_glfw_window, &width, &height); // Get the framebuffer dimension
@@ -231,7 +232,8 @@ bool RenderingSystem::keyboard_event(int key, int scancode, int action, int modi
     if(key == GLFW_KEY_D && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
         mCamera.translateCamera(-0.01, 0, mSceneCenter);
         return true;
-    }       
+    }
+    return false;    
 }
  // ----------------- end of Nanogui overrides --------------- //
 
@@ -377,6 +379,8 @@ bool RenderingSystem::MapMouseCoordinatesToSphere(double xMouse, double yMouse, 
 }
 
 bool RenderingSystem::MouseButtonEvent(int button, bool down, int mods, double mousePosX, double mousePosY) {
+    (void)button;
+    (void)mods;
 
     // If the mouse button is pressed
     if (down) {
@@ -421,6 +425,7 @@ bool RenderingSystem::MouseMotionEvent(double xMouse, double yMouse, int leftBut
 }
 
 bool RenderingSystem::ScrollingEvent(float xAxis, float yAxis, float scrollSensitivy) {
+    (void)xAxis;
     Zoom(yAxis * scrollSensitivy);
     return true;
 }
@@ -466,20 +471,20 @@ void RenderingSystem::Render() {
     if(mIsDebugRenderingEnabled) {
         mDebugTriangles.clear(); // clear previous debug shapes
         for (const auto& debug_box : mDebugBoxes) {
-            DrawDebugBox(debug_box.transform, debug_box.halfExtents, static_cast<uint32_t>(debug_box.color));
+            DrawDebugBox(debug_box);
         }
         for(const auto& debug_sphere : mDebugSpheres) {
-            DrawDebugSphere(debug_sphere.position, debug_sphere.radius, static_cast<uint32_t>(debug_sphere.color));
+            DrawDebugSphere(debug_sphere);
         }
         for (const auto& debug_rect : mDebugRectangles) {
-            DrawDebugRectangle(debug_rect.transform, debug_rect.halfExtents, debug_rect.color);
+            DrawDebugRectangle(debug_rect);
         }   
         mDebugLines.clear();
         for (const auto& debug_aabb : mDebugAABBs) {
-            DrawDebugAABB(debug_aabb.transform, debug_aabb.min, debug_aabb.max, static_cast<uint32_t>(debug_aabb.color));
+            DrawDebugAABB(debug_aabb);
         }
         for(const auto& debug_arrow : mDebugArrows) {
-            DrawDebugArrow(debug_arrow.transform, static_cast<uint32_t>(debug_arrow.color));
+            DrawDebugArrow(debug_arrow);
         }
 
         UpdateDebugVBOVAO();
@@ -692,18 +697,21 @@ void RenderingSystem::RenderDebugObjects(openglframework::Shader& shader, const 
 
 
 
-void RenderingSystem::DrawDebugBox(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color) {
+void RenderingSystem::DrawDebugBox(const DebugBox& debug_box) {
+    const auto& transform = debug_box.transform;
+    const auto& half_extents = debug_box.halfExtents;
+    const auto color = static_cast<uint32_t>(debug_box.color);
     rp3d::Vector3 debug_vertices[8];
 
     // vertices
-	debug_vertices[0] = transform * rp3d::Vector3(-halfExtents.x, -halfExtents.y, halfExtents.z);
-	debug_vertices[1] = transform * rp3d::Vector3(halfExtents.x, -halfExtents.y, halfExtents.z);
-	debug_vertices[2] = transform * rp3d::Vector3(halfExtents.x, -halfExtents.y, -halfExtents.z);
-	debug_vertices[3] = transform * rp3d::Vector3(-halfExtents.x, -halfExtents.y, -halfExtents.z);
-	debug_vertices[4] = transform * rp3d::Vector3(-halfExtents.x, halfExtents.y, halfExtents.z);
-	debug_vertices[5] = transform * rp3d::Vector3(halfExtents.x, halfExtents.y, halfExtents.z);
-	debug_vertices[6] = transform * rp3d::Vector3(halfExtents.x, halfExtents.y, -halfExtents.z);
-	debug_vertices[7] = transform * rp3d::Vector3(-halfExtents.x, halfExtents.y, -halfExtents.z);
+	debug_vertices[0] = transform * rp3d::Vector3(-half_extents.x, -half_extents.y, half_extents.z);
+	debug_vertices[1] = transform * rp3d::Vector3(half_extents.x, -half_extents.y, half_extents.z);
+	debug_vertices[2] = transform * rp3d::Vector3(half_extents.x, -half_extents.y, -half_extents.z);
+	debug_vertices[3] = transform * rp3d::Vector3(-half_extents.x, -half_extents.y, -half_extents.z);
+	debug_vertices[4] = transform * rp3d::Vector3(-half_extents.x, half_extents.y, half_extents.z);
+	debug_vertices[5] = transform * rp3d::Vector3(half_extents.x, half_extents.y, half_extents.z);
+	debug_vertices[6] = transform * rp3d::Vector3(half_extents.x, half_extents.y, -half_extents.z);
+	debug_vertices[7] = transform * rp3d::Vector3(-half_extents.x, half_extents.y, -half_extents.z);
 
     // triangle faces
 	mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[0], debug_vertices[1], debug_vertices[5], color));
@@ -721,19 +729,26 @@ void RenderingSystem::DrawDebugBox(const rp3d::Transform& transform, const rp3d:
 
 }
 
-void RenderingSystem::DrawDebugRectangle(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color) {
+void RenderingSystem::DrawDebugRectangle(const DebugRectangle& debug_rectangle) {
+    const auto& transform = debug_rectangle.transform;
+    const auto& half_extents = debug_rectangle.halfExtents;
+    const auto color = debug_rectangle.color;
     rp3d::Vector3 debug_vertices[4];
     // vertices
-    debug_vertices[0] = transform * rp3d::Vector3(-halfExtents.x, 0, -halfExtents.z);
-    debug_vertices[1] = transform * rp3d::Vector3(-halfExtents.x, 0, halfExtents.z);
-    debug_vertices[2] = transform * rp3d::Vector3(halfExtents.x, 0, halfExtents.z);
-    debug_vertices[3] = transform * rp3d::Vector3(halfExtents.x, 0, -halfExtents.z);
+    debug_vertices[0] = transform * rp3d::Vector3(-half_extents.x, 0, -half_extents.z);
+    debug_vertices[1] = transform * rp3d::Vector3(-half_extents.x, 0, half_extents.z);
+    debug_vertices[2] = transform * rp3d::Vector3(half_extents.x, 0, half_extents.z);
+    debug_vertices[3] = transform * rp3d::Vector3(half_extents.x, 0, -half_extents.z);
 
     mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[0], debug_vertices[1], debug_vertices[2], color));
     mDebugTriangles.emplace_back(DebugTriangle(debug_vertices[2], debug_vertices[3], debug_vertices[0], color));
 }
 
-void RenderingSystem::DrawDebugSphere(const rp3d::Vector3& position, const float& radius, uint32_t color) {
+void RenderingSystem::DrawDebugSphere(const DebugSphere& debug_sphere) {
+    const auto& position = debug_sphere.position;
+    const auto& radius = debug_sphere.radius;
+    const auto color = static_cast<uint32_t>(debug_sphere.color);
+
     rp3d::Vector3 vertices[(NB_SECTORS_SPHERE + 1) * (NB_STACKS_SPHERE + 1) + (NB_SECTORS_SPHERE + 1)];
 	
 	// Vertices
@@ -772,13 +787,21 @@ void RenderingSystem::DrawDebugSphere(const rp3d::Vector3& position, const float
 	}
 }
 
-void RenderingSystem::DrawDebugArrow(const rp3d::Transform& transform, uint32_t color) {
+void RenderingSystem::DrawDebugArrow(const DebugArrow& debug_arrow) {
+    const auto& transform = debug_arrow.transform;
+    const auto color = static_cast<uint32_t>(debug_arrow.color);
+
     mDebugLines.emplace_back(DebugLine(transform * rp3d::Vector3(0, 0.1, 0), transform *rp3d::Vector3(0, 0.1, -1.5), color)); // arrow body
     mDebugLines.emplace_back(DebugLine(transform *rp3d::Vector3(0, 0.1, -1.5), transform *rp3d::Vector3(-0.5, 0.1, -1), color)); // left arrow head edge
     mDebugLines.emplace_back(DebugLine(transform *rp3d::Vector3(0, 0.1, -1.5), transform *rp3d::Vector3(0.5, 0.1, -1), color)); // right arrow head edge
 }
 
-void RenderingSystem::DrawDebugAABB(const rp3d::Transform& transform, const rp3d::Vector3& min_local, const rp3d::Vector3& max_local, uint32_t color) {
+void RenderingSystem::DrawDebugAABB(const DebugAABB& debug_aabb) {
+    const auto& transform = debug_aabb.transform;
+    const auto& min_local = debug_aabb.min;
+    const auto& max_local = debug_aabb.max;
+    const auto color = static_cast<uint32_t>(debug_aabb.color);
+
 	// Local to world
     const rp3d::Vector3 min = transform * min_local;
     const rp3d::Vector3 max = transform * max_local;

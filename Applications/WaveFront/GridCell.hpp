@@ -10,13 +10,6 @@
 
 class GridCell {
 
-enum GridColor {
-    GOAL = 0xFFFF00,
-    FREE = 0xBAB2B2,
-    OBSTACLE = 0xFFFFFF,
-    TRAVELED = 0xFFE600
-};
-
 public:
 
     // -------------------- Methods -------------------- //
@@ -31,47 +24,51 @@ public:
 * @param x_idx x coordinate of this cell within the 2D grid
 * @param z_idx z coordinate of this cell within the 2D grid
 */
-    GridCell(const rp3d::Vector3& min, const rp3d::Vector3& max, const uint8_t& x_idx, const uint8_t& z_idx) : 
-        aabb_(min, max), x_idx_(x_idx), z_idx_(z_idx), value_(0), rectangle_(nullptr)
+    GridCell(const rp3d::Vector3& min, const rp3d::Vector3& max, const uint16_t& x_idx, const uint16_t& z_idx) : 
+        aabb_(min, max), value_(0), x_idx_(x_idx), z_idx_(z_idx)
     {
         auto center  = aabb_.getCenter();
         auto extents = aabb_.getExtent() * 0.5; // half-extents in x,y,z directions (y wont be used)
-        // rectangle_ = std::make_unique<lazyECS::RenderingSystem::DebugRectangle>(
-        //     rp3d::Transform(center, rp3d::Quaternion::identity()), extents, GridColor::FREE // default light gray-ish colour for unoccupied cells
-        // // rectangle_ = lazyECS::RenderingSystem::DebugRectangle(
-        //     // rp3d::Transform(center, rp3d::Quaternion::identity()), extents, GridColor::FREE // default light gray-ish colour for unoccupied cells        
-        // );
+        rectangle_ = lazyECS::RenderingSystem::DebugRectangle(
+            rp3d::Transform(center, rp3d::Quaternion::identity()), extents, static_cast<uint32_t>(GridColor::FREE) // default light gray-ish colour for unoccupied cells        
+        );
     }
 
-    bool UpdateOccupancy(const rp3d::AABB& actor_aabb, const int& target_value) {
+    bool UpdateOccupancy(const rp3d::AABB& actor_aabb, const CellState& target_cell_state) {
         if(this->aabb_.testCollision(actor_aabb)) {
-            value_ = target_value;
-            rectangle_->color = 0xFFFFFF;
-            // rectangle_.color = 0xFFFFFF;
-            std::cout << "Collision at cell:" << unsigned(x_idx_) << " " << unsigned(z_idx_) << std::endl;
+
+            // update the color based on the new state of the cell
+            switch (target_cell_state) {
+                case CellState::OBSTACLE:
+                    rectangle_.color = static_cast<uint32_t>(GridColor::OBSTACLE);
+                    value_ = -1;
+                    break;
+                case CellState::FREE:
+                    rectangle_.color = static_cast<uint32_t>(GridColor::FREE);
+                    value_ = 0;
+                    break;
+                case CellState::GOAL:
+                    rectangle_.color = static_cast<uint32_t>(GridColor::GOAL);
+                    value_ = 1;
+                    break;
+                default:
+                    rectangle_.color = static_cast<uint32_t>(GridColor::TRAVELED);
+                    break;
+            }
             return true;
         }
         return false;
-    }
-
-    void InitRectangle() {
-        auto center  = aabb_.getCenter();
-        auto extents = aabb_.getExtent() * 0.5; // half-extents in x,y,z directions (y wont be used)            
-        *rectangle_ = lazyECS::RenderingSystem::DebugRectangle(        
-                rp3d::Transform(center, rp3d::Quaternion::identity()), extents, GridColor::FREE // default light gray-ish colour for unoccupied cells        
-        );        
     }
 
     // -------------------- Members -------------------- //
 
     rp3d::AABB aabb_; // AABB bounding box representing the volume of the grid cell, also used for intersection/occupancy functions    
     
-    lazyECS::RenderingSystem::DebugRectangle* rectangle_;
-    // std::unique_ptr<lazyECS::RenderingSystem::DebugRectangle> rectangle_; // pointer to the debug rectangle corresponding to this cell in lazyECS Rendering system
-    // lazyECS::RenderingSystem::DebugRectangle rectangle_;
+    lazyECS::RenderingSystem::DebugRectangle rectangle_;
 
     int value_; // assigned value for path planning (-1: occupied by obstacle, 0: free and undiscovered, 1: goal)
 
-    uint8_t x_idx_, z_idx_; // x and z indices of this cell in the 2D grid
+    uint16_t x_idx_, z_idx_; // x and z indices of this cell in the 2D grid
+
 
 };
