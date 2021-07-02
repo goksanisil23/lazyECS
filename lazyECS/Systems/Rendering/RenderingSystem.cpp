@@ -7,6 +7,7 @@
 #include <GL/gl.h>
 #include <chrono>
 #include <cstdint>
+#include <iostream>
 #include <memory>
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <string>
@@ -28,10 +29,13 @@ RenderingSystem::RenderingSystem(bool isFullscreen, int windowWidth, int windowH
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/color.frag"},
                 mDepthShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/depth.vert",
                             "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/depth.frag"},
+                mTextShader{"/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/text.vs",
+                            "/home/goksan/Work/lazyECS/lazyECS/Systems/Rendering/shaders/text.fs"},
                 mIsShadowMappingEnabled{true}, mIsShadowMappingInitialized{false},                            
                 mDebugVBOTrianglesVertices{GL_ARRAY_BUFFER},
                 mDebugVBOLinesVertices{GL_ARRAY_BUFFER},
                 mIsDebugRenderingEnabled{true},
+                // mTextVBO{GL_ARRAY_BUFFER},
                 fpsLabel_(nullptr),
                 prevFrameTime{std::chrono::high_resolution_clock::now()}
 {
@@ -131,7 +135,11 @@ void RenderingSystem::Init() {
 
     this->set_visible(true); // nanogui set visibility
 
+    // Gui
     GuiInit();
+
+    // Free type text rendering lib
+    FreeTypeInit();
 }
 
 void RenderingSystem::SetupSignature() {
@@ -302,6 +310,26 @@ void RenderingSystem::CreateDebugVBOVAO() {
     mDebugVBOLinesVertices.unbind();
 
 }
+
+// void RenderingSystem::CreateTextVBOVAO() {
+//     mTextVBO.create();
+//     mTextVAO.create();
+
+//     mTextVAO.bind();
+//     mTextVBO.bind();
+
+//     mTextVAO.unbind();
+//     mTextVBO.unbind();
+
+// }
+
+// void RenderingSystem::UpdateTextVBOVAO() {
+//     mTextVBO.bind();
+//     GLsizei sizeVertices = static_cast<GLsizei>(mDebugTriangles.size() * sizeof(DebugTriangle));
+//     mDebugVBOTrianglesVertices.copyDataIntoVBO(sizeVertices, &(mDebugTriangles[0]), GL_DYNAMIC_DRAW); // stream since we plan to both modify and draw 
+//     mDebugVBOTrianglesVertices.unbind();    
+    
+// }
 
 void RenderingSystem::UpdateDebugVBOVAO() {
     if(mDebugTriangles.size() > 0) {
@@ -577,12 +605,13 @@ void RenderingSystem::Render() {
             shadowTexture.unbind();
         }
     }
-
     mPhongShader.unbind();
+
+    RenderText(mTextShader, "aaaaaaa", 25.0F, 25.0F, 1.0F, glm::vec3(0.5F, 0.8F, 0.2F));
 }
 
 void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix) {
-    
+
     shader.bind();
 
     // For all objects, render
@@ -631,6 +660,55 @@ void RenderingSystem::RenderSinglePass(openglframework::Shader& shader, const op
         mVAO.at(mesh.mShape).unbind();
         shader.unbind();
     }
+
+    shader.unbind();
+}
+
+void RenderingSystem::RenderText(openglframework::Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color) {
+    
+    shader.bind();
+    shader.setMatrix4x4Uniform("projection", openglframework::Matrix4::orthoProjectionMatrix(0.01F * mCamera.getSceneRadius(), 10.0F * mCamera.getSceneRadius(), 1200, 1200));
+
+    glUniform3f(glGetUniformLocation(shader.getProgramObjectId(), "textColor"), color.x, color.y, color.z);
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(mTextVAO);
+
+    // iterate through all characters
+    std::string::const_iterator c;
+    for (c = text.begin(); c != text.end(); c++) 
+    {
+        Character ch = Characters[*c];
+
+        float xpos = x + ch.Bearing.x * scale;
+        float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+
+        float w = ch.Size.x * scale;
+        float h = ch.Size.y * scale;
+        // update VBO for each character
+        float vertices[6][4] = {
+            { xpos,     ypos + h,   0.0f, 0.0f },            
+            { xpos,     ypos,       0.0f, 1.0f },
+            { xpos + w, ypos,       1.0f, 1.0f },
+
+            { xpos,     ypos + h,   0.0f, 0.0f },
+            { xpos + w, ypos,       1.0f, 1.0f },
+            { xpos + w, ypos + h,   1.0f, 0.0f }           
+        };
+        // render glyph texture over quad
+        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+        // update content of VBO memory
+        glBindBuffer(GL_ARRAY_BUFFER, mTextVBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // render quad
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+        x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+    }
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
 
     shader.unbind();
 }
@@ -883,6 +961,91 @@ void RenderingSystem::GuiInit() {
 
 void RenderingSystem::UpdateGui() const {
     fpsLabel_->set_caption("FPS: " + std::to_string(1.0F/deltaTime));
+}
+
+void RenderingSystem::FreeTypeInit() {
+
+    mTextShader.bind();
+
+    FT_Library ft;
+    if (FT_Init_FreeType(&ft)) {
+        std::cerr << "ERROR::FREETYPE: Could not init Freetype library" << std::endl;
+        return;
+    }
+
+    std::string font_name =  "/home/goksan/Work/lazyECS/Applications/fonts/Antonio-Bold.ttf";   
+    // Load font as face
+    FT_Face face;
+    if(FT_New_Face(ft, font_name.c_str(), 0, &face)) {
+        std::cerr << "ERROR::FREETYPE: Failed to load the font" << std::endl;
+    }
+    else {
+        FT_Set_Pixel_Sizes(face, 0, 48); // set size to load glyphs as
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        // load first 128 characters of ASCII set
+        for (unsigned char c = 0; c < 128; c++)
+        {
+            // Load character glyph 
+            if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+            {
+                std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+                continue;
+            }
+            // generate texture
+            unsigned int texture;
+            glGenTextures(1, &texture);
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RED,
+                face->glyph->bitmap.width,
+                face->glyph->bitmap.rows,
+                0,
+                GL_RED,
+                GL_UNSIGNED_BYTE,
+                face->glyph->bitmap.buffer
+            );
+            // set texture options
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            // now store character for later use
+            Character character = {
+                texture,
+                glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+                glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+                static_cast<unsigned int>(face->glyph->advance.x)
+            };
+            Characters.insert(std::pair<char, Character>(c, character));
+        }
+        glBindTexture(GL_TEXTURE_2D, 0);        
+    }
+
+    // destroy FreeType once we're finished
+    FT_Done_Face(face);
+    FT_Done_FreeType(ft);    
+
+
+    // configure VAO/VBO for texture quads
+    // -----------------------------------
+    glGenVertexArrays(1, &mTextVAO);
+    glGenBuffers(1, &mTextVBO);
+    glBindVertexArray(mTextVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, mTextVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    mTextShader.unbind();
+
+    //////////////////////////////////////////////////////////////////////////////////
+    RenderText(mTextShader, "aaaaaaa", 25.0F, 25.0F, 4.0F, glm::vec3(0.5F, 0.8F, 0.2F));
+
 }
 
 

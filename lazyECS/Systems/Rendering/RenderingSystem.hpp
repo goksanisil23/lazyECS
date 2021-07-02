@@ -23,6 +23,9 @@
 #include <thread>
 #include <vector>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include <glm/glm.hpp>
 
 namespace lazyECS {
 
@@ -98,6 +101,14 @@ public:
 
         DebugArrow(const rp3d::Transform& trans, const rp3d::DebugRenderer::DebugColor& col)
             : transform(trans), color(col) {}
+    };
+
+    // Holds all state information relevant to a character as loaded using FreeType
+    struct Character {
+        unsigned int TextureID; // ID handle of the glyph texture
+        glm::ivec2   Size;      // Size of glyph
+        glm::ivec2   Bearing;   // Offset from baseline to left/top of glyph
+        unsigned int Advance;   // Horizontal offset to advance to next glyph
     };    
 
 protected:
@@ -128,6 +139,7 @@ protected:
     openglframework::Shader mColorShader; // constant color shader
     openglframework::Shader mQuadShader;
     openglframework::Shader mDepthShader; // depth shader to render the shadow map
+    openglframework::Shader mTextShader;
 
     openglframework::Texture2D mShadowMapTexture[NUM_SHADOW_MAPS]; // shadow map is the depth texture rendered from the light's perspective
     openglframework::FrameBufferObject mFBOShadowMap[NUM_SHADOW_MAPS]; // FBOs for rendering the depth maps per light source
@@ -153,6 +165,11 @@ protected:
     std::vector<DebugTriangle> mDebugTriangles;
     std::vector<DebugLine> mDebugLines;
     bool mIsDebugRenderingEnabled;
+
+    // VBO and VAO for text elements
+    // openglframework::VertexBufferObject mTextVBO; // 
+    // openglframework::VertexArrayObject mTextVAO; //
+    unsigned int mTextVAO, mTextVBO;    
 
     std::unordered_set<Shape> bufferedShapes; // storing shapes for which VBO and VAO are already created
 
@@ -195,17 +212,17 @@ public:
     void Render(); // Render the scene (possibly in multiple passes due to shadow mapping)
     void RenderSinglePass(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix); // render the scene in a single pass
     void RenderDebugObjects(openglframework::Shader& shader, const openglframework::Matrix4& worldToCameraMatrix); // renders debug objects
+    void RenderText(openglframework::Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color);
     void SetupSignature(); // sets the signature of the system based on components its using
     void Update(); // highest level of function called from the main loop of the application, that calls the rest of the rendering pipeline
 
     void CreateVBOVAO(Mesh& mesh); // Create VBOs and VAO to render with OpenGL
     void CreateShadowMapFBOAndTexture(); // create shadow map frame buffer object and texture
+    void CreateTextVBOVAO();
     void CreateDebugVBOVAO(); // create VBO for debug only objects
     void UpdateDebugVBOVAO(); // update vertices and indices for debug objects
-    // void DrawDebugBox(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
-    // void DrawDebugAABB(const rp3d::Transform& transform, const rp3d::Vector3& min_local, const rp3d::Vector3& max_local, uint32_t color);
-    // void DrawDebugSphere(const rp3d::Vector3& position, const float& radius, uint32_t color);
-    // void DrawDebugRectangle(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
+    void UpdateTextVBOVAO();
+
     void DrawDebugBox(const DebugBox& debug_box);
     void DrawDebugAABB(const DebugAABB& debug_aabb);
     void DrawDebugSphere(const DebugSphere& debug_sphere);
@@ -215,6 +232,7 @@ public:
     void TimerThreadFunc(); // function used in a thread to make periodic draw calls
     void GuiInit(); // Initialize Gui panels & widgets
     void UpdateGui() const; // update Gui information
+    void FreeTypeInit(); // initialize FreeType text rendering lib
 
     // ----------------- Member variables ----------------- //
     // std::shared_ptr<nanogui::Label> fpsLabel_;
@@ -227,6 +245,8 @@ public:
     std::vector<DebugAABB> mDebugAABBs; // debug AABBs to be populated by the user
     std::vector<DebugRectangle> mDebugRectangles; // debug rectangles to be populated by the user
     std::vector<DebugArrow> mDebugArrows; // debug rectangles to be populated by the user
+
+    std::map<GLchar, Character> Characters;
 };
 
 /// Reshape the view

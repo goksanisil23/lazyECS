@@ -13,6 +13,9 @@ find_package(ReactPhysics3D REQUIRED)
 message("ReachPhysics3D include dir: ${ReactPhysics3D_INCLUDE_DIR}" )
 message("ReachPhysics3D library dir: ${ReactPhysics3D_LIBRARY_DIR}" )
 
+######################## FreeType #####################
+find_package(Freetype REQUIRED)
+
 ########################### OPENGL FRAMEWORK ######################
 # OpenGLFramework source files
 set(OPENGLFRAMEWORK_SOURCES
@@ -86,7 +89,7 @@ set(LAZY_ECS_SOURCES
 # add_library(lazyECS SHARED ${LAZY_ECS_SOURCES})
 add_library(lazyECS STATIC ${LAZY_ECS_SOURCES})
 
-target_include_directories(lazyECS PUBLIC ${LAZY_ECS_INCLUDE_DIRS})
+target_include_directories(lazyECS PUBLIC ${LAZY_ECS_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
 
 foreach(p ${NANOGUI_EXTRA_INCS})
     target_include_directories(lazyECS PUBLIC ${p})
@@ -95,4 +98,4 @@ endforeach()
 # Compile definitions
 message("NANOGUI_EXTRA_DEFS: ${NANOGUI_EXTRA_DEFS}")
 target_compile_definitions(lazyECS PUBLIC ${NANOGUI_EXTRA_DEFS})
-target_link_libraries(lazyECS ReactPhysics3D::ReactPhysics3D nanogui ${NANOGUI_EXTRA_LIBS})
+target_link_libraries(lazyECS ReactPhysics3D::ReactPhysics3D nanogui ${NANOGUI_EXTRA_LIBS} ${FREETYPE_LIBRARIES})
