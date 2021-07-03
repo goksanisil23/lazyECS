@@ -25,7 +25,7 @@ public:
 * @param z_idx z coordinate of this cell within the 2D grid
 */
     GridCell(const rp3d::Vector3& min, const rp3d::Vector3& max, const uint16_t& x_idx, const uint16_t& z_idx) : 
-        aabb_(min, max), value_(0), x_idx_(x_idx), z_idx_(z_idx)
+        aabb_(min, max), distance_(0), x_idx_(x_idx), z_idx_(z_idx)
     {
         auto center  = aabb_.getCenter();
         auto extents = aabb_.getExtent() * 0.5; // half-extents in x,y,z directions (y wont be used)
@@ -41,15 +41,15 @@ public:
             switch (target_cell_state) {
                 case CellState::OBSTACLE:
                     rectangle_.color = static_cast<uint32_t>(GridColor::OBSTACLE);
-                    value_ = -1;
+                    distance_ = -1;
                     break;
                 case CellState::FREE:
                     rectangle_.color = static_cast<uint32_t>(GridColor::FREE);
-                    value_ = 0;
+                    distance_ = 0;
                     break;
                 case CellState::GOAL:
                     rectangle_.color = static_cast<uint32_t>(GridColor::GOAL);
-                    value_ = 1;
+                    distance_ = 1;
                     break;
                 default:
                     rectangle_.color = static_cast<uint32_t>(GridColor::TRAVELED);
@@ -66,7 +66,7 @@ public:
     
     lazyECS::RenderingSystem::DebugRectangle rectangle_;
 
-    int value_; // assigned value for path planning (-1: occupied by obstacle, 0: free and undiscovered, 1: goal)
+    int distance_; // assigned value for path planning (-1: occupied by obstacle, 0: free and undiscovered, 1: goal)
 
     uint16_t x_idx_, z_idx_; // x and z indices of this cell in the 2D grid
 

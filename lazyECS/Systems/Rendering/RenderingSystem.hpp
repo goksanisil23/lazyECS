@@ -202,10 +202,7 @@ public:
     void CreateShadowMapFBOAndTexture(); // create shadow map frame buffer object and texture
     void CreateDebugVBOVAO(); // create VBO for debug only objects
     void UpdateDebugVBOVAO(); // update vertices and indices for debug objects
-    // void DrawDebugBox(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
-    // void DrawDebugAABB(const rp3d::Transform& transform, const rp3d::Vector3& min_local, const rp3d::Vector3& max_local, uint32_t color);
-    // void DrawDebugSphere(const rp3d::Vector3& position, const float& radius, uint32_t color);
-    // void DrawDebugRectangle(const rp3d::Transform& transform, const rp3d::Vector3& halfExtents, uint32_t color);
+
     void DrawDebugBox(const DebugBox& debug_box);
     void DrawDebugAABB(const DebugAABB& debug_aabb);
     void DrawDebugSphere(const DebugSphere& debug_sphere);

@@ -6,15 +6,22 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <iomanip>
+#include <iostream>
 #include <limits>
+#include <list>
 #include <random>
 #include <reactphysics3d/configuration.h>
 #include <reactphysics3d/mathematics/Quaternion.h>
 #include <reactphysics3d/mathematics/Transform.h>
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/utils/DebugRenderer.h>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
+#include <unordered_set>
 
 extern json launch_obj;
 
@@ -62,23 +69,17 @@ void WaveFront::init() {
 
     std::vector<lazyECS::Entity> ego_entities = tagSys->GetEntitiesWithTag("ego");
     for(const auto& ego_ent : ego_entities) {
-        auto ent_trans = gOrchestrator.GetComponent<lazyECS::Transform3D>(ego_ent);
-        Position2D actor_pos(ent_trans.rp3d_transform.getPosition().x, ent_trans.rp3d_transform.getPosition().z);
-        egoActors_.insert(std::make_pair(ego_ent, Ego(actor_pos)));
+        egoActors_.insert(std::make_pair(ego_ent, Ego()));
     }
 
     std::vector<lazyECS::Entity> goal_entities = tagSys->GetEntitiesWithTag("goal");
     for(const auto& goal_ent : goal_entities) {
-        auto ent_trans = gOrchestrator.GetComponent<lazyECS::Transform3D>(goal_ent);
-        Position2D actor_pos(ent_trans.rp3d_transform.getPosition().x, ent_trans.rp3d_transform.getPosition().z);
-        goalActors_.insert(std::make_pair(goal_ent, Goal(actor_pos)));
+        goalActors_.insert(std::make_pair(goal_ent, Goal()));
     }
 
     std::vector<lazyECS::Entity> obst_entities = tagSys->GetEntitiesWithTag("obstacle");
     for(const auto& obst_ent : obst_entities) {
-        auto ent_trans = gOrchestrator.GetComponent<lazyECS::Transform3D>(obst_ent);
-        Position2D actor_pos(ent_trans.rp3d_transform.getPosition().x, ent_trans.rp3d_transform.getPosition().z);
-        obstacleActors_.insert(std::make_pair(obst_ent, Obstacle(actor_pos)));
+        obstacleActors_.insert(std::make_pair(obst_ent, Obstacle()));
     }
 
     // Populate Application parameters (GRID parameters)
@@ -95,14 +96,33 @@ void WaveFront::init() {
     // Setup the grid objects (must be done after the actors above are spawned, since checks for occupancy of the cells as well)
     this->SetupGridCells();
     this->UpdateGridOccupancy();
+    this->ShowGridValues(); // before executing the wave propagation
+    this->CalculateShortestPath();
+    this->ShowGridValues(); // after executing the wave propagation
 }
 
 void WaveFront::main_loop() {
 
-    auto main_loop_step = [this]() {
+    uint64_t loop_ctr = 0;
+
+    auto main_loop_step = [this, &loop_ctr]() {
 
         // ------------- 1) Apply ego control, NPC AI, kinematic control, etc. -------------  //
+        loop_ctr = (loop_ctr +1)%500;
+        if(loop_ctr == 0) {
+            for(auto& pair : egoActors_) {
+                auto& ego_entity = pair.first;
+                auto& ego_actor = pair.second;
+                
+                // Find the best move for ego and move it
+                auto best_move = ego_actor.FindBestMove(this->gridCells_, this->num_cells_x_,this->num_cells_z_);
+                // Now move the physical entity that is connected to the ego
+                auto& rigid_body = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(ego_entity);
+                rigid_body.rp3d_rigidBody->setTransform(rp3d::Transform(gridCells_.at(best_move).aabb_.getCenter(), 
+                                                                        rp3d::Quaternion::identity()));
+            }
 
+        }
         // ------------- 2) Update physics ------------- //
         // (needs to happen right after Actor applies force/teleports on rigid body)
         this->physicsSys->Update();
@@ -134,16 +154,17 @@ void WaveFront::main_loop() {
 
 void WaveFront::SetupGridCells() {
 
-    for(uint32_t i = 0; i < num_cells_x_; i++) { // terrain boundary on x
-        for(uint32_t j = 0; j < num_cells_z_; j++) { // terrain boundary on z
+    for(uint32_t j = 0; j < num_cells_z_; j++) { // terrain boundary on z
+        for(uint32_t i = 0; i < num_cells_x_; i++) { // terrain boundary on x
             float x_coord = grid_x_limit_.first + static_cast<float>(i) * grid_resolution_;
             float z_coord = grid_z_limit_.first + static_cast<float>(j) * grid_resolution_;
 
             rp3d::Vector3 cell_min_coord(x_coord - (grid_resolution_/2.0-0.01), 0.11, z_coord - (grid_resolution_/2.0-0.01));
             rp3d::Vector3 cell_max_coord(x_coord + (grid_resolution_/2.0-0.01), 0.11, z_coord + (grid_resolution_/2.0-0.01));
 
+            // we are giving lower left and upper right global vertex coordinates here
             auto grid_cell = GridCell(cell_min_coord, cell_max_coord, i, j);
-            gridCells_.emplace_back(grid_cell); // move due to unique_ptr
+            gridCells_.emplace_back(grid_cell);
             renderSys->mDebugRectangles.emplace_back(grid_cell.rectangle_);
         }
     }  
@@ -151,32 +172,134 @@ void WaveFront::SetupGridCells() {
 
 void WaveFront::UpdateGridOccupancy() {
     // for each type of actor, check which grid cell it's occupying and update the status of the cell
-    for(const auto& obstacle : obstacleActors_) { 
+
+    for(auto& obstacle : obstacleActors_) { 
         for(auto& cell : gridCells_) {
             auto obstacle_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(obstacle.first).rp3d_collider->getWorldAABB();
             // find and update the rectangle in Rendering System by using the indices of the cell
             if(cell.UpdateOccupancy(obstacle_aabb, CellState::OBSTACLE)) {
                 std::cout << "obstacle at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
                 // update the debug renderer for this cell
-                renderSys->mDebugRectangles.at(cell.x_idx_ * num_cells_z_ + cell.z_idx_) = cell.rectangle_;
+                renderSys->mDebugRectangles.at(cell.z_idx_ * num_cells_x_ + cell.x_idx_) = cell.rectangle_;
+                // Update the cell index of the obstacle
+                obstacle.second.x_idx_.emplace_back(cell.x_idx_);
+                obstacle.second.z_idx_.emplace_back(cell.z_idx_);
                 // Found where obstacle is, no need to search the grid further            
-                break;
+                // break;
             }
         }
     }
 
-    for(const auto& goal : goalActors_) { 
+    for(auto& goal : goalActors_) { 
         for(auto& cell : gridCells_) {
             auto goal_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(goal.first).rp3d_collider->getWorldAABB();
             // find and update the rectangle in Rendering System by using the indices of the cell
             if(cell.UpdateOccupancy(goal_aabb, CellState::GOAL)) {
                 std::cout << "goal at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
                 // update the debug renderer for this cell
-                renderSys->mDebugRectangles.at(cell.x_idx_ * num_cells_z_ + cell.z_idx_) = cell.rectangle_;
+                renderSys->mDebugRectangles.at(cell.z_idx_ * num_cells_x_ + cell.x_idx_) = cell.rectangle_;
+                // Update the cell index of the goal
+                goal.second.x_idx_.emplace_back(cell.x_idx_);
+                goal.second.z_idx_.emplace_back(cell.z_idx_);                
                 // Found where goal is, no need to search the grid further         
-                break;
+                // break;
             }
         }
-    }    
+    }   
+
+    for(auto& ego : egoActors_) { 
+        for(auto& cell : gridCells_) {
+            auto ego_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(ego.first).rp3d_collider->getWorldAABB();
+            // find and update the rectangle in Rendering System by using the indices of the cell
+            if(cell.UpdateOccupancy(ego_aabb, CellState::TRAVELED)) {
+                std::cout << "ego at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
+                // update the debug renderer for this cell
+                renderSys->mDebugRectangles.at(cell.z_idx_ * num_cells_x_ + cell.x_idx_) = cell.rectangle_;
+                // Update the cell index of the ego
+                ego.second.x_idx_.emplace_back(cell.x_idx_);
+                ego.second.z_idx_.emplace_back(cell.z_idx_);                  
+                // Found where goal is, no need to search the grid further         
+                // break;
+            }
+        }
+    }        
 
 }
+
+std::pair<uint16_t, uint16_t> WaveFront::GetGoalPosition() {
+    for(const auto& cell : gridCells_) {
+        if(cell.distance_ == 1) {
+            return std::make_pair(cell.x_idx_, cell.z_idx_);
+        }
+    }
+    std::__throw_runtime_error("Goal Position Not Found !");
+}
+
+void WaveFront::CalculateShortestPath() {
+
+    // we start the wave propagation from the goal cell, by manually giving it distance 1
+    std::vector<Node> discovered_nodes;
+    std::pair<uint16_t, uint16_t> goal_position(GetGoalPosition()); 
+    discovered_nodes.emplace_back(Node(goal_position.first, goal_position.second, 1));
+
+    while(!discovered_nodes.empty()) {
+        // for each discovered cell, we investigate it's neightboring nodes, and save them if they're unoccupied
+        // If we started with multiple discovered_cells, we might end up with duplicate nodes in the 'free_neighbor_nodes'
+        // since traversing in different directions from different cells might end up at the same cell
+        // Therefore we use a set, which does not insert the duplicate elements in the first place      
+        std::unordered_set<Node, NodeHashFunc> free_neighbor_nodes;
+        for(const auto& discovered_cell : discovered_nodes) {
+            uint16_t cur_x = discovered_cell.x;
+            uint16_t cur_z = discovered_cell.z;
+            uint16_t target_x;
+            uint16_t target_z;
+            // NORTH (if not edge and not occupied)
+            target_x = cur_x; target_z = cur_z -1;
+            if( (cur_z != 0) && ( gridCells_.at(target_z * num_cells_x_ + target_x).distance_ == 0 ) ) {
+                free_neighbor_nodes.insert(Node(target_x,target_z,discovered_cell.distance+1));
+            }
+            // SOUTH (if not edge and not occupied)
+            target_x = cur_x; target_z = cur_z +1;
+            if( (target_z < num_cells_z_) && ( gridCells_.at(target_z * num_cells_x_ + target_x).distance_ == 0 ) ) {
+                free_neighbor_nodes.insert(Node(target_x,target_z,discovered_cell.distance+1));
+            }
+            // WEST (if not edge and not occupied)
+            target_x = cur_x -1; target_z = cur_z;
+            if( (cur_x != 0) && ( gridCells_.at(target_z * num_cells_x_ + target_x).distance_ == 0 ) ) {
+                free_neighbor_nodes.insert(Node(target_x,target_z,discovered_cell.distance+1));
+            }
+            // EAST (if not edge and not occupied)
+            target_x = cur_x +1; target_z = cur_z;
+            if( (target_x < num_cells_x_) && ( gridCells_.at(target_z * num_cells_x_ + target_x).distance_ == 0 ) ) {
+                free_neighbor_nodes.insert(Node(target_x,target_z,discovered_cell.distance+1));
+            }            
+        }
+        // The exploration of the neighbors of the discovered_cells is over. Now, those neighbors will be the new set of discovered_cells
+        // and we'll re-run the wave propagation
+        discovered_nodes.clear();
+        discovered_nodes.reserve(free_neighbor_nodes.size());
+        for(auto it = free_neighbor_nodes.begin(); it != free_neighbor_nodes.end(); ) { // it++ is not here since extract invalidates it
+            // Update the gricCell elements to use for navigation later on
+            gridCells_.at(it->z * num_cells_x_ + it->x).distance_ = it->distance;
+            // move the neighbors
+            discovered_nodes.push_back(std::move(free_neighbor_nodes.extract(it++).value()));
+        }
+    }
+
+    // Here gridCells_ have updated distance values based on the proximity to the goal
+    // Now the ego needs to move "down the gradient" based on these distance values 
+
+
+}
+
+void WaveFront::ShowGridValues() const {
+    // relies on the fact that we populated gridCells_ in row-first fashion
+    for(const auto& cell : gridCells_) {
+        std::cout << std::setw(3) << cell.distance_ << " ";
+        if(cell.x_idx_ == (num_cells_x_-1))
+            std::cout << "\n";
+    }
+    std::cout << "------------------------------------------" << std::endl;
+}
+
+
