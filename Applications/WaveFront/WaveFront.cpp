@@ -25,7 +25,8 @@
 
 extern json launch_obj;
 
-WaveFront::WaveFront(bool isFullscreen, int windowWidth, int windowHeight)
+WaveFront::WaveFront(bool isFullscreen, int windowWidth, int windowHeight) : 
+    goalsReached_(false), rand_eng_(rand_dev_())
 {
     // --------------- lAZYECS -------------- //
 
@@ -87,6 +88,8 @@ void WaveFront::init() {
     grid_size_z_ = launch_obj.at("application").at("GRID_SIZE_Z");
     grid_resolution_ = launch_obj.at("application").at("GRID_RESOLUTION");
 
+    rand_dist_ = std::uniform_int_distribution<int>(-grid_size_x_/2.0, grid_size_x_/2.0);  
+
     grid_x_limit_ = std::make_pair(-grid_size_x_/2.0, grid_size_x_/2.0);
     grid_z_limit_ = std::make_pair(-grid_size_z_/2.0, grid_size_z_/2.0);
 
@@ -94,10 +97,11 @@ void WaveFront::init() {
     num_cells_z_ = static_cast<uint32_t>((grid_z_limit_.second-grid_z_limit_.first) / (grid_resolution_)) + 1;
 
     // Setup the grid objects (must be done after the actors above are spawned, since checks for occupancy of the cells as well)
-    this->SetupGridCells();
+    this->CreateGridCells();
+    this->ResetGridStatus();
     this->UpdateGridOccupancy();
     this->ShowGridValues(); // before executing the wave propagation
-    this->CalculateShortestPath();
+    this->RunWavePropagation();
     this->ShowGridValues(); // after executing the wave propagation
 }
 
@@ -108,18 +112,36 @@ void WaveFront::main_loop() {
     auto main_loop_step = [this, &loop_ctr]() {
 
         // ------------- 1) Apply ego control, NPC AI, kinematic control, etc. -------------  //
-        loop_ctr = (loop_ctr +1)%500;
+        loop_ctr = (loop_ctr +1) % 500;
         if(loop_ctr == 0) {
             for(auto& pair : egoActors_) {
-                auto& ego_entity = pair.first;
+                const auto& ego_entity = pair.first;
                 auto& ego_actor = pair.second;
                 
-                // Find the best move for ego and move it
-                auto best_move = ego_actor.FindBestMove(this->gridCells_, this->num_cells_x_,this->num_cells_z_);
-                // Now move the physical entity that is connected to the ego
-                auto& rigid_body = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(ego_entity);
-                rigid_body.rp3d_rigidBody->setTransform(rp3d::Transform(gridCells_.at(best_move).aabb_.getCenter(), 
-                                                                        rp3d::Quaternion::identity()));
+                // Calculate the shortest path from ego to the goal
+                if(!ego_actor.pathCalculated_) {
+                    ego_actor.FindShortestPath(this->gridCells_, this->num_cells_x_,this->num_cells_z_);
+                    HighlightPath(ego_actor.path_);
+                }
+                else { // Move to the goal position by using the path calculated above
+                       // move the physical entity that is connected to the ego (to the center of the grid cell)
+                    if(!ego_actor.path_.empty()) {
+                        auto& rigid_body = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(ego_entity);
+                        const auto next_idx = std::move(ego_actor.path_.front());
+                        ego_actor.path_.pop_front();
+                        rigid_body.rp3d_rigidBody->setTransform(rp3d::Transform(gridCells_.at(next_idx).aabb_.getCenter(), 
+                                                                                rp3d::Quaternion::identity()));
+                    }
+                    else { // goal has been reached, so reset the episode
+                        ResetActorPositions();
+                        ResetGridStatus();
+                        ego_actor.pathCalculated_ = false;
+                        this->UpdateGridOccupancy();
+                        this->ShowGridValues(); // before executing the wave propagation
+                        this->RunWavePropagation();
+                        this->ShowGridValues(); // after executing the wave propagation                        
+                    }
+                }
             }
 
         }
@@ -130,7 +152,6 @@ void WaveFront::main_loop() {
 
         // ------------- 3) Update graphics ------------- //
         // a) Update debugging primities
-        // this->UpdateGridOccupancy();
         // b) Main entity graphics update
         this->renderSys->Update();
     };
@@ -152,7 +173,14 @@ void WaveFront::main_loop() {
 
 }
 
-void WaveFront::SetupGridCells() {
+void WaveFront::HighlightPath(const std::deque<uint16_t>& ego_path) {
+    for(const auto& path_cell : ego_path) {
+        gridCells_.at(path_cell).rectangle_.color = static_cast<uint32_t>(GridColor::TRAVELED);
+        renderSys->mDebugRectangles.at(path_cell) = gridCells_.at(path_cell).rectangle_;
+    }    
+}
+
+void WaveFront::CreateGridCells() {
 
     for(uint32_t j = 0; j < num_cells_z_; j++) { // terrain boundary on z
         for(uint32_t i = 0; i < num_cells_x_; i++) { // terrain boundary on x
@@ -170,7 +198,19 @@ void WaveFront::SetupGridCells() {
     }  
 }
 
+// Resets all distance and color values
+void WaveFront::ResetGridStatus() {
+    goalsReached_ = false;
+
+    for(auto& cell : gridCells_) {
+        cell.distance_ = 0;
+        cell.rectangle_.color = static_cast<uint32_t>(GridColor::FREE);
+        renderSys->mDebugRectangles.at(cell.z_idx_ * num_cells_x_ + cell.x_idx_) = cell.rectangle_;
+    }
+}
+
 void WaveFront::UpdateGridOccupancy() {
+
     // for each type of actor, check which grid cell it's occupying and update the status of the cell
 
     for(auto& obstacle : obstacleActors_) { 
@@ -235,7 +275,7 @@ std::pair<uint16_t, uint16_t> WaveFront::GetGoalPosition() {
     std::__throw_runtime_error("Goal Position Not Found !");
 }
 
-void WaveFront::CalculateShortestPath() {
+void WaveFront::RunWavePropagation() {
 
     // we start the wave propagation from the goal cell, by manually giving it distance 1
     std::vector<Node> discovered_nodes;
@@ -302,4 +342,18 @@ void WaveFront::ShowGridValues() const {
     std::cout << "------------------------------------------" << std::endl;
 }
 
+void WaveFront::ResetActorPositions() {
+        for(const auto& entity : this->physicsSys->m_entities) {
+            auto& tag = gOrchestrator.GetComponent<lazyECS::Tag>(entity);
+            auto rigid_body = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(entity);
 
+            if((tag.mTag == "goal") || (tag.mTag == "ego") || (tag.mTag == "obstacle")) {
+                // reset position in physics system (which will internally update graphics too)
+                auto new_x = static_cast<float>(rand_dist_(rand_eng_));
+                auto new_z = static_cast<float>(rand_dist_(rand_eng_));
+                rigid_body.rp3d_rigidBody->setTransform(rp3d::Transform(rp3d::Vector3(new_x,0,new_z),
+                                                        rp3d::Quaternion::identity()));                             
+                
+            }
+        }
+}

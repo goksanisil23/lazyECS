@@ -30,20 +30,26 @@ public:
 
     void main_loop();
 
-    void SetupGridCells();
+    void CreateGridCells();
 
     void UpdateGridOccupancy();
 
+    void ResetGridStatus();
+
+    void ResetActorPositions();
+
+    void HighlightPath(const std::deque<uint16_t>& ego_path);
+
     void ShowGridValues() const;
 
-    void CalculateShortestPath();
+    void RunWavePropagation();
 
     std::pair<uint16_t, uint16_t> GetGoalPosition();
 
     // ----------------- Member variables ----------------- //
     std::shared_ptr<lazyECS::RenderingSystem> renderSys; // pointer to the rendering system to be accessed from draw_contents
     std::shared_ptr<lazyECS::PhysicsSystem> physicsSys;
-    std::shared_ptr<lazyECS::TagSystem> tagSys;    
+    std::shared_ptr<lazyECS::TagSystem> tagSys;
 
 private:
 
@@ -56,6 +62,11 @@ private:
     float grid_size_x_, grid_size_z_, grid_resolution_;
     std::pair<float, float> grid_x_limit_, grid_z_limit_;
     uint16_t num_cells_x_, num_cells_z_;
+    
+    bool goalsReached_;
+    std::random_device rand_dev_;
+    std::default_random_engine rand_eng_;
+    std::uniform_int_distribution<int> rand_dist_;    
 
 
 };
