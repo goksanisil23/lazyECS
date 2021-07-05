@@ -10,10 +10,9 @@
 
 Ego::Ego() = default;
 
-void Ego::MoveToCell(const GridCell& grid_cell){
+void Ego::MoveToCell(const GridCell& grid_cell) {
     this->x_idx_.at(0) = grid_cell.x_idx_;
     this->z_idx_.at(0) = grid_cell.z_idx_;
-    // return grid_cell.aabb_.getCenter();
 }
 
 // Finds the best grid cell to move by following down the gradient.

@@ -9,7 +9,9 @@ GRID_SIZE_X = 18.0
 GRID_SIZE_Z = 18.0
 GRID_RESOLUTION = 1.0
 
-NUM_OBSTACLES = 10 # stuck at 20
+APP_STEP_TIME = 0.25
+
+NUM_OBSTACLES = 50 # stuck at 20
 
 ################# Actor templates #################
 def create_obstacle(position):
@@ -96,7 +98,8 @@ entities = {
 application = {
     "GRID_SIZE_X": GRID_SIZE_X,
     "GRID_SIZE_Z": GRID_SIZE_Z,
-    "GRID_RESOLUTION": GRID_RESOLUTION
+    "GRID_RESOLUTION": GRID_RESOLUTION,
+    "APP_STEP_TIME": APP_STEP_TIME
 }
 
 ################# Bundle the elements together #################

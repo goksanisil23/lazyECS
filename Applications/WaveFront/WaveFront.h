@@ -59,14 +59,20 @@ private:
 
     std::vector<GridCell> gridCells_;
 
+    // Application parameters
     float grid_size_x_, grid_size_z_, grid_resolution_;
     std::pair<float, float> grid_x_limit_, grid_z_limit_;
     uint16_t num_cells_x_, num_cells_z_;
+    float app_step_time_;
     
     bool goalsReached_;
     std::random_device rand_dev_;
     std::default_random_engine rand_eng_;
-    std::uniform_int_distribution<int> rand_dist_;    
+    std::uniform_int_distribution<int> rand_dist_;
+
+    std::chrono::_V2::system_clock::time_point prevAppTime_;
+    float deltaTime_;
+    float timeAccumulator_;     
 
 
 };

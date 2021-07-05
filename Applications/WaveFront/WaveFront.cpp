@@ -26,7 +26,8 @@
 extern json launch_obj;
 
 WaveFront::WaveFront(bool isFullscreen, int windowWidth, int windowHeight) : 
-    goalsReached_(false), rand_eng_(rand_dev_())
+    goalsReached_(false), rand_eng_(rand_dev_()),
+    prevAppTime_{std::chrono::high_resolution_clock::now()},  deltaTime_(0.0),timeAccumulator_(0.0)    
 {
     // --------------- lAZYECS -------------- //
 
@@ -87,6 +88,7 @@ void WaveFront::init() {
     grid_size_x_ = launch_obj.at("application").at("GRID_SIZE_X");
     grid_size_z_ = launch_obj.at("application").at("GRID_SIZE_Z");
     grid_resolution_ = launch_obj.at("application").at("GRID_RESOLUTION");
+    app_step_time_ = launch_obj.at("application").at("APP_STEP_TIME");
 
     rand_dist_ = std::uniform_int_distribution<int>(-grid_size_x_/2.0, grid_size_x_/2.0);  
 
@@ -107,13 +109,18 @@ void WaveFront::init() {
 
 void WaveFront::main_loop() {
 
-    uint64_t loop_ctr = 0;
-
-    auto main_loop_step = [this, &loop_ctr]() {
+    auto main_loop_step = [this]() {
 
         // ------------- 1) Apply ego control, NPC AI, kinematic control, etc. -------------  //
-        loop_ctr = (loop_ctr +1) % 500;
-        if(loop_ctr == 0) {
+
+        // Adjust the iteration rate for Control (not the engine)
+        auto current_app_time = std::chrono::high_resolution_clock::now();
+        this->deltaTime_ = std::chrono::duration<float, std::chrono::seconds::period>(current_app_time-prevAppTime_).count();
+        this->prevAppTime_ = current_app_time; // update previous time
+        this->timeAccumulator_ += deltaTime_;
+
+        while(this->timeAccumulator_ >= app_step_time_ ) {
+            this->timeAccumulator_ -= app_step_time_;
             for(auto& pair : egoActors_) {
                 const auto& ego_entity = pair.first;
                 auto& ego_actor = pair.second;
@@ -214,6 +221,8 @@ void WaveFront::UpdateGridOccupancy() {
     // for each type of actor, check which grid cell it's occupying and update the status of the cell
 
     for(auto& obstacle : obstacleActors_) { 
+        obstacle.second.x_idx_.clear();
+        obstacle.second.z_idx_.clear();
         for(auto& cell : gridCells_) {
             auto obstacle_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(obstacle.first).rp3d_collider->getWorldAABB();
             // find and update the rectangle in Rendering System by using the indices of the cell
@@ -231,8 +240,10 @@ void WaveFront::UpdateGridOccupancy() {
     }
 
     for(auto& goal : goalActors_) { 
+        goal.second.x_idx_.clear();
+        goal.second.z_idx_.clear();          
         for(auto& cell : gridCells_) {
-            auto goal_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(goal.first).rp3d_collider->getWorldAABB();
+            auto goal_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(goal.first).rp3d_collider->getWorldAABB();          
             // find and update the rectangle in Rendering System by using the indices of the cell
             if(cell.UpdateOccupancy(goal_aabb, CellState::GOAL)) {
                 std::cout << "goal at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
@@ -247,9 +258,11 @@ void WaveFront::UpdateGridOccupancy() {
         }
     }   
 
-    for(auto& ego : egoActors_) { 
+    for(auto& ego : egoActors_) {
+        ego.second.x_idx_.clear();
+        ego.second.z_idx_.clear();           
         for(auto& cell : gridCells_) {
-            auto ego_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(ego.first).rp3d_collider->getWorldAABB();
+            auto ego_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(ego.first).rp3d_collider->getWorldAABB();              
             // find and update the rectangle in Rendering System by using the indices of the cell
             if(cell.UpdateOccupancy(ego_aabb, CellState::TRAVELED)) {
                 std::cout << "ego at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
