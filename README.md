@@ -16,4 +16,4 @@ Naive implementation of the potential field algorithm where Green capsule repres
 ## Wave Propagation
 2D Grid based implementation of path finding by wave propagation. Compared to the potential field, implementation of this approach is more "discrete" in the sense that, the environment is divided into finite number of cells, each cell is either "occupied" or "free". There is a cost value associated with each free cell based on it's relative distance to the goal position, and the ego actor is trying to move down the cost gradient in the fastest way possible, by choosing the free cell with the lowest "cost" (distance) value in it's 4-directional neighborhood. Occupied cells omitted from the search.
 
-![](Applications/WavePropagation/wave_propagation.gif)
+![](Applications/WaveFront/wave_propagation.gif)
