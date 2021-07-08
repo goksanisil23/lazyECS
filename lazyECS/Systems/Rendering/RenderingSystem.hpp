@@ -213,6 +213,8 @@ public:
     void GuiInit(); // Initialize Gui panels & widgets
     void UpdateGui() const; // update Gui information
 
+    static float GetTimeStep() ;
+
     // ----------------- Member variables ----------------- //
     // std::shared_ptr<nanogui::Label> fpsLabel_;
     nanogui::Label* fpsLabel_;
@@ -225,6 +227,10 @@ public:
     std::vector<DebugRectangle> mDebugRectangles; // debug rectangles to be populated by the user
     std::vector<DebugArrow> mDebugArrows; // debug rectangles to be populated by the user
 };
+
+inline float RenderingSystem::GetTimeStep()  {
+    return RENDER_TIME_STEP;
+}
 
 /// Reshape the view
 inline void RenderingSystem::ReshapeCameraView(int width, int height) {

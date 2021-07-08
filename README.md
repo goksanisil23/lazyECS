@@ -3,6 +3,10 @@ Simple Entity Component System implementation with minimal robotics application 
 
 This project is mainly for learning and exploration purposes. For physics (and collision) system, lazyECS utilizes ReactPhysics3D (https://github.com/DanielChappuis/reactphysics3d).
 
+Important Note: If the update rate of the application is faster than the Render rate (which is currently 50Hz), then the PhysicsSystem->Update() function better be called in the main application loop. (so that latest forces/teleportations can be applied immediately and interpolation factor introduces less error)
+
+If the update rate of the application is slower then the Render rate, PhysicsSystem->Update() function better be called outside the main application loop, which is running faster (at the rate of Render System), so that interpolation factor has a resolution that fits better to the render rate.
+
 
 ## Minimal 3D
 Minimal lazyECS application with both physics and render only actors that can be moved around kinematically or dynamically.

@@ -25,7 +25,7 @@ constexpr float EGO_RADIUS_ = 0.05; // 0.05
 
 constexpr float GRID_SIZE_X = 18.0;
 constexpr float GRID_SIZE_Z = 18.0;
-constexpr float GRID_RES = 0.2; // 0.25
+constexpr float GRID_RES = 1.0; // 0.2
 
 constexpr float APP_STEP_TIME = 0.01; // 100Hz
 

@@ -828,7 +828,7 @@ void RenderingSystem::DrawDebugAABB(const DebugAABB& debug_aabb) {
 void RenderingSystem::TimerThreadFunc() {
     while(true) {
         // Not sleeping here, maximizing the FPS
-        // std::this_thread::sleep_for(this->quantum); // since no other operation happens in this thread, enough to just sleep for FPS rate
+        std::this_thread::sleep_for(this->quantum); // since no other operation happens in this thread, enough to just sleep for FPS rate
         // This is the main event interrupt which allows steady render rate (irrespective of mouse/keyboard callbacks)
         // after sleeping for RENDER_TIME_STEP
         // redraw() calls glfwPostEmptyEvent() which allows the iteration to proceed from the blocked glfwWaitEvents() state
@@ -858,10 +858,8 @@ void RenderingSystem::Update() {
             }
             // Blocks next iteration until:
             // a) A keyboard/mouse event is made
-            // b) render_timer_thread below periodically interrupts it by a glfwPostEmptyEvent call for steady render rate
-            // make this blocking call every 50FPS so that fast mouse/keyboard movements (faster than 50FPS) doesnt cause 
-            // main loop acceleration
-            // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long>(RENDER_TIME_STEP*1e3)));
+            // b) render_timer_thread periodically interrupts it by a glfwPostEmptyEvent call for steady render rate.
+            // The program waits here only if everything else (physics + App) has already been finished in less time than render rate
             glfwWaitEvents();
         }    
 }

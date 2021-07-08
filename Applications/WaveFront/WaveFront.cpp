@@ -27,7 +27,7 @@ extern json launch_obj;
 
 WaveFront::WaveFront(bool isFullscreen, int windowWidth, int windowHeight) : 
     goalsReached_(false), rand_eng_(rand_dev_()),
-    prevAppTime_{std::chrono::high_resolution_clock::now()},  deltaTime_(0.0),timeAccumulator_(0.0)    
+    prevAppTime_{std::chrono::high_resolution_clock::now()},  deltaTime_(0.0),timeAccumulator_(0.0)
 {
     // --------------- lAZYECS -------------- //
 
@@ -90,6 +90,7 @@ void WaveFront::init() {
     grid_resolution_ = launch_obj.at("application").at("GRID_RESOLUTION");
     app_step_time_ = launch_obj.at("application").at("APP_STEP_TIME");
 
+    // Initialize random distribution for resetting actor positions after episode
     rand_dist_ = std::uniform_int_distribution<int>(-grid_size_x_/2.0, grid_size_x_/2.0);  
 
     grid_x_limit_ = std::make_pair(-grid_size_x_/2.0, grid_size_x_/2.0);
@@ -150,12 +151,14 @@ void WaveFront::main_loop() {
                     }
                 }
             }
-
+            // ------------- 2) Update physics ------------- //
+            if(app_step_time_ < lazyECS::RenderingSystem::GetTimeStep())
+                this->physicsSys->Update();            
         }
-        // ------------- 2) Update physics ------------- //
-        // (needs to happen right after Actor applies force/teleports on rigid body)
-        this->physicsSys->Update();
 
+        // ------------- 2) Update physics ------------- //
+        if(app_step_time_ > lazyECS::RenderingSystem::GetTimeStep())
+            this->physicsSys->Update();
 
         // ------------- 3) Update graphics ------------- //
         // a) Update debugging primities
@@ -227,7 +230,7 @@ void WaveFront::UpdateGridOccupancy() {
             auto obstacle_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(obstacle.first).rp3d_collider->getWorldAABB();
             // find and update the rectangle in Rendering System by using the indices of the cell
             if(cell.UpdateOccupancy(obstacle_aabb, CellState::OBSTACLE)) {
-                std::cout << "obstacle at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
+                // std::cout << "obstacle at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
                 // update the debug renderer for this cell
                 renderSys->mDebugRectangles.at(cell.z_idx_ * num_cells_x_ + cell.x_idx_) = cell.rectangle_;
                 // Update the cell index of the obstacle
@@ -246,7 +249,7 @@ void WaveFront::UpdateGridOccupancy() {
             auto goal_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(goal.first).rp3d_collider->getWorldAABB();          
             // find and update the rectangle in Rendering System by using the indices of the cell
             if(cell.UpdateOccupancy(goal_aabb, CellState::GOAL)) {
-                std::cout << "goal at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
+                // std::cout << "goal at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
                 // update the debug renderer for this cell
                 renderSys->mDebugRectangles.at(cell.z_idx_ * num_cells_x_ + cell.x_idx_) = cell.rectangle_;
                 // Update the cell index of the goal
@@ -265,7 +268,7 @@ void WaveFront::UpdateGridOccupancy() {
             auto ego_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(ego.first).rp3d_collider->getWorldAABB();              
             // find and update the rectangle in Rendering System by using the indices of the cell
             if(cell.UpdateOccupancy(ego_aabb, CellState::TRAVELED)) {
-                std::cout << "ego at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
+                // std::cout << "ego at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
                 // update the debug renderer for this cell
                 renderSys->mDebugRectangles.at(cell.z_idx_ * num_cells_x_ + cell.x_idx_) = cell.rectangle_;
                 // Update the cell index of the ego

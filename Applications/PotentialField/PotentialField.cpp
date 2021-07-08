@@ -61,8 +61,10 @@ PotentialField::PotentialField(bool isFullscreen, int windowWidth, int windowHei
 
 void PotentialField::init() {
     // Create application specific Actors here
+    // 1) Filter the entities based on their logical Tag
+    // 2) Construct App specific Actors
+    // 3) Point Actors to entities based on the tag group
 
-    // Filter the entities based on their logical Tag, and point them into Application Actors
     std::vector<lazyECS::Entity> ego_entities = tagSys->GetEntitiesWithTag("ego");
     for(const auto& ego_ent : ego_entities) {
         auto ent_trans = gOrchestrator.GetComponent<lazyECS::Transform3D>(ego_ent);
@@ -136,8 +138,12 @@ void PotentialField::main_loop() {
 
             // // ------------- 2) Update physics ------------- //
             // (needs to happen right after Actor applies force/teleports on rigid body)
-            this->physicsSys->Update();
+            if(APP_STEP_TIME < lazyECS::RenderingSystem::GetTimeStep())
+                this->physicsSys->Update();
         }
+        
+        if(APP_STEP_TIME > lazyECS::RenderingSystem::GetTimeStep())
+            this->physicsSys->Update();
 
         // ------------- 3) Update graphics ------------- //
         // a) Update debugging primities
