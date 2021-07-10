@@ -29,5 +29,23 @@ public:
     std::unordered_set<Entity> m_entities;
 };
 
+// Events (defined here instead of inside systems to that systems do not need to know about each other)
+
+struct Event {
+    virtual ~Event() = default;
+};
+
+
+struct KeyboardEvent : public Event {
+    enum KeyButton {
+        KEY_A, KEY_S, KEY_D, KEY_W
+    };
+
+    KeyButton key_button;
+    
+    explicit KeyboardEvent(const KeyButton key_but) : key_button(key_but) {}
+};
+
+
 }
 

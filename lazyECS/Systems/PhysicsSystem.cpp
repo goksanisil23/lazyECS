@@ -90,8 +90,12 @@ void PhysicsSystem::Init(){
     }
 }
 
-const float& PhysicsSystem::GetInterpFactor() {
+const float& PhysicsSystem::GetInterpFactor() const {
     return interpFactor;
+}
+
+void PhysicsSystem::RayCast(const rp3d::Ray& ray) {
+    physicsWorld->raycast(ray, &raycast_manager_);
 }
 
 void PhysicsSystem::Update() {

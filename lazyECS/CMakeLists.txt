@@ -56,6 +56,7 @@ set(LAZY_ECS_SOURCES
     ECSCore/SystemManager.hpp
     ECSCore/Orchestrator.hpp
     ECSCore/Types.hpp
+    ECSCore/EventManagement.hpp
 
     Components/RigidBody3D.hpp
     Components/Transform3D.hpp
@@ -75,6 +76,7 @@ set(LAZY_ECS_SOURCES
     Systems/Rendering/RenderingSystem.hpp
     Systems/Rendering/RenderingSystem.cpp
     Systems/TagSystem.cpp
+    Systems/ManualControlSystem.cpp
     # Systems/Rendering/Gui.h
     # Systems/Rendering/Gui.cpp
 

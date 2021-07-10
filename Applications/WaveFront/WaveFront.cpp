@@ -152,7 +152,7 @@ void WaveFront::main_loop() {
                 }
             }
             // ------------- 2) Update physics ------------- //
-            if(app_step_time_ < lazyECS::RenderingSystem::GetTimeStep())
+            if(app_step_time_ <= lazyECS::RenderingSystem::GetTimeStep())
                 this->physicsSys->Update();            
         }
 

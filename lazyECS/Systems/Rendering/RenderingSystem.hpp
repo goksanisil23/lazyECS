@@ -4,9 +4,11 @@
 #include "ECSCore/Types.hpp"
 #include "Components/RigidBody3D.hpp"
 #include "Components/Transform3D.hpp"
+#include "ECSCore/EventManagement.hpp"
 
 #include <cstdint>
 #include <reactphysics3d/collision/shapes/AABB.h>
+#include <reactphysics3d/mathematics/Ray.h>
 #include <reactphysics3d/mathematics/Transform.h>
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/reactphysics3d.h>
@@ -98,8 +100,7 @@ public:
 
         DebugArrow(const rp3d::Transform& trans, const rp3d::DebugRenderer::DebugColor& col)
             : transform(trans), color(col) {}
-    };    
-
+    };
 protected:
     // ----------------- Member variables ----------------- //
 
@@ -186,7 +187,7 @@ public:
     void SetViewport(int x, int y, int width, int height); // Set the viewport to render the scene
     void SetScenePosition(const openglframework::Vector3& position, float sceneRadius); // where main scene camera looks at
 
-    bool KeyboardEvent(int key, int scancode, int action, int mods);  // Called when a keyboard event occurs
+    // void OnKeyboardEvent();  // Called when a keyboard event occurs
     bool MouseButtonEvent(int button, bool down, int mods, double mousePosX, double mousePosY); // called when mouse button event occurs
     bool MouseMotionEvent(double xMouse, double yMouse, int leftButtonState, int rightButtonState, int middleButtonState, int altKeyState);
     bool ScrollingEvent(float xAxis, float yAxis, float scrollSensitivy); // called when scrolling event occurs
@@ -208,6 +209,7 @@ public:
     void DrawDebugSphere(const DebugSphere& debug_sphere);
     void DrawDebugRectangle(const DebugRectangle& debug_rectangle);    
     void DrawDebugArrow(const DebugArrow& debug_arrow);
+    void DrawDebugRays();
 
     void TimerThreadFunc(); // function used in a thread to make periodic draw calls
     void GuiInit(); // Initialize Gui panels & widgets
@@ -226,6 +228,7 @@ public:
     std::vector<DebugAABB> mDebugAABBs; // debug AABBs to be populated by the user
     std::vector<DebugRectangle> mDebugRectangles; // debug rectangles to be populated by the user
     std::vector<DebugArrow> mDebugArrows; // debug rectangles to be populated by the user
+    std::vector<rp3d::Ray> mDebugRays;
 };
 
 inline float RenderingSystem::GetTimeStep()  {

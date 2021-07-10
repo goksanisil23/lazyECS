@@ -138,7 +138,7 @@ void PotentialField::main_loop() {
 
             // // ------------- 2) Update physics ------------- //
             // (needs to happen right after Actor applies force/teleports on rigid body)
-            if(APP_STEP_TIME < lazyECS::RenderingSystem::GetTimeStep())
+            if(APP_STEP_TIME <= lazyECS::RenderingSystem::GetTimeStep())
                 this->physicsSys->Update();
         }
         

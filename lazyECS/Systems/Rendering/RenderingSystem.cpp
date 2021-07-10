@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <memory>
 #include <reactphysics3d/mathematics/Vector3.h>
+#include <reactphysics3d/utils/DebugRenderer.h>
 #include <string>
 #include <thread>
 
@@ -218,19 +219,23 @@ bool RenderingSystem::keyboard_event(int key, int scancode, int action, int modi
     }
 
     if(key == GLFW_KEY_W && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-        mCamera.setZoom(-0.1);
+        // mCamera.setZoom(-0.1);
+        gOrchestrator.event_bus_->publish<KeyboardEvent>(KeyboardEvent(KeyboardEvent::KeyButton::KEY_W));
         return true;
     }
     if(key == GLFW_KEY_S && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-        mCamera.setZoom(0.1);
+        // mCamera.setZoom(0.1);
+        gOrchestrator.event_bus_->publish<KeyboardEvent>(KeyboardEvent(KeyboardEvent::KeyButton::KEY_S));
         return true;
     }
     if(key == GLFW_KEY_A && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-        mCamera.translateCamera(0.01, 0, mSceneCenter);
+        // mCamera.translateCamera(0.01, 0, mSceneCenter);
+        gOrchestrator.event_bus_->publish<KeyboardEvent>(KeyboardEvent(KeyboardEvent::KeyButton::KEY_A));
         return true;
     }   
     if(key == GLFW_KEY_D && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
-        mCamera.translateCamera(-0.01, 0, mSceneCenter);
+        // mCamera.translateCamera(-0.01, 0, mSceneCenter);
+        gOrchestrator.event_bus_->publish<KeyboardEvent>(KeyboardEvent(KeyboardEvent::KeyButton::KEY_D));
         return true;
     }
     return false;    
@@ -486,6 +491,9 @@ void RenderingSystem::Render() {
         for(const auto& debug_arrow : mDebugArrows) {
             DrawDebugArrow(debug_arrow);
         }
+
+        DrawDebugRays();
+        
 
         UpdateDebugVBOVAO();
     }
@@ -785,6 +793,12 @@ void RenderingSystem::DrawDebugSphere(const DebugSphere& debug_sphere) {
 			}
 		}
 	}
+}
+
+void RenderingSystem::DrawDebugRays() {
+    for(const auto& ray : mDebugRays) {
+        mDebugLines.emplace_back(DebugLine(ray.point1, ray.point2, static_cast<uint32_t>(rp3d::DebugRenderer::DebugColor::BLUE)));
+    }
 }
 
 void RenderingSystem::DrawDebugArrow(const DebugArrow& debug_arrow) {

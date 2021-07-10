@@ -4,6 +4,7 @@
 #include "ComponentManager.hpp"
 #include "EntityManager.hpp"
 #include "SystemManager.hpp"
+#include "EventManagement.hpp"
 
 #include <memory>
 
@@ -17,6 +18,8 @@ public:
         m_componentManager = std::make_unique<ComponentManager>();
         m_entityManager = std::make_unique<EntityManager>();
         m_systemManager = std::make_unique<SystemManager>();
+
+        event_bus_ = std::make_unique<EventBus>();
     }
 
     /////////////////////////// ENTITY METHODS ////////////////////////////////
@@ -87,6 +90,9 @@ private:
     std::unique_ptr<ComponentManager> m_componentManager;
     std::unique_ptr<EntityManager> m_entityManager;
     std::unique_ptr<SystemManager> m_systemManager;
+    
+public:
+    std::unique_ptr<EventBus> event_bus_; // don't want to create setters/getters
 };
 
 }

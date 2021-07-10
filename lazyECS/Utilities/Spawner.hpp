@@ -69,44 +69,46 @@ public:
 
     // Creates a static solid platform, meant to be used as terrain
     static void CreateTerrainEntity(const json& entities_json) {
-        auto terrain_obj = entities_json.at("TerrainEntity");
 
-        lazyECS::Entity entity = gOrchestrator.CreateEntity();
+        for(const auto& terrain_obj : entities_json.at("TerrainEntity")) {
 
-        // --------------- Mesh component (For rendering) --------------- //
-        lazyECS::Mesh mesh(stringToShape.at(terrain_obj.at("shape"))); // can be heightfield, concavemesh or Box
-        mesh.mColor = openglframework::Color(0.47F, 0.48F, 0.49F, 1.0F);
-        gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
+            lazyECS::Entity entity = gOrchestrator.CreateEntity();
 
-        // --------------- Transform component (Initial position) --------------- //
-        rp3d::Vector3 spawn_pos(terrain_obj.at("initial_position")[0], 
-                                terrain_obj.at("initial_position")[1], 
-                                terrain_obj.at("initial_position")[2]);
-            rp3d::Quaternion spawn_rot = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(static_cast<float>(terrain_obj.at("initial_rotation")[0])*rp3d::PI/180.0F,
-                                                                                         static_cast<float>(terrain_obj.at("initial_rotation")[1])*rp3d::PI/180.0F,
-                                                                                         static_cast<float>(terrain_obj.at("initial_rotation")[2])*rp3d::PI/180.0F
-                                                                                         ));
-        lazyECS::Transform3D spawn_trans(spawn_pos, spawn_rot);
-        if(mesh.mShape != lazyECS::Shape::Hfield) // scaling problem with height fields currently
-            spawn_trans.SetScale(terrain_obj.at("scale")[0],
-                                    terrain_obj.at("scale")[1],
-                                    terrain_obj.at("scale")[2]);
-        gOrchestrator.AddComponent<lazyECS::Transform3D>(entity, spawn_trans);
+            // --------------- Mesh component (For rendering) --------------- //
+            lazyECS::Mesh mesh(stringToShape.at(terrain_obj.at("shape"))); // can be heightfield, concavemesh or Box
+            mesh.mColor = openglframework::Color(0.47F, 0.48F, 0.49F, 1.0F);
+            gOrchestrator.AddComponent<lazyECS::Mesh>(entity, mesh);
 
-        // --------------- Rigid Body component (For physical motion) --------------- //
-        lazyECS::RigidBody3D rigid_body; // will be initialize in Physics System
-        rigid_body.rp3d_bodyType = stringToBodyType.at(terrain_obj.at("body_type"));
-        gOrchestrator.AddComponent<lazyECS::RigidBody3D>(entity, rigid_body);
+            // --------------- Transform component (Initial position) --------------- //
+            rp3d::Vector3 spawn_pos(terrain_obj.at("initial_position")[0], 
+                                    terrain_obj.at("initial_position")[1], 
+                                    terrain_obj.at("initial_position")[2]);
+                rp3d::Quaternion spawn_rot = rp3d::Quaternion::fromEulerAngles(rp3d::Vector3(static_cast<float>(terrain_obj.at("initial_rotation")[0])*rp3d::PI/180.0F,
+                                                                                            static_cast<float>(terrain_obj.at("initial_rotation")[1])*rp3d::PI/180.0F,
+                                                                                            static_cast<float>(terrain_obj.at("initial_rotation")[2])*rp3d::PI/180.0F
+                                                                                            ));
+            lazyECS::Transform3D spawn_trans(spawn_pos, spawn_rot);
+            if(mesh.mShape != lazyECS::Shape::Hfield) // scaling problem with height fields currently
+                spawn_trans.SetScale(terrain_obj.at("scale")[0],
+                                        terrain_obj.at("scale")[1],
+                                        terrain_obj.at("scale")[2]);
+            gOrchestrator.AddComponent<lazyECS::Transform3D>(entity, spawn_trans);
 
-        // --------------- Tag component (For logical grouping/filtering) --------------- //
-        if(terrain_obj.contains("tag")) {
-            lazyECS::Tag entity_tag(terrain_obj.at("tag"));
-            gOrchestrator.AddComponent(entity, entity_tag);
-        }
-        else {
-            lazyECS::Tag entity_tag;
-            gOrchestrator.AddComponent(entity, entity_tag);
-        }        
+            // --------------- Rigid Body component (For physical motion) --------------- //
+            lazyECS::RigidBody3D rigid_body; // will be initialize in Physics System
+            rigid_body.rp3d_bodyType = stringToBodyType.at(terrain_obj.at("body_type"));
+            gOrchestrator.AddComponent<lazyECS::RigidBody3D>(entity, rigid_body);
+
+            // --------------- Tag component (For logical grouping/filtering) --------------- //
+            if(terrain_obj.contains("tag")) {
+                lazyECS::Tag entity_tag(terrain_obj.at("tag"));
+                gOrchestrator.AddComponent(entity, entity_tag);
+            }
+            else {
+                lazyECS::Tag entity_tag;
+                gOrchestrator.AddComponent(entity, entity_tag);
+            }
+        }     
     }    
 
     // Creates a render only entities, meant to be used for objects that does not require physical movement/interaction

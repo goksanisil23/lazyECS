@@ -5,11 +5,16 @@
 #include "Components/Transform3D.hpp"
 #include "Components/Mesh.hpp"
 
+#include <reactphysics3d/collision/RaycastInfo.h>
+#include <reactphysics3d/mathematics/Ray.h>
+#include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/reactphysics3d.h>
 
 #include <chrono>
 
 namespace lazyECS {
+
+// ****************** Engine Settings ****************** //
 
 struct EngineSettings {
 
@@ -47,6 +52,23 @@ public:
 
 };
 
+// ****************** RaycastManager ****************** //
+
+class RaycastManager : public rp3d::RaycastCallback {
+
+public:
+    RaycastManager() = default;
+
+    float notifyRaycastHit(const rp3d::RaycastInfo& raycastInfo) override {
+        hit_points_.push_back(raycastInfo.worldPoint);
+        return raycastInfo.hitFraction;
+    }
+
+    std::vector<rp3d::Vector3> hit_points_;
+};
+
+// ****************** Physics System ****************** //
+
 class PhysicsSystem : public System {
 
 private:
@@ -62,11 +84,15 @@ public:
 
     void Update();
 
-    const float& GetInterpFactor();
+    const float& GetInterpFactor() const;
+
+    void RayCast(const rp3d::Ray& ray);
 
     float timeAccumulator; // to keep track of the leftover time from last physics iteration
 
-    float interpFactor; // interpolation ratio [0,1] calculated based on the left over time in physics period 
+    float interpFactor; // interpolation ratio [0,1] calculated based on the left over time in physics period
+
+    RaycastManager raycast_manager_;
 
 private:
     // PhysicsCommon is a factory module that is used to create physics world and objects and handling memory and logging
