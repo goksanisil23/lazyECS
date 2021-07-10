@@ -106,7 +106,10 @@ entities = {
         [create_ego([0,1.0,0]) for _ in range (1)] + \
         [create_goal(generate_random_position()) for _ in range (1)],
     "RenderOnlyEntities": [],
-    "TerrainEntity": [create_terrain(position=[0,0,0],scale=[20.0,0.1,20.0])] + [create_terrain(position=[0,0,-20],scale=[20.0,2.0,0.2])]
+    # Build a cage by 1 ground + 4 wall planes 
+    "TerrainEntity": [create_terrain(position=[0,0,0],scale=[20.0,0.1,20.0])] +\
+        [create_terrain(position=[0,0,-10],scale=[20.0,2.0,0.2])] + [create_terrain(position=[0,0,10],scale=[20.0,2.0,0.2])] +\
+            [create_terrain(position=[-10,0,0],scale=[0.2,2.0,20])] + [create_terrain(position=[10,0,0],scale=[0.2,2.0,20])]
 }
 
 # Application specific (not related to lazyECS) parameters

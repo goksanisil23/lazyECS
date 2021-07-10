@@ -19,9 +19,9 @@
                     0.5
                 ],
                 "initial_position": [
-                    1,
+                    8,
                     0.5,
-                    3
+                    2
                 ],
                 "initial_rotation": [
                     0,
@@ -71,9 +71,9 @@
                     0.5
                 ],
                 "initial_position": [
-                    0,
+                    -9,
                     0.5,
-                    1
+                    4
                 ],
                 "initial_rotation": [
                     0,
@@ -125,7 +125,76 @@
                 "initial_position": [
                     0,
                     0,
-                    -20
+                    -10
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "body_type": "Static",
+                "shape": "Box",
+                "file": "/home/goksan/Work/lazyECS/Applications/meshes/walls.obj",
+                "heightfield": {
+                    "size": 100
+                }
+            },
+            {
+                "scale": [
+                    20.0,
+                    2.0,
+                    0.2
+                ],
+                "initial_position": [
+                    0,
+                    0,
+                    10
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "body_type": "Static",
+                "shape": "Box",
+                "file": "/home/goksan/Work/lazyECS/Applications/meshes/walls.obj",
+                "heightfield": {
+                    "size": 100
+                }
+            },
+            {
+                "scale": [
+                    0.2,
+                    2.0,
+                    20
+                ],
+                "initial_position": [
+                    -10,
+                    0,
+                    0
+                ],
+                "initial_rotation": [
+                    0,
+                    0,
+                    0
+                ],
+                "body_type": "Static",
+                "shape": "Box",
+                "file": "/home/goksan/Work/lazyECS/Applications/meshes/walls.obj",
+                "heightfield": {
+                    "size": 100
+                }
+            },
+            {
+                "scale": [
+                    0.2,
+                    2.0,
+                    20
+                ],
+                "initial_position": [
+                    10,
+                    0,
+                    0
                 ],
                 "initial_rotation": [
                     0,
