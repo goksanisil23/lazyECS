@@ -55,7 +55,6 @@ Raycast::Raycast(bool isFullscreen, int windowWidth, int windowHeight) :
     physicsSys->Init();
     manControlSys->Init("ego");
 
-
     // run Application specific init
     this->init();
 }

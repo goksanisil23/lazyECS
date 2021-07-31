@@ -55,19 +55,20 @@ def create_ego(position):
 
     return ego_json
 
-def create_terrain(position): 
+def create_terrain(position, scale): 
     terrain_json = {
-        "scale": [20.0,0.1,20.0],
+        "scale": scale,
         "initial_position": position,
         "initial_rotation": [0,0,0],        
         "body_type": "Static",
         "shape": "Box",
-        "file": "/home/goksan/Work/lazyECS/Applications/meshes/walls.obj", # omitted if Shape is not ConcaveMesh
+        "file": ".", # omitted if Shape is not ConcaveMesh
         "heightfield" : { # omitted if Shape is not HeightField
             "size": 100
         }          
     }
-    return terrain_json
+    return terrain_json 
+
 
 def generate_random_position(num_random_positions = 1):
     random_positions = []
@@ -92,7 +93,10 @@ entities = {
         [create_ego(generate_random_position()) for _ in range (1)] + \
         [create_goal(generate_random_position()) for _ in range (1)],
     "RenderOnlyEntities": [],
-    "TerrainEntity": create_terrain([0,0,0])
+    "TerrainEntity": [create_terrain(position=[0,0,0],scale=[20.0,0.1,20.0])] +\
+        [create_terrain(position=[0,0,-10],scale=[20.0,2.0,0.2])] + [create_terrain(position=[0,0,10],scale=[20.0,2.0,0.2])] +\
+            [create_terrain(position=[-10,0,0],scale=[0.2,2.0,20])] + [create_terrain(position=[10,0,0],scale=[0.2,2.0,20])]    
+    # "TerrainEntity": create_terrain([0,0,0])
 }
 
 # Application specific (not related to lazyECS) parameters

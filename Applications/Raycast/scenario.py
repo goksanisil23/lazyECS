@@ -56,21 +56,6 @@ def create_ego(position):
 
     return ego_json
 
-# def create_terrain(position): 
-#     terrain_json = {
-#         "scale": [1.0,1.0,1.0],
-#         "initial_position": position,
-#         "initial_rotation": [0,0,0],        
-#         "body_type": "Static",
-#         "shape": "ConcaveMesh",
-#         "file": "/home/goksan/Work/lazyECS/Applications/meshes/walls.obj",
-#         "heightfield" : {
-#             "size": 100
-#         }          
-#     }
-#     return terrain_json
-
-
 def create_terrain(position, scale): 
     terrain_json = {
         "scale": scale,

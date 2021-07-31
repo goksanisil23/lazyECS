@@ -52,15 +52,15 @@ def create_ego(position):
 
     return ego_json
 
-def create_terrain(position): 
+def create_terrain(position, scale): 
     terrain_json = {
-        "scale": [1.0,1.0,1.0],
+        "scale": scale,
         "initial_position": position,
         "initial_rotation": [0,0,0],        
         "body_type": "Static",
-        "shape": "ConcaveMesh",
-        "file": "/home/goksan/Work/lazyECS/Applications/meshes/walls.obj",
-        "heightfield" : {
+        "shape": "Box",
+        "file": ".", # omitted if Shape is not ConcaveMesh
+        "heightfield" : { # omitted if Shape is not HeightField
             "size": 100
         }          
     }
@@ -89,7 +89,7 @@ entities = {
         [create_ego(generate_random_position()) for _ in range (1)] + \
         [create_goal(generate_random_position()) for _ in range (1)],
     "RenderOnlyEntities": [],
-    "TerrainEntity": create_terrain([0,0,0])
+    "TerrainEntity": [create_terrain(position=[0,0,0],scale=[20.0,0.2,20.0])]
 }
 
 ################# Bundle the elements together #################
