@@ -98,3 +98,7 @@ endforeach()
 message("NANOGUI_EXTRA_DEFS: ${NANOGUI_EXTRA_DEFS}")
 target_compile_definitions(lazyECS PUBLIC ${NANOGUI_EXTRA_DEFS})
 target_link_libraries(lazyECS ReactPhysics3D::ReactPhysics3D nanogui ${NANOGUI_EXTRA_LIBS})
+
+# Copy the shaders and meshes to build directory
+file(COPY "Systems/Rendering/shaders/" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/../shaders/")
+file(COPY "Systems/Rendering/meshes/" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/../meshes/")

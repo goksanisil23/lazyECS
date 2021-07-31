@@ -9,14 +9,15 @@ Mesh::Mesh(const Shape& mesh_shape) : mColor{openglframework::Color(1,1,1,1)}, m
 {
     mShape = mesh_shape;
     if(mesh_shape == Shape::Box) {
-        meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/cube.obj";
+        meshPath = "../../meshes/cube.obj";
     } else if(mesh_shape ==  Shape::Sphere) {
-        meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/sphere.obj";
+        meshPath = "../../meshes/sphere.obj";
     } else if(mesh_shape ==  Shape::Capsule) {
-        meshPath = "/home/goksan/Work/lazyECS/Applications/meshes/capsule.obj";
+        meshPath = "../../meshes/capsule.obj";
     }
     else if(mesh_shape == Shape::ConcaveMesh) {
-        meshPath = launch_obj.at("entities").at("TerrainEntity").at("file");
+        // meshPath = launch_obj.at("entities").at("TerrainEntity").at("file");
+        meshPath = "../../meshes/walls.obj";
     }
     else if (mesh_shape == Shape::Hfield) {
         json hf_json =  launch_obj.at("floor").at("heightfield");

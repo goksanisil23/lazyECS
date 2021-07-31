@@ -1,5 +1,6 @@
 import json
 import random
+import pathlib
 ################# SCENE PARAMETERS #################
 SCENE_RADIUS = 10.0
 SCENE_CENTER = [0.0, 30.0, 1.0] # [0.0, 24.0, 12.0]
@@ -110,7 +111,7 @@ json_data = {
     "application": application
 }
 
-with open("/home/goksan/Work/lazyECS/Applications/WaveFront/scene.json",'w') as outfile:
+with open(str(pathlib.Path(__file__).parent.resolve()) + "/../../build/Applications/WaveFront/scene.json",'w') as outfile:
     json.dump(json_data, outfile, indent=4)
 
 

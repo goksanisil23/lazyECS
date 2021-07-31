@@ -16,7 +16,7 @@ json launch_obj; // launch_obj is a global json object that will be populated in
 int main() {
 
     // ---- Parse the launch file for scene & entity setup ---- //
-    std::ifstream ifs("/home/goksan/Work/lazyECS/Applications/Raycast/scene.json");
+    std::ifstream ifs("scene.json");
     launch_obj = json::parse(ifs);
 
     // ---------- NANOGUI -------------- //
