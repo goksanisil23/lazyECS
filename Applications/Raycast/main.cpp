@@ -3,7 +3,8 @@
 #include <fstream>
 
 #include "Orchestrator.hpp"
-#include "Raycast.h"
+// #include "Raycast.h"
+#include "BaseApp.h"
 
 
 lazyECS::Orchestrator gOrchestrator; // Orchestrator is a global variable that can be accessed by all systems
@@ -22,8 +23,9 @@ int main() {
     // ---------- NANOGUI -------------- //
     nanogui::init();
     {
-        nanogui::ref<Raycast> raycast_app = new Raycast(false, 1200, 1200); // WaveFront(isFullscreen, windowWidth, windowHeight)
-        raycast_app->main_loop(); // render update interval in sec.
+        // nanogui::ref<Raycast> raycast_app = new Raycast();
+        nanogui::ref<BaseApp> raycast_app = new BaseApp();
+        raycast_app->main_lazyECS_loop();
     }
     nanogui::shutdown();
     return 0;

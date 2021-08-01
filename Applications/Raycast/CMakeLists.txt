@@ -4,12 +4,14 @@ project(raycast)
 
 # add_compile_options(-Wall -Wextra -Werror) #-pedantic -> causes error during c code compilation
 
-add_executable(raycast main.cpp Raycast.cpp)
+add_executable(raycast main.cpp Raycast.cpp 
+                                ${CMAKE_CURRENT_SOURCE_DIR}/../BaseApp/BaseApp.cpp)
 
 target_include_directories(raycast PUBLIC
                                             ${LAZY_ECS_PARENT_DIR}
                                             ${LAZY_ECS_INCLUDE_DIRS}
-                                            ${CMAKE_CURRENT_SOURCE_DIR})
+                                            ${CMAKE_CURRENT_SOURCE_DIR}
+                                            ${CMAKE_CURRENT_SOURCE_DIR}/../BaseApp)
 
 foreach(p ${NANOGUI_EXTRA_INCS})
     target_include_directories(raycast PUBLIC ${p})

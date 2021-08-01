@@ -21,6 +21,13 @@ public:
     static std::unordered_map<std::string, lazyECS::Shape> stringToShape;
     static std::unordered_map<std::string, rp3d::BodyType> stringToBodyType;    
 
+    static void CreateEntities(const json& entities_json) {
+        CreatePhysicsEntities(entities_json);
+        CreateTerrainEntity(entities_json);
+        CreateRenderOnlyEntities(entities_json);
+    }
+
+
     // This is an entity template that contains Transform3D, RigidBody3D and Mesh components
     // It's preferable to use PhysicsEntity as "intelligent" actors that are controlled by force, 
     // or environmental actors that act/move based on physics
