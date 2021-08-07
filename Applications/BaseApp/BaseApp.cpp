@@ -46,9 +46,6 @@ BaseApp::BaseApp(bool isFullscreen, int windowWidth, int windowHeight) :
     renderSys->Init();
     physicsSys->Init();
     manControlSys->Init("ego");
-
-    // --------------- Application -------------- //
-    app_step_time_ = launch_obj.at("application").at("APP_STEP_TIME");
 }
 
 void BaseApp::lazyECS_loop() {

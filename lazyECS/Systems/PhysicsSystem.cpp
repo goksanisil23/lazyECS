@@ -47,7 +47,35 @@ void PhysicsSystem::Init(){
                 break;
             case Shape::Capsule:
                 rigidBody.rp3d_collision_shape = physicsCommon.createCapsuleShape(transform.halfExtent[0],transform.halfExtent[1]);
-                break;                
+                break;
+            case Shape::Dumbbell: {
+                float distance_between_spheres(4.0/2.0f); // 8.0
+                rp3d::SphereShape* sphere_shape = physicsCommon.createSphereShape(0.75/2.0); // 1.5
+                rp3d::CapsuleShape* capsule_shape = physicsCommon.createCapsuleShape(0.25/2.0, 3.5/2.0); // 0.5, 7
+                rp3d::Transform sphere_1_trans_local(rp3d::Vector3(0, distance_between_spheres / 2.0f, 0), rp3d::Quaternion::identity());
+                rp3d::Transform sphere_2_trans_local(rp3d::Vector3(0, -distance_between_spheres / 2.0f, 0), rp3d::Quaternion::identity());
+                rp3d::Transform cylinder_trans_local(rp3d::Vector3(0, 0, 0), rp3d::Quaternion::identity());
+
+                rp3d::Collider* capsule_collider = rigidBody.rp3d_rigidBody->addCollider(capsule_shape, cylinder_trans_local);
+                rp3d::Collider* sphere_collider_1 = rigidBody.rp3d_rigidBody->addCollider(sphere_shape, sphere_1_trans_local);
+                rp3d::Collider* sphere_collider_2 = rigidBody.rp3d_rigidBody->addCollider(sphere_shape, sphere_2_trans_local);
+
+                sphere_collider_1->getMaterial().setMassDensity(2);
+                sphere_collider_1->getMaterial().setBounciness(0.2);
+                sphere_collider_2->getMaterial().setMassDensity(2);
+                sphere_collider_2->getMaterial().setBounciness(0.2);
+                capsule_collider->getMaterial().setBounciness(0.2);
+            
+                rigidBody.rp3d_rigidBody->setType(rigidBody.rp3d_bodyType);
+                rigidBody.rp3d_rigidBody->updateMassPropertiesFromColliders();
+
+                // Store the colliders created above
+                rigidBody.rp3d_colliders.push_back(std::shared_ptr<rp3d::Collider>(capsule_collider));
+                rigidBody.rp3d_colliders.push_back(std::shared_ptr<rp3d::Collider>(sphere_collider_1));
+                rigidBody.rp3d_colliders.push_back(std::shared_ptr<rp3d::Collider>(sphere_collider_2));
+
+                break;
+            }
             case Shape::ConcaveMesh: {
                 auto mPhysicsTriangleMesh = physicsCommon.createTriangleMesh();
                 for(unsigned int i = 0; i < mesh.getNbParts(); i++) {
@@ -84,8 +112,10 @@ void PhysicsSystem::Init(){
                 break;
         }
 
-        rigidBody.rp3d_collider = std::shared_ptr<rp3d::Collider>(rigidBody.rp3d_rigidBody->addCollider(rigidBody.rp3d_collision_shape, rp3d::Transform::identity()));
-        rigidBody.rp3d_rigidBody->updateMassPropertiesFromColliders();            
+        if(mesh.mShape != Shape::Dumbbell) {
+            rigidBody.rp3d_colliders.push_back(std::shared_ptr<rp3d::Collider>(rigidBody.rp3d_rigidBody->addCollider(rigidBody.rp3d_collision_shape, rp3d::Transform::identity())));
+            rigidBody.rp3d_rigidBody->updateMassPropertiesFromColliders();            
+        }
         rigidBody.rp3d_rigidBody->setType(rigidBody.rp3d_bodyType);
     }
 }

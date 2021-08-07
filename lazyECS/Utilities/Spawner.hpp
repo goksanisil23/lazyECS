@@ -27,15 +27,12 @@ public:
         CreateRenderOnlyEntities(entities_json);
     }
 
-
     // This is an entity template that contains Transform3D, RigidBody3D and Mesh components
     // It's preferable to use PhysicsEntity as "intelligent" actors that are controlled by force, 
     // or environmental actors that act/move based on physics
     static void CreatePhysicsEntities(const json& entities_json) {
-        int ent_ctr = 0;
         for(const auto& phy_obj : entities_json.at("PhysicsEntities")) {
             lazyECS::Entity entity = gOrchestrator.CreateEntity();
-            ent_ctr++;
 
             // --------------- Transform component (Initial position) --------------- //
             rp3d::Vector3 spawn_pos(phy_obj.at("initial_position")[0], 
@@ -73,6 +70,7 @@ public:
             }
         }
     }
+  
 
     // Creates a static solid platform, meant to be used as terrain
     static void CreateTerrainEntity(const json& entities_json) {
@@ -120,10 +118,8 @@ public:
 
     // Creates a render only entities, meant to be used for objects that does not require physical movement/interaction
     static void CreateRenderOnlyEntities(const json& entities_json) {
-        float ent_ctr = 0;
         for(const auto& render_obj : entities_json.at("RenderOnlyEntities")) {
             lazyECS::Entity entity = gOrchestrator.CreateEntity();
-            ent_ctr++;
 
             // --------------- Transform component (Initial position) --------------- //
             rp3d::Vector3 spawn_pos(render_obj.at("initial_position")[0], 
@@ -161,7 +157,7 @@ public:
 // Static variable initialization
 std::unordered_map<std::string, lazyECS::Shape> Spawner::stringToShape = {
         {"Box",lazyECS::Shape::Box},{"Sphere",lazyECS::Shape::Sphere}, {"ConcaveMesh",lazyECS::Shape::ConcaveMesh}, 
-        {"Capsule",lazyECS::Shape::Capsule}, {"Hfield",lazyECS::Shape::Hfield}, {"Custom",lazyECS::Shape::Custom}
+        {"Capsule",lazyECS::Shape::Capsule}, {"Hfield",lazyECS::Shape::Hfield}, {"Custom",lazyECS::Shape::Custom}, {"Dumbbell",lazyECS::Shape::Dumbbell}
 };
 
 std::unordered_map<std::string, rp3d::BodyType> Spawner::stringToBodyType = {

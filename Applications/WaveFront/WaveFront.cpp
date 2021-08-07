@@ -227,7 +227,7 @@ void WaveFront::UpdateGridOccupancy() {
         obstacle.second.x_idx_.clear();
         obstacle.second.z_idx_.clear();
         for(auto& cell : gridCells_) {
-            auto obstacle_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(obstacle.first).rp3d_collider->getWorldAABB();
+            auto obstacle_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(obstacle.first).rp3d_colliders.at(0)->getWorldAABB();
             // find and update the rectangle in Rendering System by using the indices of the cell
             if(cell.UpdateOccupancy(obstacle_aabb, CellState::OBSTACLE)) {
                 // std::cout << "obstacle at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
@@ -246,7 +246,7 @@ void WaveFront::UpdateGridOccupancy() {
         goal.second.x_idx_.clear();
         goal.second.z_idx_.clear();          
         for(auto& cell : gridCells_) {
-            auto goal_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(goal.first).rp3d_collider->getWorldAABB();          
+            auto goal_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(goal.first).rp3d_colliders.at(0)->getWorldAABB();          
             // find and update the rectangle in Rendering System by using the indices of the cell
             if(cell.UpdateOccupancy(goal_aabb, CellState::GOAL)) {
                 // std::cout << "goal at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";
@@ -265,7 +265,7 @@ void WaveFront::UpdateGridOccupancy() {
         ego.second.x_idx_.clear();
         ego.second.z_idx_.clear();           
         for(auto& cell : gridCells_) {
-            auto ego_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(ego.first).rp3d_collider->getWorldAABB();              
+            auto ego_aabb = gOrchestrator.GetComponent<lazyECS::RigidBody3D>(ego.first).rp3d_colliders.at(0)->getWorldAABB();              
             // find and update the rectangle in Rendering System by using the indices of the cell
             if(cell.UpdateOccupancy(ego_aabb, CellState::TRAVELED)) {
                 // std::cout << "ego at: " << cell.x_idx_ << " " << cell.z_idx_ << "\n";

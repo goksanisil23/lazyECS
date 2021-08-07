@@ -16,10 +16,10 @@ APP_STEP_TIME = 0.02
 NUM_OBSTACLES = 1 # stuck at 20
 
 ################# Actor templates #################
-def create_obstacle(position):
+def create_obstacle_box(position, scale):
      
     obst_json = {
-            "scale": [0.5,1.0,0.5],
+            "scale": scale,
             "initial_position": position,
             "initial_rotation": [0,0,0],            
             "shape": "Box",
@@ -30,9 +30,24 @@ def create_obstacle(position):
 
     return obst_json
 
-def create_goal(position):
+def create_obstacle_sphere(position, scale):
+     
+    obst_json = {
+            "scale": scale,
+            "initial_position": position,
+            "initial_rotation": [0,0,0],            
+            "shape": "Sphere",
+            "color": [1.0,0.0,0.0,1],
+            "tag": "obstacle",
+            "body_type": "Static"  
+    }
+
+    return obst_json
+
+
+def create_goal(position, scale):
     goal_json = {
-            "scale": [0.5,3.0,0.5],
+            "scale": scale,
             "initial_position": position,
             "initial_rotation": [0,0,0],            
             "shape": "Box",
@@ -44,17 +59,28 @@ def create_goal(position):
 
 def create_ego(position):
      
+    # ego_json = {
+    #         "scale": [0.4,0.4,0.4],
+    #         "initial_position": position,
+    #         "initial_rotation": [0,0,0],
+    #         "body_type": "Static",
+    #         "shape": "Box", # Sphere
+    #         "color": [0,0,1,1],
+    #         "tag": "ego"
+    # }
+
+    # return ego_json
     ego_json = {
-            "scale": [0.4,0.4,0.4],
-            "initial_position": position,
-            "initial_rotation": [0,0,0],
-            "body_type": "Static",
-            "shape": "Box", # Sphere
+            "scale": [0.5,0.5,0.5],
+            "initial_position": [0,44,0],
+            "initial_rotation": [0,0,90],
+            "body_type": "Dynamic",
+            "shape": "Dumbbell", # Sphere
             "color": [0,0,1,1],
             "tag": "ego"
     }
 
-    return ego_json
+    return ego_json    
 
 def create_terrain(position, scale): 
     terrain_json = {
@@ -89,9 +115,10 @@ scene = {
 }
 
 entities = {
-    "PhysicsEntities": [create_obstacle(generate_random_position()) for _ in range (NUM_OBSTACLES)] + \
-        [create_ego([0,1.0,0]) for _ in range (1)] + \
-        [create_goal(generate_random_position()) for _ in range (1)],
+    "PhysicsEntities": [create_obstacle_box([2,0.5,2],[1,1,1])] + [create_obstacle_box([4,0.5,4],[1,1,1])] + [create_obstacle_box([6,0.5,6],[1,1,1])] + [create_obstacle_box([8,0.5,8],[1,1,1])] + \
+        [create_obstacle_sphere([-4,0.5,-3],[1,1,1])] + [create_obstacle_sphere([6,0.5,-5],[1,1,1])] + [create_obstacle_sphere([0,1,-8],[2,2,2])] + \
+        [create_ego([0,0.2,0])] + \
+        [create_goal([-2,1,5],[1,2,0.5])] + [create_goal([-4,1,5],[1,2,0.5])] + [create_goal([-6,1,5],[1,2,0.5])],
     "RenderOnlyEntities": [],
     # Build a cage by 1 ground + 4 wall planes 
     "TerrainEntity": [create_terrain(position=[0,0,0],scale=[20.0,0.1,20.0])] +\
@@ -117,6 +144,3 @@ json_data = {
 
 with open(str(pathlib.Path(__file__).parent.resolve()) + "/../../build/Applications/Raycast/scene.json",'w') as outfile:
     json.dump(json_data, outfile, indent=4)
-
-
-
