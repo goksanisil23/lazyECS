@@ -14,7 +14,7 @@ public:
 
     void init();
 
-    // void main_app_func() override;
+    void app_func() override;
 
 private:
 

@@ -12,7 +12,6 @@
 #include <reactphysics3d/mathematics/Vector3.h>
 #include <reactphysics3d/utils/DebugRenderer.h>
 
-
 extern json launch_obj;
 
 BaseApp::BaseApp(bool isFullscreen, int windowWidth, int windowHeight) :
@@ -52,7 +51,7 @@ BaseApp::BaseApp(bool isFullscreen, int windowWidth, int windowHeight) :
     app_step_time_ = launch_obj.at("application").at("APP_STEP_TIME");
 }
 
-void BaseApp::main_lazyECS_loop() {
+void BaseApp::lazyECS_loop() {
 
     auto loop_step = [this]() {
 
@@ -66,27 +65,22 @@ void BaseApp::main_lazyECS_loop() {
            timeAccumulator_ -= app_step_time_;
 
             // ------------- 1) Apply ego control, NPC AI, kinematic control, etc. -------------  //
-            
-            // App specific stuff ()
-            // main_app_func();
+            app_func();
 
             // ------------- 2) Update physics ------------- //
             if(app_step_time_ <= lazyECS::RenderingSystem::GetTimeStep()) {
                 physicsSys->Update();
-                std::cout << "physics updated INSIDE" << std::endl;
             }
         }
 
         // ------------- 2) Update physics ------------- //
         if(app_step_time_ > lazyECS::RenderingSystem::GetTimeStep()) {
-            std::cout << "start phy update outside" << std::endl;
             physicsSys->Update();
         }
 
         // ------------- 3) Update graphics ------------- //
         // a) Update debugging primities        
         // b) Main entity graphics update
-        std::cout << "start Graphics updated OUTSIDE" << std::endl;
         renderSys->Update();
                 
     };
@@ -105,4 +99,8 @@ void BaseApp::main_lazyECS_loop() {
 
     render_timer_thread.join();
 
+}
+
+void BaseApp::app_func() {
+    std::cout << "This is a dummy application main func, since derived App doesnt exist or main_app_func in not overloaded" << std::endl;
 }

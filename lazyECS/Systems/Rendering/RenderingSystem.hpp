@@ -166,6 +166,10 @@ public:
 
     RenderingSystem(bool isFullscreen, int windowWidth, int windowHeight, const std::string& appName);
 
+    ~RenderingSystem() {
+        std::cout << "Rendering System Destructor is called" << std::endl; 
+    }
+
     // nanogui::Screen overrides
     virtual void draw_contents() override; // render the contents of the application
     virtual bool mouse_button_event(const nanogui::Vector2i& p, int button, bool down, int modifiers) override;

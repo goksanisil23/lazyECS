@@ -853,7 +853,7 @@ void RenderingSystem::TimerThreadFunc() {
 }
 
 void RenderingSystem::Update() {
-        for(auto& entity : this->m_entities) {
+        for(auto& entity : m_entities) {
             auto& transform = gOrchestrator.GetComponent<lazyECS::Transform3D>(entity);
             transform.ConvertRP3DToOpenglTransform(); // convert the physics transform to graphics transform
         }

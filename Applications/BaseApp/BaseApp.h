@@ -23,20 +23,13 @@ extern lazyECS::Orchestrator gOrchestrator;
 class BaseApp {
 
 public:
-    void main_lazyECS_loop();
+    void lazyECS_loop();
 
-    explicit BaseApp(bool isFullscreen = false, int windowWidth = 800, int windowHeight = 800);
-
-    // TODO: HAVING VIRTUAL FUNCTION (EVEN IF ITS NOT USED ANYWHERE) CAUSES RUNTIME ERROR
-    virtual void main_app_func() {
-         std::cout << "default app loop" << std::endl;
-    };    
+    BaseApp(bool isFullscreen = false, int windowWidth = 800, int windowHeight = 800);
 
 protected:
     // ----------------- Member functions ----------------- //
-    // BaseApp(bool isFullscreen = false, int windowWidth = 800, int windowHeight = 800);
-
-    // virtual void main_app_func() = 0; // needs to be implemented by the derived app
+    virtual void app_func(); // needs to be implemented by the derived app
 
     // ----------------- Member variables ----------------- //
     // All systems are listed, even if some won't be needed.
