@@ -5,7 +5,8 @@ project(raycast)
 # add_compile_options(-Wall -Wextra -Werror) #-pedantic -> causes error during c code compilation
 
 add_executable(raycast main.cpp 
-                       Raycast.cpp 
+                       Raycast.cpp
+                       Ego.cpp
                        ${CMAKE_CURRENT_SOURCE_DIR}/../BaseApp/BaseApp.cpp)
 
 target_include_directories(raycast PUBLIC

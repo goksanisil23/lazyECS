@@ -58,21 +58,11 @@ def create_goal(position, scale):
     return goal_json    
 
 def create_ego(position):
-     
-    # ego_json = {
-    #         "scale": [0.4,0.4,0.4],
-    #         "initial_position": position,
-    #         "initial_rotation": [0,0,0],
-    #         "body_type": "Static",
-    #         "shape": "Box", # Sphere
-    #         "color": [0,0,1,1],
-    #         "tag": "ego"
-    # }
 
     # return ego_json
     ego_json = {
             "scale": [0.5,0.5,0.5],
-            "initial_position": [0,44,0],
+            "initial_position": [0,0.5,0],
             "initial_rotation": [0,0,90],
             "body_type": "Dynamic",
             "shape": "Dumbbell", # Sphere

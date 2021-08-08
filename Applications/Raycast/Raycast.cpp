@@ -15,7 +15,7 @@
 extern json launch_obj;
 
 Raycast::Raycast() :
-    BaseApp{false, 1200, 1200}, // BaseApp(isFullscreen, windowWidth, windowHeight) 
+    BaseApp{false, 800, 800}, // BaseApp(isFullscreen, windowWidth, windowHeight) 
     rand_eng_{rand_dev_()}
 {
     // --------------- Application -------------- //
@@ -26,14 +26,18 @@ Raycast::Raycast() :
 
 void Raycast::init() {
     // Create application specific Actors here
-    // 1) Filter the entities based on their logical Tag
-    // 2) Construct App specific Actors
-    // 3) Point Actors to entities based on the tag group
+    //      1) Filter the entities based on their logical Tag
+    //      2) Construct App specific Actors
+    //      3) Point Actors to entities based on the tag group
 
-    // std::vector<lazyECS::Entity> ego_entities = tagSys->GetEntitiesWithTag("ego");
-    // for(const auto& ego_ent : ego_entities) {
-    //     egoActors_.insert(std::make_pair(ego_ent, Ego()));
-    // }
+    std::vector<lazyECS::Entity> ego_entities = tagSys->GetEntitiesWithTag("ego");
+    for(const auto& ego_ent : ego_entities) {
+        auto ego_actor = Ego(renderSys, physicsSys, 
+                            gOrchestrator.GetComponent<lazyECS::Transform3D>(ego_ent).rp3d_transform.getPosition(),
+                            gOrchestrator.GetComponent<lazyECS::Transform3D>(ego_ent).rp3d_transform.getOrientation()
+                            );
+        egoActors_.insert(std::make_pair(ego_ent, std::move(ego_actor)));
+    }
 
     // std::vector<lazyECS::Entity> goal_entities = tagSys->GetEntitiesWithTag("goal");
     // for(const auto& goal_ent : goal_entities) {
@@ -56,23 +60,15 @@ void Raycast::app_func() {
     renderSys->mDebugRays.clear();
     physicsSys->raycast_manager_.hit_points_.clear();
 
-    const auto& ego_pos = gOrchestrator.GetComponent<lazyECS::Transform3D>(tagSys->GetEntitiesWithTag("ego").at(0)).rp3d_transform.getPosition();
-    // const auto& ray_origin = ego_pos - rp3d::Vector3(0,0,-0.3);
+    for(auto& pair : egoActors_) {
+        const auto& ego_entity = pair.first;
+        auto& ego_actor = pair.second;
 
-    for(int j = 0; j < 3; j++) {
-        for(int i = 0; i < 30; i++) {
-            // rp3d::Ray ray(rp3d::Vector3(0,0,0), rp3d::Vector3(-15+i,0,-30));
-            rp3d::Ray ray(rp3d::Vector3(ego_pos.x, ego_pos.y, ego_pos.z - 0.3), 
-                            rp3d::Vector3(ego_pos.x -15 + i, ego_pos.y + j*1.0, ego_pos.z - 0.3 - 30));
-            renderSys->mDebugRays.emplace_back(ray);
-            physicsSys->RayCast(ray);
-        }
+        ego_actor.step();
     }
-    for(const auto& hit_point : physicsSys->raycast_manager_.hit_points_) {
-        // std::cout << hit_point.x << " " << hit_point.y << " " << hit_point.z << std::endl;
-        renderSys->mDebugSpheres.emplace_back(lazyECS::RenderingSystem::DebugSphere(hit_point,
-                                                            0.05, rp3d::DebugRenderer::DebugColor::BLACK));                
-    }                 
+    
+    // Apply force to the wheels
+
 }
 
 
