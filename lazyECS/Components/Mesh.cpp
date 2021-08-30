@@ -19,7 +19,6 @@ Mesh::Mesh(const Shape& mesh_shape) : mColor{openglframework::Color(1,1,1,1)}, m
         meshPath = "../../meshes/dumbbell.obj";
     }
     else if(mesh_shape == Shape::ConcaveMesh) {
-        // meshPath = launch_obj.at("entities").at("TerrainEntity").at("file");
         meshPath = "../../meshes/walls.obj";
     }
     else if (mesh_shape == Shape::Hfield) {

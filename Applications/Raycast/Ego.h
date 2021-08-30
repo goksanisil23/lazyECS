@@ -12,7 +12,7 @@ public:
     
     Ego(std::shared_ptr<lazyECS::RenderingSystem> render_sys_in, 
         std::shared_ptr<lazyECS::PhysicsSystem> physics_sys_in,
-        const rp3d::Vector3& ego_pos_in, const rp3d::Quaternion& ego_rot_in);
+        const lazyECS::Transform3D& transform_in);
 
     void step();
 
@@ -33,10 +33,5 @@ private:
     float lidar_vert_count, lidar_hor_count;
 
     // References to the lazyECS::Transform3D components of the ego
-    const rp3d::Vector3& ego_pos_;
-    const rp3d::Quaternion& ego_rot_;
-
-
-    std::tuple<float, float, float> quaternion_to_euler(const rp3d::Quaternion&);
-
+    const lazyECS::Transform3D& ego_trans_;
 };

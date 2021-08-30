@@ -45,7 +45,6 @@ void Transform3D::SetScale(const float& xScale, const float& yScale, const float
     this->halfExtent[1] = yScale * 0.5F;
     this->halfExtent[2] = zScale * 0.5F;
     
-
     // Set the scaling matrix for the openglframework
     this->mScalingMatrix = openglframework::Matrix4(this->halfExtent[0], 0, 0, 0,
                                                     0, this->halfExtent[1], 0, 0,
@@ -56,5 +55,30 @@ void Transform3D::SetScale(const float& xScale, const float& yScale, const float
     this->ConvertRP3DToOpenglTransform();
 }
 
+
+std::tuple<float, float, float> Transform3D::GetEulerOrientation() const {
+    float yaw, pitch, roll;
+    auto q = rp3d_transform.getOrientation();
+
+    float test = q.x*q.y + q.z*q.w;
+
+    if(test > 0.499) { // singularity 
+        yaw = 2.0f * atan2(q.x,q.w);
+        roll = 0;
+        pitch = rp3d::PI/2.0f;
+    }
+    else if (test < -0.499) {
+        yaw = -2.0f * atan2(q.x,q.w);
+        roll = 0;
+        pitch = -rp3d::PI/2.0f;        
+    }
+    else {
+        yaw = atan2(2*q.y*q.w-2*q.x*q.z , 1 - 2*q.y*q.y - 2*q.z*q.z);
+        pitch = asin(2*q.x*q.y + 2*q.z*q.w);
+        roll = atan2(2*q.x*q.w-2*q.y*q.z , 1 - 2*q.x*q.x - 2*q.z*q.z);
+    }
+
+    return std::make_tuple<float,float,float>(std::move(yaw),std::move(pitch),std::move(roll));
+}
 
 }

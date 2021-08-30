@@ -65,7 +65,7 @@ def create_ego(position):
             "initial_position": [0,0.5,0],
             "initial_rotation": [0,0,90],
             "body_type": "Dynamic",
-            "shape": "Dumbbell", # Sphere
+            "shape": "Box", #  Dumbbell
             "color": [0,0,1,1],
             "tag": "ego"
     }

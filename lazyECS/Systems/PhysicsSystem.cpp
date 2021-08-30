@@ -49,6 +49,7 @@ void PhysicsSystem::Init(){
                 rigidBody.rp3d_collision_shape = physicsCommon.createCapsuleShape(transform.halfExtent[0],transform.halfExtent[1]);
                 break;
             case Shape::Dumbbell: {
+                // Dumbbell blender obj file dimensions are: sphere-to-sphere: 8.0m, sphere radius: 1.5m  
                 float distance_between_spheres(4.0/2.0f); // 8.0
                 rp3d::SphereShape* sphere_shape = physicsCommon.createSphereShape(0.75/2.0); // 1.5
                 rp3d::CapsuleShape* capsule_shape = physicsCommon.createCapsuleShape(0.25/2.0, 3.5/2.0); // 0.5, 7

@@ -32,10 +32,7 @@ void Raycast::init() {
 
     std::vector<lazyECS::Entity> ego_entities = tagSys->GetEntitiesWithTag("ego");
     for(const auto& ego_ent : ego_entities) {
-        auto ego_actor = Ego(renderSys, physicsSys, 
-                            gOrchestrator.GetComponent<lazyECS::Transform3D>(ego_ent).rp3d_transform.getPosition(),
-                            gOrchestrator.GetComponent<lazyECS::Transform3D>(ego_ent).rp3d_transform.getOrientation()
-                            );
+        auto ego_actor = Ego(renderSys, physicsSys, gOrchestrator.GetComponent<lazyECS::Transform3D>(ego_ent));
         egoActors_.insert(std::make_pair(ego_ent, std::move(ego_actor)));
     }
 

@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <iostream>
+#include <reactphysics3d/configuration.h>
 #include <reactphysics3d/mathematics/Transform.h>
 #include <reactphysics3d/mathematics/Vector3.h>
 
@@ -11,7 +12,7 @@ extern lazyECS::Orchestrator gOrchestrator; // expected to be defined globally i
 
 namespace lazyECS {
 
-ManualControlSystem::ManualControlSystem() = default;
+ManualControlSystem::ManualControlSystem() : move_step_(0.2), rotate_step_(1.0) {};
 
 void ManualControlSystem::SetupSignature() {
     // Set the system signature based on the utilized Components below
@@ -34,7 +35,6 @@ void ManualControlSystem::Init(const std::string& tag) {
             break;            
         }
     }
-
 }
 
 void ManualControlSystem::OnKeyboardEvent(const KeyboardEvent& key_event) {
@@ -44,27 +44,41 @@ void ManualControlSystem::OnKeyboardEvent(const KeyboardEvent& key_event) {
 
     const auto& cur_trans = rigid_body.rp3d_rigidBody->getTransform();
 
+    float ego_yaw, ego_pitch, ego_roll;
+    std::tie(ego_yaw, ego_pitch, ego_roll) = gOrchestrator.GetComponent<Transform3D>(manual_entity_).GetEulerOrientation(); 
+
     switch (key_event.key_button) {
-    case KeyboardEvent::KeyButton::KEY_A :
+    
+    // ROTATE COUNTER-CLOCKWISE
+    case KeyboardEvent::KeyButton::KEY_A: {
+        auto rotation = rp3d::Quaternion::fromEulerAngles(0,rotate_step_/180.0*reactphysics3d::PI, 0); // 1 degrees around y-axis (heading)
+        rigid_body.rp3d_rigidBody->setTransform(rp3d::Transform(cur_trans.getPosition(), rotation * cur_trans.getOrientation()));
+        break;
+    }
+
+    // BACKWARDS
+    case KeyboardEvent::KeyButton::KEY_S: {
         rigid_body.rp3d_rigidBody->setTransform(
-                rp3d::Transform(cur_trans.getPosition() + rp3d::Vector3(-0.2,0,0), cur_trans.getOrientation())
+                rp3d::Transform(cur_trans.getPosition() - rp3d::Vector3(sin(ego_yaw)*move_step_,0,cos(ego_yaw)*move_step_), cur_trans.getOrientation())
             );
         break;
-    case KeyboardEvent::KeyButton::KEY_S :
-        rigid_body.rp3d_rigidBody->setTransform(
-                rp3d::Transform(cur_trans.getPosition() + rp3d::Vector3(0,0,0.2), cur_trans.getOrientation())
-            );    
+    }
+
+    // ROTATE CLOCKWISE
+    case KeyboardEvent::KeyButton::KEY_D: {
+        auto rotation = rp3d::Quaternion::fromEulerAngles(0,-rotate_step_/180.0*reactphysics3d::PI, 0); // 1 degrees around y-axis (heading)
+        rigid_body.rp3d_rigidBody->setTransform(rp3d::Transform(cur_trans.getPosition(), rotation * cur_trans.getOrientation()));
         break;
-    case KeyboardEvent::KeyButton::KEY_D :
+    }
+
+    // FORWARD
+    case KeyboardEvent::KeyButton::KEY_W: {
         rigid_body.rp3d_rigidBody->setTransform(
-                rp3d::Transform(cur_trans.getPosition() + rp3d::Vector3(0.2,0,0), cur_trans.getOrientation())
-            );    
+                rp3d::Transform(cur_trans.getPosition() + rp3d::Vector3(sin(ego_yaw)*move_step_,0,cos(ego_yaw)*move_step_), cur_trans.getOrientation())
+            );
         break;
-    case KeyboardEvent::KeyButton::KEY_W :
-        rigid_body.rp3d_rigidBody->setTransform(
-                rp3d::Transform(cur_trans.getPosition() + rp3d::Vector3(0,0,-0.2), cur_trans.getOrientation())
-            );    
-        break;
+    }
+
     default:
         throw std::runtime_error("This Keyboard Event is not handled");
         break;

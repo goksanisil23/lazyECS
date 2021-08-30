@@ -39,7 +39,14 @@ public:
     void ConvertRP3DToOpenglTransformInterp(const float& interpolationFactor);
 
     // scales the 3d shape in 3 directions : TODO: handle multiple shapes
-    void SetScale(const float& xScale, const float& yScale, const float& zScale); 
+    // Note: This sets the absolute scale, does NOT amplify the existing size
+    // @param xScale : total length of x side
+    // @param yScale : total length of y side
+    // @param zScale : total length of z size 
+    void SetScale(const float& xScale, const float& yScale, const float& zScale);
+
+    // Returns the Euler angles from the native quaternion orientation
+    std::tuple<float, float, float> GetEulerOrientation() const;
     
 };
 
