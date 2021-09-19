@@ -1,0 +1,2 @@
+Invoking command in '/home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/eloquent /usr/bin/cmake --build /home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher -- -j12 -l12
+Invoked command in '/home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/eloquent /usr/bin/cmake --build /home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher -- -j12 -l12

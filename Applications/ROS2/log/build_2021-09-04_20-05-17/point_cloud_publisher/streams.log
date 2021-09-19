@@ -1,0 +1,47 @@
+[0.017s] Invoking command in '/home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/eloquent /usr/bin/cmake --build /home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher -- -j12 -l12
+[0.046s] -- Found ament_cmake: 0.8.3 (/opt/ros/eloquent/share/ament_cmake/cmake)
+[0.075s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[0.265s] -- Found rclcpp: 0.8.5 (/opt/ros/eloquent/share/rclcpp/cmake)
+[0.283s] -- Found rosidl_adapter: 0.8.3 (/opt/ros/eloquent/share/rosidl_adapter/cmake)
+[0.314s] -- Found rmw_implementation_cmake: 0.8.1 (/opt/ros/eloquent/share/rmw_implementation_cmake/cmake)
+[0.315s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[0.342s] -- Found std_msgs: 0.8.1 (/opt/ros/eloquent/share/std_msgs/cmake)
+[0.347s] -- Found sensor_msgs: 0.8.1 (/opt/ros/eloquent/share/sensor_msgs/cmake)
+[0.389s] -- Found ament_lint_auto: 0.8.2 (/opt/ros/eloquent/share/ament_lint_auto/cmake)
+[0.457s] -- Added test 'copyright' to check for copyright in CMake / C / C++ / Python code
+[0.458s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[0.458s] -- Configured cppcheck include dirs: $<BUILD_INTERFACE:/home/goksan/Work/lazyECS/Applications/ROS2/src/point_cloud_publisher/include>
+[0.459s] -- Added test 'cpplint' to check C / C++ code against the Google style
+[0.459s] -- Added test 'lint_cmake' to check CMake code style
+[0.460s] -- Added test 'uncrustify' to check C / C++ code style
+[0.460s] -- Added test 'xmllint' to check XML markup files
+[0.462s] -- Configuring done
+[0.471s] -- Generating done
+[0.472s] -- Build files have been written to: /home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher
+[0.502s] [35m[1mScanning dependencies of target my_node[0m
+[0.534s] [ 50%] [32mBuilding CXX object CMakeFiles/my_node.dir/src/my_node.cpp.o[0m
+[2.329s] [100%] [32m[1mLinking CXX executable my_node[0m
+[2.470s] [100%] Built target my_node
+[2.486s] Invoked command in '/home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/eloquent /usr/bin/cmake --build /home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher -- -j12 -l12
+[2.530s] Invoking command in '/home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/eloquent /usr/bin/cmake --build /home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher --target install -- -j12 -l12
+[2.594s] [100%] Built target my_node
+[2.619s] [36mInstall the project...[0m
+[2.630s] -- Install configuration: ""
+[2.630s] -- Installing: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/lib/point_cloud_publisher/my_node
+[2.631s] -- Set runtime path of "/home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/lib/point_cloud_publisher/my_node" to ""
+[2.631s] -- Installing: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/ament_index/resource_index/package_run_dependencies/point_cloud_publisher
+[2.631s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/ament_index/resource_index/parent_prefix_path/point_cloud_publisher
+[2.632s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/environment/ament_prefix_path.sh
+[2.632s] -- Installing: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/environment/ament_prefix_path.dsv
+[2.632s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/environment/path.sh
+[2.632s] -- Installing: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/environment/path.dsv
+[2.632s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/local_setup.bash
+[2.632s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/local_setup.sh
+[2.633s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/local_setup.zsh
+[2.633s] -- Installing: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/local_setup.dsv
+[2.633s] -- Installing: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/package.dsv
+[2.633s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/ament_index/resource_index/packages/point_cloud_publisher
+[2.633s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/cmake/point_cloud_publisherConfig.cmake
+[2.633s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/cmake/point_cloud_publisherConfig-version.cmake
+[2.633s] -- Installing: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/package.xml
+[2.636s] Invoked command in '/home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/eloquent /usr/bin/cmake --build /home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher --target install -- -j12 -l12

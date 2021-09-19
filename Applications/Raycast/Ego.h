@@ -27,11 +27,12 @@ private:
     constexpr static float LIDAR_HOR_FOV = 60.0; // degrees
     constexpr static float LIDAR_VERT_FOV = 20.0; // degrees
     constexpr static float LIDAR_HOR_RES = 3.0; // degrees
-    constexpr static float LIDAR_VERT_RES = 5.0; // degrees
+    constexpr static float LIDAR_VERT_RES = 3.0; // degrees
     constexpr static float LIDAR_RANGE = 10.0; // meters
 
     float lidar_vert_count, lidar_hor_count;
 
     // References to the lazyECS::Transform3D components of the ego
     const lazyECS::Transform3D& ego_trans_;
+    const rp3d::Vector3 lidar_pos_offset;
 };

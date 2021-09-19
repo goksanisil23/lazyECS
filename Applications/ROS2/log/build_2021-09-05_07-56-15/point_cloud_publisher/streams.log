@@ -1,0 +1,28 @@
+[0.016s] Invoking command in '/home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/eloquent /usr/bin/cmake --build /home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher -- -j12 -l12
+[0.059s] [35m[1mScanning dependencies of target my_node[0m
+[0.089s] [ 50%] [32mBuilding CXX object CMakeFiles/my_node.dir/src/my_node.cpp.o[0m
+[1.993s] [100%] [32m[1mLinking CXX executable my_node[0m
+[2.143s] [100%] Built target my_node
+[2.157s] Invoked command in '/home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/eloquent /usr/bin/cmake --build /home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher -- -j12 -l12
+[2.201s] Invoking command in '/home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/eloquent /usr/bin/cmake --build /home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher --target install -- -j12 -l12
+[2.277s] [100%] Built target my_node
+[2.296s] [36mInstall the project...[0m
+[2.307s] -- Install configuration: ""
+[2.307s] -- Installing: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/lib/point_cloud_publisher/my_node
+[2.308s] -- Set runtime path of "/home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/lib/point_cloud_publisher/my_node" to ""
+[2.308s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/ament_index/resource_index/package_run_dependencies/point_cloud_publisher
+[2.308s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/ament_index/resource_index/parent_prefix_path/point_cloud_publisher
+[2.308s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/environment/ament_prefix_path.sh
+[2.309s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/environment/ament_prefix_path.dsv
+[2.309s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/environment/path.sh
+[2.309s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/environment/path.dsv
+[2.309s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/local_setup.bash
+[2.309s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/local_setup.sh
+[2.309s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/local_setup.zsh
+[2.309s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/local_setup.dsv
+[2.310s] -- Installing: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/package.dsv
+[2.310s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/ament_index/resource_index/packages/point_cloud_publisher
+[2.310s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/cmake/point_cloud_publisherConfig.cmake
+[2.310s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/cmake/point_cloud_publisherConfig-version.cmake
+[2.310s] -- Up-to-date: /home/goksan/Work/lazyECS/Applications/ROS2/install/point_cloud_publisher/share/point_cloud_publisher/package.xml
+[2.313s] Invoked command in '/home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/eloquent /usr/bin/cmake --build /home/goksan/Work/lazyECS/Applications/ROS2/build/point_cloud_publisher --target install -- -j12 -l12

@@ -1,0 +1,5 @@
+[35m[1mScanning dependencies of target my_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/my_node.dir/src/my_node.cpp.o[0m
+CMakeFiles/my_node.dir/build.make:62: recipe for target 'CMakeFiles/my_node.dir/src/my_node.cpp.o' failed
+CMakeFiles/Makefile2:131: recipe for target 'CMakeFiles/my_node.dir/all' failed
+Makefile:140: recipe for target 'all' failed
